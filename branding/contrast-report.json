@@ -1,0 +1,182 @@
+[
+  {
+    "mode": "light",
+    "what": "Body text (ink) on surface",
+    "fg": "#0F172A",
+    "bg": "#FFFFFF",
+    "ratio": 17.85,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "mode": "light",
+    "what": "Body text (ink) on canvas",
+    "fg": "#0F172A",
+    "bg": "#F5F7FB",
+    "ratio": 16.65,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "mode": "light",
+    "what": "Secondary text (muted) on surface",
+    "fg": "#56657B",
+    "bg": "#FFFFFF",
+    "ratio": 5.93,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "mode": "light",
+    "what": "Secondary text (muted) on canvas",
+    "fg": "#56657B",
+    "bg": "#F5F7FB",
+    "ratio": 5.53,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "mode": "light",
+    "what": "Links / IDs (primary) on surface",
+    "fg": "#1D4ED8",
+    "bg": "#FFFFFF",
+    "ratio": 6.7,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "mode": "light",
+    "what": "Button label on primary",
+    "fg": "#FFFFFF",
+    "bg": "#1D4ED8",
+    "ratio": 6.7,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "mode": "light",
+    "what": "Button label on primary (hover)",
+    "fg": "#FFFFFF",
+    "bg": "#1A3FB0",
+    "ratio": 8.82,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "mode": "light",
+    "what": "Selected item text on soft primary",
+    "fg": "#1A3FB0",
+    "bg": "#EEF3FF",
+    "ratio": 7.93,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "mode": "light",
+    "what": "Borders (line) vs surface — non-text",
+    "fg": "#E2E8F0",
+    "bg": "#FFFFFF",
+    "ratio": 1.23,
+    "min": 1,
+    "pass": true
+  },
+  {
+    "mode": "dark",
+    "what": "Body text (ink) on surface",
+    "fg": "#E6EBF5",
+    "bg": "#121A2E",
+    "ratio": 14.48,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "mode": "dark",
+    "what": "Body text (ink) on canvas",
+    "fg": "#E6EBF5",
+    "bg": "#0A1020",
+    "ratio": 15.86,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "mode": "dark",
+    "what": "Secondary text (muted) on surface",
+    "fg": "#9AA8BF",
+    "bg": "#121A2E",
+    "ratio": 7.2,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "mode": "dark",
+    "what": "Secondary text (muted) on canvas",
+    "fg": "#9AA8BF",
+    "bg": "#0A1020",
+    "ratio": 7.88,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "mode": "dark",
+    "what": "Links / IDs (primary) on surface",
+    "fg": "#7FA3FF",
+    "bg": "#121A2E",
+    "ratio": 7.08,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "mode": "dark",
+    "what": "Button label on primary",
+    "fg": "#0B1B4A",
+    "bg": "#7FA3FF",
+    "ratio": 6.76,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "mode": "dark",
+    "what": "Button label on primary (hover)",
+    "fg": "#0B1B4A",
+    "bg": "#A5BFFF",
+    "ratio": 9.05,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "mode": "dark",
+    "what": "Selected item text on soft primary",
+    "fg": "#A5BFFF",
+    "bg": "#17244A",
+    "ratio": 8.28,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "mode": "dark",
+    "what": "Borders (line) vs surface — non-text",
+    "fg": "#26324B",
+    "bg": "#121A2E",
+    "ratio": 1.35,
+    "min": 1,
+    "pass": true
+  },
+  {
+    "mode": "both",
+    "what": "Text on accent (midnight on amber)",
+    "fg": "#0B1B4A",
+    "bg": "#F59E0B",
+    "ratio": 7.7,
+    "min": 4.5,
+    "pass": true
+  },
+  {
+    "mode": "both",
+    "what": "Wordmark on light / white on midnight",
+    "fg": "#0B1B4A",
+    "bg": "#FFFFFF",
+    "ratio": 16.54,
+    "min": 4.5,
+    "pass": true
+  }
+]

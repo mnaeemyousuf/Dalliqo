@@ -1,0 +1,132 @@
+{
+  "capturedAt": "2026-10-18T08:09:00.901Z",
+  "baseUrl": "http://localhost:51108",
+  "shots": [
+    {
+      "role": "viewer",
+      "id": "dashboard",
+      "file": "screenshots/viewer/dashboard.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "my-day",
+      "file": "screenshots/viewer/my-day.jpg",
+      "url": "/my-day",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "global-search",
+      "file": "screenshots/viewer/global-search.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "clients",
+      "file": "screenshots/viewer/clients.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "client-detail",
+      "file": "screenshots/viewer/client-detail.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "client-requirements",
+      "file": "screenshots/viewer/client-requirements.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "client-matches",
+      "file": "screenshots/viewer/client-matches.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "client-activity",
+      "file": "screenshots/viewer/client-activity.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "properties",
+      "file": "screenshots/viewer/properties.jpg",
+      "url": "/properties",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "property-detail",
+      "file": "screenshots/viewer/property-detail.jpg",
+      "url": "/properties/6ad47cc59f7482385fe70e16",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "property-media",
+      "file": "screenshots/viewer/property-media.jpg",
+      "url": "/properties/6ad47cc59f7482385fe70e16",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "property-matches",
+      "file": "screenshots/viewer/property-matches.jpg",
+      "url": "/properties/6ad47cc59f7482385fe70e16",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "owners",
+      "file": "screenshots/viewer/owners.jpg",
+      "url": "/owners",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "matches",
+      "file": "screenshots/viewer/matches.jpg",
+      "url": "/matches",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "followups",
+      "file": "screenshots/viewer/followups.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "documents",
+      "file": "screenshots/viewer/documents.jpg",
+      "url": "/documents",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "notifications",
+      "file": "screenshots/viewer/notifications.jpg",
+      "url": "/notifications",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "settings",
+      "file": "screenshots/viewer/settings.jpg",
+      "url": "/settings",
+      "ok": true
+    }
+  ]
+}

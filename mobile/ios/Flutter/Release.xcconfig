@@ -1,0 +1,4 @@
+#include "Generated.xcconfig"
+
+// Google Maps iOS key (leave empty to disable the map picker).
+GMS_API_KEY=

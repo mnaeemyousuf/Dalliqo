@@ -1,0 +1,153 @@
+{
+  "capturedAt": "2026-10-18T08:08:13.422Z",
+  "baseUrl": "http://localhost:51108",
+  "shots": [
+    {
+      "role": "accountant",
+      "id": "dashboard",
+      "file": "screenshots/accountant/dashboard.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "dashboard-analytics",
+      "file": "screenshots/accountant/dashboard-analytics.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "dashboard-sales",
+      "file": "screenshots/accountant/dashboard-sales.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "my-day",
+      "file": "screenshots/accountant/my-day.jpg",
+      "url": "/my-day",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "global-search",
+      "file": "screenshots/accountant/global-search.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "clients",
+      "file": "screenshots/accountant/clients.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "client-detail",
+      "file": "screenshots/accountant/client-detail.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "client-requirements",
+      "file": "screenshots/accountant/client-requirements.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "client-matches",
+      "file": "screenshots/accountant/client-matches.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "client-activity",
+      "file": "screenshots/accountant/client-activity.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "properties",
+      "file": "screenshots/accountant/properties.jpg",
+      "url": "/properties",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "property-detail",
+      "file": "screenshots/accountant/property-detail.jpg",
+      "url": "/properties/6ad47cc59f7482385fe70e16",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "property-media",
+      "file": "screenshots/accountant/property-media.jpg",
+      "url": "/properties/6ad47cc59f7482385fe70e16",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "property-matches",
+      "file": "screenshots/accountant/property-matches.jpg",
+      "url": "/properties/6ad47cc59f7482385fe70e16",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "owners",
+      "file": "screenshots/accountant/owners.jpg",
+      "url": "/owners",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "matches",
+      "file": "screenshots/accountant/matches.jpg",
+      "url": "/matches",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "followups",
+      "file": "screenshots/accountant/followups.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "documents",
+      "file": "screenshots/accountant/documents.jpg",
+      "url": "/documents",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "notifications",
+      "file": "screenshots/accountant/notifications.jpg",
+      "url": "/notifications",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "settings",
+      "file": "screenshots/accountant/settings.jpg",
+      "url": "/settings",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "reports",
+      "file": "screenshots/accountant/reports.jpg",
+      "url": "/reports",
+      "ok": true
+    }
+  ]
+}

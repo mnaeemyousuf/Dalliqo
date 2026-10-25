@@ -1,0 +1,1378 @@
+{
+  "capturedAt": "2026-10-24T19:58:28.206Z",
+  "baseUrl": "http://localhost:5174",
+  "shots": [
+    {
+      "role": "common",
+      "id": "login",
+      "file": "screenshots/common/login.jpg",
+      "url": "/login",
+      "ok": true
+    },
+    {
+      "role": "common",
+      "id": "login-filled",
+      "file": "screenshots/common/login-filled.jpg",
+      "url": "/login",
+      "ok": true
+    },
+    {
+      "role": "common",
+      "id": "forgot-password",
+      "file": "screenshots/common/forgot-password.jpg",
+      "url": "/forgot-password",
+      "ok": true
+    },
+    {
+      "role": "common",
+      "id": "register",
+      "file": "screenshots/common/register.jpg",
+      "url": "/register",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "dashboard",
+      "file": "screenshots/owner/dashboard.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "dashboard-analytics",
+      "file": "screenshots/owner/dashboard-analytics.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "dashboard-sales",
+      "file": "screenshots/owner/dashboard-sales.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "my-day",
+      "file": "screenshots/owner/my-day.jpg",
+      "url": "/my-day",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "global-search",
+      "file": "screenshots/owner/global-search.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "clients",
+      "file": "screenshots/owner/clients.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "client-detail",
+      "file": "screenshots/owner/client-detail.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "client-requirements",
+      "file": "screenshots/owner/client-requirements.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "client-matches",
+      "file": "screenshots/owner/client-matches.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "client-activity",
+      "file": "screenshots/owner/client-activity.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "properties",
+      "file": "screenshots/owner/properties.jpg",
+      "url": "/properties",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "property-detail",
+      "file": "screenshots/owner/property-detail.jpg",
+      "url": "/properties/6add0d425000cfe16ddee99d",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "property-media",
+      "file": "screenshots/owner/property-media.jpg",
+      "url": "/properties/6add0d425000cfe16ddee99d",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "property-matches",
+      "file": "screenshots/owner/property-matches.jpg",
+      "url": "/properties/6add0d425000cfe16ddee99d",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "owners",
+      "file": "screenshots/owner/owners.jpg",
+      "url": "/owners",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "matches",
+      "file": "screenshots/owner/matches.jpg",
+      "url": "/matches",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "followups",
+      "file": "screenshots/owner/followups.jpg",
+      "url": "/followups?tab=upcoming",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "documents",
+      "file": "screenshots/owner/documents.jpg",
+      "url": "/documents",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "notifications",
+      "file": "screenshots/owner/notifications.jpg",
+      "url": "/notifications",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "settings",
+      "file": "screenshots/owner/settings.jpg",
+      "url": "/settings",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "client-form",
+      "file": "screenshots/owner/client-form.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "client-form-requirements",
+      "file": "screenshots/owner/client-form-requirements.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "client-saved",
+      "file": "screenshots/owner/client-saved.jpg",
+      "url": "/clients/6add0e2a5000cfe16ddef1fa",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "client-duplicate",
+      "file": "screenshots/owner/client-duplicate.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "followup-form",
+      "file": "screenshots/owner/followup-form.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "followup-saved",
+      "file": "screenshots/owner/followup-saved.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "followup-reschedule",
+      "file": "screenshots/owner/followup-reschedule.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "followup-complete",
+      "file": "screenshots/owner/followup-complete.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "followup-notes",
+      "file": "screenshots/owner/followup-notes.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "client-notes",
+      "file": "screenshots/owner/client-notes.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "property-form",
+      "file": "screenshots/owner/property-form.jpg",
+      "url": "/properties",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "property-verify",
+      "file": "screenshots/owner/property-verify.jpg",
+      "url": "/properties/6add0d425000cfe16ddee97b",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "property-status",
+      "file": "screenshots/owner/property-status.jpg",
+      "url": "/properties/6add0d425000cfe16ddee97b",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "properties-stale",
+      "file": "screenshots/owner/properties-stale.jpg",
+      "url": "/properties?verification=stale&view=table",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "property-documents",
+      "file": "screenshots/owner/property-documents.jpg",
+      "url": "/properties/6add0d415000cfe16ddee89e",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "users",
+      "file": "screenshots/owner/users.jpg",
+      "url": "/users",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "user-add",
+      "file": "screenshots/owner/user-add.jpg",
+      "url": "/users",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "user-permissions",
+      "file": "screenshots/owner/user-permissions.jpg",
+      "url": "/users",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "settings-business",
+      "file": "screenshots/owner/settings-business.jpg",
+      "url": "/settings",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "settings-categories",
+      "file": "screenshots/owner/settings-categories.jpg",
+      "url": "/settings",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "settings-matching",
+      "file": "screenshots/owner/settings-matching.jpg",
+      "url": "/settings",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "reports",
+      "file": "screenshots/owner/reports.jpg",
+      "url": "/reports",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "audit-log",
+      "file": "screenshots/owner/audit-log.jpg",
+      "url": "/audit",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "urdu-dashboard",
+      "file": "screenshots/owner/urdu-dashboard.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "urdu-clients",
+      "file": "screenshots/owner/urdu-clients.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "dark-mode",
+      "file": "screenshots/owner/dark-mode.jpg",
+      "url": "/properties",
+      "ok": true
+    },
+    {
+      "role": "owner",
+      "id": "tablet",
+      "file": "screenshots/owner/tablet.jpg",
+      "url": "/my-day",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "dashboard",
+      "file": "screenshots/member/dashboard.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "dashboard-analytics",
+      "file": "screenshots/member/dashboard-analytics.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "dashboard-sales",
+      "file": "screenshots/member/dashboard-sales.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "my-day",
+      "file": "screenshots/member/my-day.jpg",
+      "url": "/my-day",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "global-search",
+      "file": "screenshots/member/global-search.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "clients",
+      "file": "screenshots/member/clients.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "client-detail",
+      "file": "screenshots/member/client-detail.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "client-requirements",
+      "file": "screenshots/member/client-requirements.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "client-matches",
+      "file": "screenshots/member/client-matches.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "client-activity",
+      "file": "screenshots/member/client-activity.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "properties",
+      "file": "screenshots/member/properties.jpg",
+      "url": "/properties",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "property-detail",
+      "file": "screenshots/member/property-detail.jpg",
+      "url": "/properties/6add0d425000cfe16ddee99d",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "property-media",
+      "file": "screenshots/member/property-media.jpg",
+      "url": "/properties/6add0d425000cfe16ddee99d",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "property-matches",
+      "file": "screenshots/member/property-matches.jpg",
+      "url": "/properties/6add0d425000cfe16ddee99d",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "owners",
+      "file": "screenshots/member/owners.jpg",
+      "url": "/owners",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "matches",
+      "file": "screenshots/member/matches.jpg",
+      "url": "/matches",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "followups",
+      "file": "screenshots/member/followups.jpg",
+      "url": "/followups?tab=upcoming",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "documents",
+      "file": "screenshots/member/documents.jpg",
+      "url": "/documents",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "notifications",
+      "file": "screenshots/member/notifications.jpg",
+      "url": "/notifications",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "settings",
+      "file": "screenshots/member/settings.jpg",
+      "url": "/settings",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "client-form",
+      "file": "screenshots/member/client-form.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "client-form-requirements",
+      "file": "screenshots/member/client-form-requirements.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "client-saved",
+      "file": "screenshots/member/client-saved.jpg",
+      "url": "/clients/6add0ee05000cfe16ddef856",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "client-duplicate",
+      "file": "screenshots/member/client-duplicate.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "followup-form",
+      "file": "screenshots/member/followup-form.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "followup-saved",
+      "file": "screenshots/member/followup-saved.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "followup-reschedule",
+      "file": "screenshots/member/followup-reschedule.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "followup-complete",
+      "file": "screenshots/member/followup-complete.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "followup-notes",
+      "file": "screenshots/member/followup-notes.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "client-notes",
+      "file": "screenshots/member/client-notes.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "property-form",
+      "file": "screenshots/member/property-form.jpg",
+      "url": "/properties",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "property-verify",
+      "file": "screenshots/member/property-verify.jpg",
+      "url": "/properties/6add0d425000cfe16ddee97b",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "property-status",
+      "file": "screenshots/member/property-status.jpg",
+      "url": "/properties/6add0d425000cfe16ddee97b",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "properties-stale",
+      "file": "screenshots/member/properties-stale.jpg",
+      "url": "/properties?verification=stale&view=table",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "property-documents",
+      "file": "screenshots/member/property-documents.jpg",
+      "url": "/properties/6add0d415000cfe16ddee89e",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "reports",
+      "file": "screenshots/member/reports.jpg",
+      "url": "/reports",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "dashboard",
+      "file": "screenshots/manager/dashboard.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "dashboard-analytics",
+      "file": "screenshots/manager/dashboard-analytics.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "dashboard-sales",
+      "file": "screenshots/manager/dashboard-sales.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "my-day",
+      "file": "screenshots/manager/my-day.jpg",
+      "url": "/my-day",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "global-search",
+      "file": "screenshots/manager/global-search.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "clients",
+      "file": "screenshots/manager/clients.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "client-detail",
+      "file": "screenshots/manager/client-detail.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "client-requirements",
+      "file": "screenshots/manager/client-requirements.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "client-matches",
+      "file": "screenshots/manager/client-matches.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "client-activity",
+      "file": "screenshots/manager/client-activity.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "properties",
+      "file": "screenshots/manager/properties.jpg",
+      "url": "/properties",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "property-detail",
+      "file": "screenshots/manager/property-detail.jpg",
+      "url": "/properties/6add0d425000cfe16ddee99d",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "property-media",
+      "file": "screenshots/manager/property-media.jpg",
+      "url": "/properties/6add0d425000cfe16ddee99d",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "property-matches",
+      "file": "screenshots/manager/property-matches.jpg",
+      "url": "/properties/6add0d425000cfe16ddee99d",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "owners",
+      "file": "screenshots/manager/owners.jpg",
+      "url": "/owners",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "matches",
+      "file": "screenshots/manager/matches.jpg",
+      "url": "/matches",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "followups",
+      "file": "screenshots/manager/followups.jpg",
+      "url": "/followups?tab=upcoming",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "documents",
+      "file": "screenshots/manager/documents.jpg",
+      "url": "/documents",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "notifications",
+      "file": "screenshots/manager/notifications.jpg",
+      "url": "/notifications",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "settings",
+      "file": "screenshots/manager/settings.jpg",
+      "url": "/settings",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "client-form",
+      "file": "screenshots/manager/client-form.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "client-form-requirements",
+      "file": "screenshots/manager/client-form-requirements.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "client-saved",
+      "file": "screenshots/manager/client-saved.jpg",
+      "url": "/clients/6add0f6e5000cfe16ddefd27",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "client-duplicate",
+      "file": "screenshots/manager/client-duplicate.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "followup-form",
+      "file": "screenshots/manager/followup-form.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "followup-saved",
+      "file": "screenshots/manager/followup-saved.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "followup-reschedule",
+      "file": "screenshots/manager/followup-reschedule.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "followup-complete",
+      "file": "screenshots/manager/followup-complete.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "followup-notes",
+      "file": "screenshots/manager/followup-notes.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "client-notes",
+      "file": "screenshots/manager/client-notes.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "property-form",
+      "file": "screenshots/manager/property-form.jpg",
+      "url": "/properties",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "property-verify",
+      "file": "screenshots/manager/property-verify.jpg",
+      "url": "/properties/6add0d425000cfe16ddee97b",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "property-status",
+      "file": "screenshots/manager/property-status.jpg",
+      "url": "/properties/6add0d425000cfe16ddee97b",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "properties-stale",
+      "file": "screenshots/manager/properties-stale.jpg",
+      "url": "/properties?verification=stale&view=table",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "property-documents",
+      "file": "screenshots/manager/property-documents.jpg",
+      "url": "/properties/6add0d415000cfe16ddee89e",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "reports",
+      "file": "screenshots/manager/reports.jpg",
+      "url": "/reports",
+      "ok": true
+    },
+    {
+      "role": "manager",
+      "id": "audit-log",
+      "file": "screenshots/manager/audit-log.jpg",
+      "url": "/audit",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "dashboard",
+      "file": "screenshots/agent/dashboard.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "my-day",
+      "file": "screenshots/agent/my-day.jpg",
+      "url": "/my-day",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "global-search",
+      "file": "screenshots/agent/global-search.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "clients",
+      "file": "screenshots/agent/clients.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "client-detail",
+      "file": "screenshots/agent/client-detail.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "client-requirements",
+      "file": "screenshots/agent/client-requirements.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "client-matches",
+      "file": "screenshots/agent/client-matches.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "client-activity",
+      "file": "screenshots/agent/client-activity.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "properties",
+      "file": "screenshots/agent/properties.jpg",
+      "url": "/properties",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "property-detail",
+      "file": "screenshots/agent/property-detail.jpg",
+      "url": "/properties/6add0d425000cfe16ddee99d",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "property-media",
+      "file": "screenshots/agent/property-media.jpg",
+      "url": "/properties/6add0d425000cfe16ddee99d",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "property-matches",
+      "file": "screenshots/agent/property-matches.jpg",
+      "url": "/properties/6add0d425000cfe16ddee99d",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "owners",
+      "file": "screenshots/agent/owners.jpg",
+      "url": "/owners",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "matches",
+      "file": "screenshots/agent/matches.jpg",
+      "url": "/matches",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "followups",
+      "file": "screenshots/agent/followups.jpg",
+      "url": "/followups?tab=upcoming",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "documents",
+      "file": "screenshots/agent/documents.jpg",
+      "url": "/documents",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "notifications",
+      "file": "screenshots/agent/notifications.jpg",
+      "url": "/notifications",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "settings",
+      "file": "screenshots/agent/settings.jpg",
+      "url": "/settings",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "client-form",
+      "file": "screenshots/agent/client-form.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "client-form-requirements",
+      "file": "screenshots/agent/client-form-requirements.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "client-saved",
+      "file": "screenshots/agent/client-saved.jpg",
+      "url": "/clients/6add0fe65000cfe16ddf01e2",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "client-duplicate",
+      "file": "screenshots/agent/client-duplicate.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "followup-form",
+      "file": "screenshots/agent/followup-form.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "followup-saved",
+      "file": "screenshots/agent/followup-saved.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "followup-reschedule",
+      "file": "screenshots/agent/followup-reschedule.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "followup-complete",
+      "file": "screenshots/agent/followup-complete.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "followup-notes",
+      "file": "screenshots/agent/followup-notes.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "client-notes",
+      "file": "screenshots/agent/client-notes.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "property-form",
+      "file": "screenshots/agent/property-form.jpg",
+      "url": "/properties",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "property-verify",
+      "file": "screenshots/agent/property-verify.jpg",
+      "url": "/properties/6add0d425000cfe16ddee97b",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "property-status",
+      "file": "screenshots/agent/property-status.jpg",
+      "url": "/properties/6add0d425000cfe16ddee97b",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "properties-stale",
+      "file": "screenshots/agent/properties-stale.jpg",
+      "url": "/properties?verification=stale&view=table",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "property-documents",
+      "file": "screenshots/agent/property-documents.jpg",
+      "url": "/properties/6add0d415000cfe16ddee89e",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "dashboard",
+      "file": "screenshots/accountant/dashboard.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "dashboard-analytics",
+      "file": "screenshots/accountant/dashboard-analytics.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "dashboard-sales",
+      "file": "screenshots/accountant/dashboard-sales.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "my-day",
+      "file": "screenshots/accountant/my-day.jpg",
+      "url": "/my-day",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "global-search",
+      "file": "screenshots/accountant/global-search.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "clients",
+      "file": "screenshots/accountant/clients.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "client-detail",
+      "file": "screenshots/accountant/client-detail.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "client-requirements",
+      "file": "screenshots/accountant/client-requirements.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "client-matches",
+      "file": "screenshots/accountant/client-matches.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "client-activity",
+      "file": "screenshots/accountant/client-activity.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "properties",
+      "file": "screenshots/accountant/properties.jpg",
+      "url": "/properties",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "property-detail",
+      "file": "screenshots/accountant/property-detail.jpg",
+      "url": "/properties/6add0d425000cfe16ddee99d",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "property-media",
+      "file": "screenshots/accountant/property-media.jpg",
+      "url": "/properties/6add0d425000cfe16ddee99d",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "property-matches",
+      "file": "screenshots/accountant/property-matches.jpg",
+      "url": "/properties/6add0d425000cfe16ddee99d",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "owners",
+      "file": "screenshots/accountant/owners.jpg",
+      "url": "/owners",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "matches",
+      "file": "screenshots/accountant/matches.jpg",
+      "url": "/matches",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "followups",
+      "file": "screenshots/accountant/followups.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "documents",
+      "file": "screenshots/accountant/documents.jpg",
+      "url": "/documents",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "notifications",
+      "file": "screenshots/accountant/notifications.jpg",
+      "url": "/notifications",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "settings",
+      "file": "screenshots/accountant/settings.jpg",
+      "url": "/settings",
+      "ok": true
+    },
+    {
+      "role": "accountant",
+      "id": "reports",
+      "file": "screenshots/accountant/reports.jpg",
+      "url": "/reports",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "dashboard",
+      "file": "screenshots/viewer/dashboard.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "my-day",
+      "file": "screenshots/viewer/my-day.jpg",
+      "url": "/my-day",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "global-search",
+      "file": "screenshots/viewer/global-search.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "clients",
+      "file": "screenshots/viewer/clients.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "client-detail",
+      "file": "screenshots/viewer/client-detail.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "client-requirements",
+      "file": "screenshots/viewer/client-requirements.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "client-matches",
+      "file": "screenshots/viewer/client-matches.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "client-activity",
+      "file": "screenshots/viewer/client-activity.jpg",
+      "url": "/clients/6add0d455000cfe16ddeebf8",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "properties",
+      "file": "screenshots/viewer/properties.jpg",
+      "url": "/properties",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "property-detail",
+      "file": "screenshots/viewer/property-detail.jpg",
+      "url": "/properties/6add0d425000cfe16ddee99d",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "property-media",
+      "file": "screenshots/viewer/property-media.jpg",
+      "url": "/properties/6add0d425000cfe16ddee99d",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "property-matches",
+      "file": "screenshots/viewer/property-matches.jpg",
+      "url": "/properties/6add0d425000cfe16ddee99d",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "owners",
+      "file": "screenshots/viewer/owners.jpg",
+      "url": "/owners",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "matches",
+      "file": "screenshots/viewer/matches.jpg",
+      "url": "/matches",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "followups",
+      "file": "screenshots/viewer/followups.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "documents",
+      "file": "screenshots/viewer/documents.jpg",
+      "url": "/documents",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "notifications",
+      "file": "screenshots/viewer/notifications.jpg",
+      "url": "/notifications",
+      "ok": true
+    },
+    {
+      "role": "viewer",
+      "id": "settings",
+      "file": "screenshots/viewer/settings.jpg",
+      "url": "/settings",
+      "ok": true
+    }
+  ]
+}

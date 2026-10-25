@@ -1,0 +1,237 @@
+{
+  "capturedAt": "2026-10-18T08:06:45.996Z",
+  "baseUrl": "http://localhost:51108",
+  "shots": [
+    {
+      "role": "agent",
+      "id": "dashboard",
+      "file": "screenshots/agent/dashboard.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "my-day",
+      "file": "screenshots/agent/my-day.jpg",
+      "url": "/my-day",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "global-search",
+      "file": "screenshots/agent/global-search.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "clients",
+      "file": "screenshots/agent/clients.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "client-detail",
+      "file": "screenshots/agent/client-detail.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "client-requirements",
+      "file": "screenshots/agent/client-requirements.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "client-matches",
+      "file": "screenshots/agent/client-matches.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "client-activity",
+      "file": "screenshots/agent/client-activity.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "properties",
+      "file": "screenshots/agent/properties.jpg",
+      "url": "/properties",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "property-detail",
+      "file": "screenshots/agent/property-detail.jpg",
+      "url": "/properties/6ad47cc59f7482385fe70e16",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "property-media",
+      "file": "screenshots/agent/property-media.jpg",
+      "url": "/properties/6ad47cc59f7482385fe70e16",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "property-matches",
+      "file": "screenshots/agent/property-matches.jpg",
+      "url": "/properties/6ad47cc59f7482385fe70e16",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "owners",
+      "file": "screenshots/agent/owners.jpg",
+      "url": "/owners",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "matches",
+      "file": "screenshots/agent/matches.jpg",
+      "url": "/matches",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "followups",
+      "file": "screenshots/agent/followups.jpg",
+      "url": "/followups?tab=upcoming",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "documents",
+      "file": "screenshots/agent/documents.jpg",
+      "url": "/documents",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "notifications",
+      "file": "screenshots/agent/notifications.jpg",
+      "url": "/notifications",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "settings",
+      "file": "screenshots/agent/settings.jpg",
+      "url": "/settings",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "client-form",
+      "file": "screenshots/agent/client-form.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "client-form-requirements",
+      "file": "screenshots/agent/client-form-requirements.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "client-saved",
+      "file": "screenshots/agent/client-saved.jpg",
+      "url": "/clients/6ad47e419f7482385fe725fc",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "client-duplicate",
+      "file": "screenshots/agent/client-duplicate.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "followup-form",
+      "file": "screenshots/agent/followup-form.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "followup-saved",
+      "file": "screenshots/agent/followup-saved.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "followup-reschedule",
+      "file": "screenshots/agent/followup-reschedule.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "followup-complete",
+      "file": "screenshots/agent/followup-complete.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "followup-notes",
+      "file": "screenshots/agent/followup-notes.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "client-notes",
+      "file": "screenshots/agent/client-notes.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "property-form",
+      "file": "screenshots/agent/property-form.jpg",
+      "url": "/properties",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "property-verify",
+      "file": "screenshots/agent/property-verify.jpg",
+      "url": "/properties/6ad47cc59f7482385fe70df4",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "property-status",
+      "file": "screenshots/agent/property-status.jpg",
+      "url": "/properties/6ad47cc59f7482385fe70df4",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "properties-stale",
+      "file": "screenshots/agent/properties-stale.jpg",
+      "url": "/properties?verification=stale&view=table",
+      "ok": true
+    },
+    {
+      "role": "agent",
+      "id": "property-documents",
+      "file": "screenshots/agent/property-documents.jpg",
+      "url": "/properties/6ad47cc49f7482385fe70d17",
+      "ok": true
+    }
+  ]
+}

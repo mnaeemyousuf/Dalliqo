@@ -1,0 +1,27 @@
+{
+  "name": "real-estate-crm",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Dalliqo — Real Estate CRM & Business Management Platform (Node/Express API, React web, Flutter mobile app)",
+  "workspaces": [
+    "shared",
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "build": "npm run build -w @recrm/shared && npm run build -w @recrm/server && npm run build -w @recrm/web",
+    "test": "npm run build -w @recrm/shared && npm test -w @recrm/server && npm test -w @recrm/web",
+    "dev:server": "npm run dev -w @recrm/server",
+    "typecheck": "npm run build -w @recrm/shared && npm run typecheck -w @recrm/server",
+    "dev:web": "npm run dev -w @recrm/web",
+    "demo": "npm run demo -w @recrm/server",
+    "seed": "npm run seed -w @recrm/server"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "overrides": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  }
+}

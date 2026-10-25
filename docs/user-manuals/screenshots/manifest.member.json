@@ -1,0 +1,258 @@
+{
+  "capturedAt": "2026-10-18T08:03:37.112Z",
+  "baseUrl": "http://localhost:51108",
+  "shots": [
+    {
+      "role": "member",
+      "id": "dashboard",
+      "file": "screenshots/member/dashboard.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "dashboard-analytics",
+      "file": "screenshots/member/dashboard-analytics.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "dashboard-sales",
+      "file": "screenshots/member/dashboard-sales.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "my-day",
+      "file": "screenshots/member/my-day.jpg",
+      "url": "/my-day",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "global-search",
+      "file": "screenshots/member/global-search.jpg",
+      "url": "/",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "clients",
+      "file": "screenshots/member/clients.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "client-detail",
+      "file": "screenshots/member/client-detail.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "client-requirements",
+      "file": "screenshots/member/client-requirements.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "client-matches",
+      "file": "screenshots/member/client-matches.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "client-activity",
+      "file": "screenshots/member/client-activity.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "properties",
+      "file": "screenshots/member/properties.jpg",
+      "url": "/properties",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "property-detail",
+      "file": "screenshots/member/property-detail.jpg",
+      "url": "/properties/6ad47cc59f7482385fe70e16",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "property-media",
+      "file": "screenshots/member/property-media.jpg",
+      "url": "/properties/6ad47cc59f7482385fe70e16",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "property-matches",
+      "file": "screenshots/member/property-matches.jpg",
+      "url": "/properties/6ad47cc59f7482385fe70e16",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "owners",
+      "file": "screenshots/member/owners.jpg",
+      "url": "/owners",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "matches",
+      "file": "screenshots/member/matches.jpg",
+      "url": "/matches",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "followups",
+      "file": "screenshots/member/followups.jpg",
+      "url": "/followups?tab=upcoming",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "documents",
+      "file": "screenshots/member/documents.jpg",
+      "url": "/documents",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "notifications",
+      "file": "screenshots/member/notifications.jpg",
+      "url": "/notifications",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "settings",
+      "file": "screenshots/member/settings.jpg",
+      "url": "/settings",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "client-form",
+      "file": "screenshots/member/client-form.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "client-form-requirements",
+      "file": "screenshots/member/client-form-requirements.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "client-saved",
+      "file": "screenshots/member/client-saved.jpg",
+      "url": "/clients/6ad47d879f7482385fe71c7c",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "client-duplicate",
+      "file": "screenshots/member/client-duplicate.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "followup-form",
+      "file": "screenshots/member/followup-form.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "followup-saved",
+      "file": "screenshots/member/followup-saved.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "followup-reschedule",
+      "file": "screenshots/member/followup-reschedule.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "followup-complete",
+      "file": "screenshots/member/followup-complete.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "followup-notes",
+      "file": "screenshots/member/followup-notes.jpg",
+      "url": "/followups?tab=upcoming&assignedTo=all",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "client-notes",
+      "file": "screenshots/member/client-notes.jpg",
+      "url": "/clients/6ad47cc79f7482385fe71071",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "property-form",
+      "file": "screenshots/member/property-form.jpg",
+      "url": "/properties",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "property-verify",
+      "file": "screenshots/member/property-verify.jpg",
+      "url": "/properties/6ad47cc59f7482385fe70df4",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "property-status",
+      "file": "screenshots/member/property-status.jpg",
+      "url": "/properties/6ad47cc59f7482385fe70df4",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "properties-stale",
+      "file": "screenshots/member/properties-stale.jpg",
+      "url": "/properties?verification=stale&view=table",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "property-documents",
+      "file": "screenshots/member/property-documents.jpg",
+      "url": "/properties/6ad47cc49f7482385fe70d17",
+      "ok": true
+    },
+    {
+      "role": "member",
+      "id": "reports",
+      "file": "screenshots/member/reports.jpg",
+      "url": "/reports",
+      "ok": true
+    }
+  ]
+}

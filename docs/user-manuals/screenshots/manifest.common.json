@@ -1,0 +1,34 @@
+{
+  "capturedAt": "2026-10-18T08:01:21.921Z",
+  "baseUrl": "http://localhost:51108",
+  "shots": [
+    {
+      "role": "common",
+      "id": "login",
+      "file": "screenshots/common/login.jpg",
+      "url": "/login",
+      "ok": true
+    },
+    {
+      "role": "common",
+      "id": "login-filled",
+      "file": "screenshots/common/login-filled.jpg",
+      "url": "/login",
+      "ok": true
+    },
+    {
+      "role": "common",
+      "id": "forgot-password",
+      "file": "screenshots/common/forgot-password.jpg",
+      "url": "/forgot-password",
+      "ok": true
+    },
+    {
+      "role": "common",
+      "id": "register",
+      "file": "screenshots/common/register.jpg",
+      "url": "/register",
+      "ok": true
+    }
+  ]
+}

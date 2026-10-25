@@ -1,0 +1,12 @@
+{
+  "name": "dalliqo-brand-tools",
+  "private": true,
+  "description": "Generates Dalliqo logo assets, icons, splash images and theme files from shared/brand/dalliqo.tokens.json.",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "@fontsource/plus-jakarta-sans": "^5.1.1",
+    "opentype.js": "^1.3.4"
+  }
+}

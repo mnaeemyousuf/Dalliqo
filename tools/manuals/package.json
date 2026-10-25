@@ -1,0 +1,16 @@
+{
+  "name": "recrm-manual-tools",
+  "private": true,
+  "description": "Captures real application screenshots and builds the role-based PDF user manuals (docs/user-manuals).",
+  "scripts": {
+    "screenshots": "node capture.mjs",
+    "build": "node build.mjs",
+    "verify": "node verify.mjs",
+    "all": "node capture.mjs && node build.mjs && node verify.mjs"
+  },
+  "devDependencies": {
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^4.7.76",
+    "playwright-core": "^1.48.2"
+  }
+}
