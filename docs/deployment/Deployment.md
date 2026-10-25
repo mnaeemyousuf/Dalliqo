@@ -47,3 +47,20 @@
 * Security: rotate `JWT_SECRET` by deploying a new one (all access tokens expire within 15 minutes);
   rotating `JWT_REFRESH_SECRET` signs everyone out (refresh hashes change), so schedule it.
 * Mobile releases: Android App Bundle via Play Console, iOS via TestFlight/App Store; API base URL per flavour.
+
+## Render — single-service demo (web + API in one process)
+
+The API serves the built web app when `web/dist` exists (same origin, so the `SameSite=Strict`
+refresh cookie and `/socket.io` work without a proxy). Used for the hosted test environment:
+
+| Setting | Value |
+|---|---|
+| Service type / runtime | Web Service, Node |
+| Build command | `npm ci --include=dev && npm run build -w @recrm/shared && npm run build -w @recrm/web` |
+| Start command | `npm run demo -w @recrm/server` (in-memory MongoDB, seeded demo data) |
+| Env | `JWT_SECRET`, `JWT_REFRESH_SECRET` (random, ≥32 chars, different), `COOKIE_SECURE=true`, `TRUST_PROXY=1`, `CORS_ORIGINS`/`APP_WEB_URL`/`PUBLIC_API_URL` = the service URL, optional `DEMO_PASSWORD` |
+
+Limitations of this mode: data resets on every restart (the Free plan sleeps after ~15 min idle),
+uploads use local disk and are lost on restart (set the Cloudinary variables to keep them), no
+e-mail delivery without SMTP. For real use, set `MONGO_URI` to MongoDB Atlas and start with
+`npm run build && npm start -w @recrm/server` instead of the demo command.
