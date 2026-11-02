@@ -81,6 +81,7 @@ class MoreScreen extends ConsumerWidget {
         tile(Icons.dashboard_outlined, context.t('nav.dashboard'), '/dashboard'),
         if (auth.can('owners:read')) tile(Icons.apartment, context.t('nav.owners'), '/owners'),
         if (auth.can('followups:read')) tile(Icons.event_note, context.t('nav.followups'), '/followups'),
+        if (auth.can('deals:read')) tile(Icons.handshake_outlined, context.t('nav.deals'), '/deals'),
         tile(Icons.notifications_outlined, context.t('nav.notifications'), '/notifications'),
         if (auth.can('branches:manage') || ref.watch(branchScopeProvider).hasChoice) tile(Icons.store_mall_directory_outlined, context.t('settings.branches'), '/branches'),
         tile(Icons.sync, context.t('mobile.sync.title'), '/sync'),

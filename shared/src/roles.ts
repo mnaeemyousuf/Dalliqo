@@ -47,12 +47,15 @@ const WORK_ALL: Permission[] = [
   P.DOCUMENTS_UPLOAD,
 ];
 
+const DEALS_OWN: Permission[] = [P.DEALS_READ, P.DEALS_CREATE, P.DEALS_UPDATE];
+const DEALS_ALL: Permission[] = [...DEALS_OWN, P.DEALS_READ_ALL, P.COMMISSIONS_MANAGE];
+
 /** Default permissions granted when a member is created with a given role. */
 export const ROLE_PRESETS: Record<Role, readonly Permission[]> = {
   OWNER: ALL_PERMISSIONS,
   // The family-business default: the second user can do all day-to-day work
   // but cannot delete core records or administer the account.
-  MEMBER: [...WORK_ALL, P.REPORTS_READ, P.EXPORTS_CREATE, P.MEMBERS_READ],
+  MEMBER: [...WORK_ALL, ...DEALS_ALL, P.REPORTS_READ, P.EXPORTS_CREATE, P.MEMBERS_READ],
   ADMIN: ALL_PERMISSIONS.filter((p) => p !== P.BUSINESS_MANAGE),
   MANAGER: [
     ...WORK_ALL,
@@ -61,12 +64,15 @@ export const ROLE_PRESETS: Record<Role, readonly Permission[]> = {
     P.OWNERS_DELETE,
     P.DOCUMENTS_DELETE,
     P.NOTES_MANAGE_ALL,
+    ...DEALS_ALL,
+    P.DEALS_DELETE,
     P.REPORTS_READ,
     P.EXPORTS_CREATE,
     P.MEMBERS_READ,
     P.AUDIT_READ,
   ],
-  AGENT: WORK_ALL,
+  // Agents see and work their own deals only (no deals:read_all).
+  AGENT: [...WORK_ALL, ...DEALS_OWN],
   SALESPERSON: [
     ...READ_ALL,
     P.CLIENTS_CREATE,
@@ -74,9 +80,10 @@ export const ROLE_PRESETS: Record<Role, readonly Permission[]> = {
     P.FOLLOWUPS_CREATE,
     P.FOLLOWUPS_UPDATE,
     P.NOTES_CREATE,
+    ...DEALS_OWN,
   ],
-  ACCOUNTANT: [...READ_ALL, P.REPORTS_READ, P.EXPORTS_CREATE],
-  VIEWER: READ_ALL,
+  ACCOUNTANT: [...READ_ALL, P.DEALS_READ, P.DEALS_READ_ALL, P.COMMISSIONS_MANAGE, P.REPORTS_READ, P.EXPORTS_CREATE],
+  VIEWER: [...READ_ALL, P.DEALS_READ, P.DEALS_READ_ALL],
 };
 
 /**

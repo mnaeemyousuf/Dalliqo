@@ -140,8 +140,8 @@ export function createTenantRepository<T extends { _id: unknown }>(model: Model<
     },
 
     /** Delta feed for sync pull: everything (incl. tombstones) after the cursor. */
-    changedSince(ctx: TenantContext, after: { updatedAt: Date; id: string } | null, limit: number) {
-      const filter: Filter = { businessId: ctx.businessId, ...branchScope(ctx, {}) };
+    changedSince(ctx: TenantContext, after: { updatedAt: Date; id: string } | null, limit: number, extra?: Filter) {
+      const filter: Filter = { ...(extra ?? {}), businessId: ctx.businessId, ...branchScope(ctx, {}) };
       if (after) {
         filter.$or = [{ updatedAt: { $gt: after.updatedAt } }, { updatedAt: after.updatedAt, _id: { $gt: after.id } }];
       }

@@ -9,6 +9,7 @@ import type { Owner } from '@/api/types';
 import { ContactActions, MatchCard, PropertyStatusBadge, locationLabel, useSizeLabel } from '@/components/domain';
 import { ActivityPanel, DocumentsPanel, FollowUpForm, FollowUpItem, NotesPanel, RenameDocumentModal } from '@/components/domain/panels';
 import { BranchField } from '@/components/branches';
+import { CommissionReport, DealsPanel } from '@/pages/DealPages';
 import { Badge, Button, Card, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column } from '@/components/ui';
 import { formatBytes, formatDate, formatPkr } from '@/lib/format';
 import { useDebounce, useEnumOptions, useErrorText, useMembers, useOnError, useUrlState } from '@/lib/hooks';
@@ -402,7 +403,8 @@ export function ReportsPage() {
   const [format, setFormat] = useState<'xlsx' | 'pdf'>('xlsx');
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
-  const resources = useEnumOptions('exportResource', ['clients', 'properties', 'owners', 'followups', 'matches']);
+  const canDeals = useCan(PERMISSIONS.DEALS_READ);
+  const resources = useEnumOptions('exportResource', ['clients', 'properties', 'owners', 'followups', 'matches', ...(canDeals ? ['deals', 'commissions'] : [])]);
   const f = (k: string) => (e: { target: { value: string } }) => setFilters((x) => ({ ...x, [k]: e.target.value }));
   const filterFields: Record<string, React.ReactNode> = {
     properties: (
@@ -442,8 +444,9 @@ export function ReportsPage() {
     }
   };
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-3xl space-y-4">
       <PageHeader title={t('report.title')} subtitle={t('report.subtitle')} />
+      {canDeals && <CommissionReport />}
       <Card>
         <div className="grid gap-4 sm:grid-cols-2">
           <Select label={t('report.resource')} options={resources} value={resource} onChange={(e) => (setResource(e.target.value), setFilters({}))} />

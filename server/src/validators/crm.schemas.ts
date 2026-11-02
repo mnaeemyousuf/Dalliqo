@@ -2,6 +2,12 @@ import { z } from 'zod';
 import {
   CLIENT_PURPOSES,
   CLIENT_SOURCES,
+  COMMISSION_MODES,
+  COMMISSION_STATUSES,
+  DEAL_SIDES,
+  DEAL_STAGES,
+  PAYMENT_METHODS,
+  PAYOUT_STATUSES,
   CLIENT_STATUSES,
   COMMUNICATION_CHANNELS,
   DOCUMENT_CATEGORIES,
@@ -221,6 +227,78 @@ export const propertyListQuery = pagination
     ...(la !== undefined && lo !== undefined ? { near: { lat: la, lng: lo, radiusKm: radiusKm ?? 2 } } : {}),
   }));
 
+// ── Deals & commission ──
+const commissionTerm = z.object({ mode: z.enum(COMMISSION_MODES), value: z.number().min(0).max(1e12) }).strict();
+const agentShare = z.object({ userId: objectId, sharePct: z.number().gt(0).max(100) }).strict();
+export const dealPaymentSchema = z
+  .object({
+    id: uuid.optional(),
+    _id: uuid.optional(),
+    side: z.enum(DEAL_SIDES),
+    amount: money.pipe(z.number().min(1)),
+    date: z.coerce.date(),
+    method: z.enum(PAYMENT_METHODS).optional(),
+    reference: optionalText(100),
+    notes: optionalText(500),
+  })
+  .strict();
+export const dealPayoutSchema = z
+  .object({
+    id: uuid.optional(),
+    _id: uuid.optional(),
+    userId: objectId,
+    amount: money.pipe(z.number().min(1)),
+    date: z.coerce.date().nullable().optional(),
+    status: z.enum(PAYOUT_STATUSES).optional(),
+    notes: optionalText(500),
+  })
+  .strict();
+export const dealPayoutUpdateSchema = z
+  .object({ amount: money.pipe(z.number().min(1)).optional(), date: z.coerce.date().nullable().optional(), status: z.enum(PAYOUT_STATUSES).optional(), notes: optionalText(500) })
+  .strict();
+const dealFields = {
+  branchId: branchRef,
+  title: optionalText(150),
+  clientId: ref,
+  propertyId: ref.nullable().optional(),
+  agents: z.array(agentShare).min(1).max(10).optional(),
+  agreedPrice: money.optional(),
+  finalPrice: money.optional(),
+  expectedCloseDate: z.coerce.date().nullable().optional(),
+  notes: optionalText(2000),
+  commission: z.object({ buyer: commissionTerm.optional(), seller: commissionTerm.optional() }).strict().optional(),
+};
+export const dealCreateSchema = z
+  .object({ uuid: uuid.optional(), stage: z.enum(DEAL_STAGES).optional(), lostReason: optionalText(500), ...dealFields, payments: z.array(dealPaymentSchema).max(100).optional(), payouts: z.array(dealPayoutSchema).max(100).optional() })
+  .strict();
+export const dealUpdateSchema = z
+  .object(dealFields)
+  .partial()
+  .extend({
+    stage: z.enum(DEAL_STAGES).optional(),
+    lostReason: optionalText(500),
+    payments: z.array(dealPaymentSchema).max(100).optional(),
+    payouts: z.array(dealPayoutSchema).max(100).optional(),
+    baseVersion: z.number().int().positive().optional(),
+  })
+  .strict();
+export const dealStageSchema = z.object({ stage: z.enum(DEAL_STAGES), note: optionalText(300), lostReason: optionalText(500), baseVersion: z.number().int().positive().optional() }).strict();
+export const dealListQuery = pagination.extend({
+  q: optionalText(100),
+  stage: z.enum(DEAL_STAGES).optional(),
+  open: bool.optional(),
+  agentId: objectId.optional(),
+  clientId: objectId.optional(),
+  propertyId: objectId.optional(),
+  commissionStatus: z.enum(COMMISSION_STATUSES).optional(),
+  branchId: objectId.optional(),
+  from: z.coerce.date().optional(),
+  to: z.coerce.date().optional(),
+  sort: z.enum(['-updatedAt', '-createdAt', '-expectedTotal', '-outstanding', 'dealNo']).optional(),
+});
+export const commissionReportQuery = z.object({ groupBy: z.enum(['month', 'agent']).default('month'), from: z.coerce.date().optional(), to: z.coerce.date().optional() });
+export const subIdParams = z.object({ id: objectId, subId: z.string().uuid() });
+
 // ── Media & documents ──
 export const mediaUpdateSchema = z.object({ sortOrder: z.number().int().min(0).optional(), setCover: z.boolean().optional() }).strict();
 export const documentUploadFields = z.object({
@@ -268,6 +346,10 @@ export const settingsUpdateSchema = z
       .optional(),
     sqftPerUnit: z.object({ MARLA: z.number().positive(), KANAL: z.number().positive() }).partial().strict().optional(),
     reminders: z.object({ defaultMinutesBefore: z.number().int().min(0).max(10080) }).strict().optional(),
+    commission: z
+      .object({ defaultBuyerPct: z.number().min(0).max(20).optional(), defaultSellerPct: z.number().min(0).max(20).optional(), autoCreateIncome: z.boolean().optional() })
+      .strict()
+      .optional(),
   })
   .strict();
 
@@ -313,7 +395,7 @@ export const searchQuery = z.object({
   types: list(z.enum(['clients', 'properties', 'owners', 'matches'])).default(['clients', 'properties', 'owners', 'matches']),
   limit: z.coerce.number().int().min(1).max(20).default(5),
 });
-export const exportParams = z.object({ resource: z.enum(['clients', 'properties', 'owners', 'followups', 'matches']) });
+export const exportParams = z.object({ resource: z.enum(['clients', 'properties', 'owners', 'followups', 'matches', 'deals', 'commissions']) });
 export const exportQuery = z
   .object({ format: z.enum(['xlsx', 'pdf']).default('xlsx') })
   .passthrough();
@@ -321,7 +403,7 @@ export const exportQuery = z
 const mutation = z
   .object({
     mutationId: uuid,
-    entity: z.enum(['clients', 'owners', 'properties', 'followUps', 'notes']),
+    entity: z.enum(['clients', 'owners', 'properties', 'followUps', 'notes', 'deals']),
     op: z.enum(['create', 'update', 'delete']),
     uuid,
     baseVersion: z.number().int().positive().optional(),

@@ -94,7 +94,8 @@
     "settings": "Settings",
     "logout": "Sign out",
     "profile": "Profile",
-    "myDay": "My Day"
+    "myDay": "My Day",
+    "deals": "Deals"
   },
   "topbar": {
     "searchPlaceholder": "Search clients, properties, owners…",
@@ -180,7 +181,11 @@
     "member": "Member",
     "followUpsCompleted": "Follow-ups completed",
     "followUpsOverdue": "Overdue now",
-    "activeClients": "Active clients"
+    "activeClients": "Active clients",
+    "openDeals": "Open deals",
+    "dealsWonThisMonth": "Deals won this month",
+    "commissionThisMonth": "Commission this month",
+    "commissionOutstanding": "Commission outstanding"
   },
   "myDay": {
     "title": "My Day",
@@ -460,7 +465,8 @@
       "notes": "Notes",
       "documents": "Documents",
       "reports": "Reports & exports",
-      "administration": "Administration"
+      "administration": "Administration",
+      "deals": "Deals & commission"
     },
     "template": "Start from a template",
     "access": "Access",
@@ -650,14 +656,17 @@
       "client": "Client",
       "property": "Property",
       "owner": "Owner",
-      "followUp": "Follow-up"
+      "followUp": "Follow-up",
+      "deal": "Deal"
     },
     "exportResource": {
       "clients": "Clients",
       "properties": "Properties",
       "owners": "Owners",
       "followups": "Follow-ups",
-      "matches": "Matches"
+      "matches": "Matches",
+      "deals": "Deals",
+      "commissions": "Commission received"
     },
     "matchReason": {
       "TYPE_MATCH": "Property type",
@@ -708,7 +717,48 @@
       "business:manage": "Edit business details",
       "settings:manage": "Change settings",
       "audit:read": "View audit log",
-      "branches:manage": "Manage branches"
+      "branches:manage": "Manage branches",
+      "deals:read": "View own deals",
+      "deals:read_all": "View all deals and commission",
+      "deals:create": "Create deals",
+      "deals:update": "Edit deals",
+      "deals:delete": "Delete deals",
+      "commissions:manage": "Record commission payments and payouts"
+    },
+    "dealStage": {
+      "INQUIRY": "Inquiry",
+      "SITE_VISIT": "Site visit",
+      "OFFER": "Offer",
+      "TOKEN": "Token / bayana",
+      "AGREEMENT": "Agreement",
+      "TRANSFER": "Transfer",
+      "CLOSED_WON": "Closed (won)",
+      "CLOSED_LOST": "Lost"
+    },
+    "commissionStatus": {
+      "PENDING": "Pending",
+      "PARTIALLY_RECEIVED": "Partially received",
+      "RECEIVED": "Received"
+    },
+    "commissionMode": {
+      "PERCENT": "Percent of price",
+      "FIXED": "Fixed amount"
+    },
+    "dealSide": {
+      "BUYER": "Buyer side",
+      "SELLER": "Seller side"
+    },
+    "paymentMethod": {
+      "CASH": "Cash",
+      "BANK_TRANSFER": "Bank transfer",
+      "CHEQUE": "Cheque",
+      "JAZZCASH": "JazzCash",
+      "EASYPAISA": "Easypaisa",
+      "OTHER": "Other"
+    },
+    "payoutStatus": {
+      "PENDING": "Pending",
+      "PAID": "Paid"
     }
   },
   "errors": {
@@ -729,7 +779,10 @@
     "NO_ACTIVE_MEMBERSHIP": "You no longer have access to this business.",
     "BRANCH_NOT_FOUND": "Branch not found",
     "BRANCH_FORBIDDEN": "You do not have access to this branch",
-    "BRANCH_IS_DEFAULT": "The main branch cannot be archived"
+    "BRANCH_IS_DEFAULT": "The main branch cannot be archived",
+    "DEAL_NOT_FOUND": "Deal not found",
+    "INVALID_AGENT_SHARES": "Agent shares must add up to 100%",
+    "PAYMENT_NOT_FOUND": "Payment not found"
   },
   "mobile": {
     "tabs": {
@@ -837,5 +890,69 @@
     "chooseOne": "Choose at least one branch",
     "crossBranch": "Match clients with properties of other branches too",
     "crossBranchHint": "Off: clients are matched only with properties of their own branch."
+  },
+  "deal": {
+    "title": "Deals",
+    "subtitle": "Pipeline from inquiry to transfer, with commission",
+    "add": "New deal",
+    "edit": "Edit deal",
+    "created": "Deal created",
+    "updated": "Deal updated",
+    "deleted": "Deal deleted",
+    "deleteConfirm": "Delete deal {{no}}? Its payments are removed too.",
+    "board": "Pipeline",
+    "empty": "No deals yet",
+    "emptyHint": "Start a deal when a client is serious about a property.",
+    "searchPlaceholder": "Deal number, title or client",
+    "dealNo": "Deal",
+    "titleField": "Title",
+    "titlePlaceholder": "e.g. 120 sq yd plot, Gulshan Block 13-D",
+    "client": "Client",
+    "property": "Property",
+    "stage": "Stage",
+    "agreedPrice": "Agreed price",
+    "finalPrice": "Final price",
+    "expectedClose": "Expected closing",
+    "commission": "Commission",
+    "mode": "Type",
+    "value": "Value",
+    "defaultPct": "Default %",
+    "expectedPreview": "Expected commission: {{amount}}",
+    "agents": "Agents",
+    "agent": "Agent",
+    "share": "Share %",
+    "addAgent": "Add agent",
+    "shareTotal": "Total {{total}}% (must be 100%)",
+    "expected": "Expected",
+    "received": "Received",
+    "receivedShort": "received",
+    "outstanding": "Outstanding",
+    "commissionStatus": "Commission",
+    "details": "Deal details",
+    "payments": "Payments received",
+    "payouts": "Agent payouts",
+    "addPayment": "Record payment",
+    "addPayout": "Add payout",
+    "noPayments": "No payments yet",
+    "noPayouts": "No payouts yet",
+    "paymentSaved": "Payment recorded",
+    "payoutSaved": "Payout saved",
+    "markPaid": "Mark paid",
+    "paidOut": "paid out",
+    "owed": "owed",
+    "side": "Side",
+    "amount": "Amount",
+    "method": "Method",
+    "reference": "Reference / cheque no.",
+    "lostReason": "Reason lost",
+    "reportTitle": "Commission",
+    "groupBy": "Group by",
+    "byMonth": "Month",
+    "byAgent": "Agent",
+    "month": "Month",
+    "paymentsCount": "Payments",
+    "outstandingDeals": "Deals with commission still due",
+    "defaultBuyerPct": "Default buyer-side commission",
+    "defaultSellerPct": "Default seller-side commission"
   }
 }

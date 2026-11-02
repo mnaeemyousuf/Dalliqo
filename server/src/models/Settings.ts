@@ -1,5 +1,5 @@
 import { Schema, model, type Types } from 'mongoose';
-import { DEFAULT_MATCHING_SETTINGS, DEFAULT_SQFT_PER_UNIT, type MatchingSettings, type SizeUnit } from '@recrm/shared';
+import { DEFAULT_COMMISSION_SETTINGS, DEFAULT_MATCHING_SETTINGS, DEFAULT_SQFT_PER_UNIT, type CommissionDefaults, type MatchingSettings, type SizeUnit } from '@recrm/shared';
 import { tenantGuardPlugin } from './plugins/tenant';
 
 /** One document per business. Missing values fall back to the defaults. */
@@ -9,6 +9,7 @@ export interface SettingsDoc {
   matching: MatchingSettings;
   sqftPerUnit: Record<SizeUnit, number>;
   reminders: { defaultMinutesBefore: number };
+  commission: CommissionDefaults;
   updatedBy?: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -38,6 +39,11 @@ const schema = new Schema<SettingsDoc>(
       KANAL: { type: Number, default: DEFAULT_SQFT_PER_UNIT.KANAL },
     },
     reminders: { defaultMinutesBefore: { type: Number, default: 30 } },
+    commission: {
+      defaultBuyerPct: { type: Number, default: DEFAULT_COMMISSION_SETTINGS.defaultBuyerPct },
+      defaultSellerPct: { type: Number, default: DEFAULT_COMMISSION_SETTINGS.defaultSellerPct },
+      autoCreateIncome: { type: Boolean, default: DEFAULT_COMMISSION_SETTINGS.autoCreateIncome },
+    },
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true, versionKey: false },

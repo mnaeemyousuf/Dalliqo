@@ -127,13 +127,20 @@ export const ACTIVITY_TYPES = [
   'DOCUMENT_UPLOADED',
   'DOCUMENT_DELETED',
   'MEDIA_UPLOADED',
+  'DEAL_CREATED',
+  'DEAL_UPDATED',
+  'DEAL_STAGE_CHANGED',
+  'DEAL_DELETED',
+  'COMMISSION_RECEIVED',
+  'COMMISSION_PAYMENT_REMOVED',
+  'COMMISSION_PAYOUT',
 ] as const;
 export type ActivityType = (typeof ACTIVITY_TYPES)[number];
 
-export const ENTITY_TYPES = ['client', 'property', 'owner', 'followUp'] as const;
+export const ENTITY_TYPES = ['client', 'property', 'owner', 'followUp', 'deal'] as const;
 export type EntityType = (typeof ENTITY_TYPES)[number];
 
-export const DOCUMENT_ENTITY_TYPES = ['client', 'property', 'owner'] as const;
+export const DOCUMENT_ENTITY_TYPES = ['client', 'property', 'owner', 'deal'] as const;
 export type DocumentEntityType = (typeof DOCUMENT_ENTITY_TYPES)[number];
 
 export const COMMUNICATION_CHANNELS = ['CALL', 'WHATSAPP', 'SMS', 'EMAIL'] as const;
@@ -209,5 +216,5 @@ export type BranchAccess = (typeof BRANCH_ACCESS)[number];
 /** Header the web and mobile apps send with the branch picked in the branch switcher. */
 export const BRANCH_HEADER = 'X-Branch-Id';
 
-export const SYNC_ENTITIES = ['clients', 'owners', 'properties', 'followUps', 'notes', 'clientCategories', 'matches', 'branches'] as const;
+export const SYNC_ENTITIES = ['clients', 'owners', 'properties', 'followUps', 'notes', 'clientCategories', 'matches', 'branches', 'deals'] as const;
 export type SyncEntity = (typeof SYNC_ENTITIES)[number];

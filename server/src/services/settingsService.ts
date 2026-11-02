@@ -1,5 +1,5 @@
 import type { ClientSession } from 'mongoose';
-import { DEFAULT_MATCHING_SETTINGS, DEFAULT_SQFT_PER_UNIT, ERROR_CODES, type MatchingSettings, type SizeUnit } from '@recrm/shared';
+import { DEFAULT_MATCHING_SETTINGS, DEFAULT_SQFT_PER_UNIT, ERROR_CODES, type MatchingSettings, type SizeUnit, DEFAULT_COMMISSION_SETTINGS, type CommissionDefaults } from '@recrm/shared';
 import { Settings, type SettingsDoc } from '../models/Settings';
 import type { AuthContext, TenantContext } from '../types/context';
 import { badRequest } from '../utils/AppError';
@@ -10,6 +10,7 @@ export interface EffectiveSettings {
   matching: MatchingSettings;
   sqftPerUnit: Record<SizeUnit, number>;
   reminders: { defaultMinutesBefore: number };
+  commission: CommissionDefaults;
 }
 
 function effective(doc: Partial<SettingsDoc> | null): EffectiveSettings {
@@ -22,6 +23,7 @@ function effective(doc: Partial<SettingsDoc> | null): EffectiveSettings {
     },
     sqftPerUnit: { ...DEFAULT_SQFT_PER_UNIT, ...(doc?.sqftPerUnit ?? {}) },
     reminders: { defaultMinutesBefore: doc?.reminders?.defaultMinutesBefore ?? 30 },
+    commission: { ...DEFAULT_COMMISSION_SETTINGS, ...(doc?.commission ?? {}) },
   };
 }
 
@@ -29,6 +31,7 @@ export type SettingsUpdate = {
   matching?: { weights?: Partial<MatchingSettings['weights']>; storeThreshold?: number; notifyThreshold?: number; crossBranch?: boolean };
   sqftPerUnit?: Partial<Record<SizeUnit, number>>;
   reminders?: { defaultMinutesBefore?: number };
+  commission?: Partial<CommissionDefaults>;
 };
 
 export const settingsService = {
@@ -56,6 +59,7 @@ export const settingsService = {
       },
       sqftPerUnit: { ...before.sqftPerUnit, ...(input.sqftPerUnit ?? {}) },
       reminders: { defaultMinutesBefore: input.reminders?.defaultMinutesBefore ?? before.reminders.defaultMinutesBefore },
+      commission: { ...before.commission, ...(input.commission ?? {}) },
     };
     const w = next.matching.weights;
     const total = w.type + w.location + w.budget + w.size + w.purpose;
@@ -64,7 +68,7 @@ export const settingsService = {
       throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'Notify threshold cannot be lower than the store threshold');
     }
     await Settings.findOneAndUpdate({ businessId: auth.businessId }, { $set: { ...next, updatedBy: auth.userId } }, { upsert: true, new: true });
-    const changes = diffFields(before as unknown as Record<string, unknown>, next as unknown as Record<string, unknown>, ['matching', 'sqftPerUnit', 'reminders']);
+    const changes = diffFields(before as unknown as Record<string, unknown>, next as unknown as Record<string, unknown>, ['matching', 'sqftPerUnit', 'reminders', 'commission']);
     if (changes.length) await auditService.record(auth, { action: 'settings.updated', entityType: 'settings', changes, ip });
     return next;
   },

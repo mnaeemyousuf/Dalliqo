@@ -5,6 +5,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:uuid/uuid.dart';
 
 import '../core/branch/branch_scope.dart';
 import '../core/database/app_database.dart';
@@ -438,6 +439,83 @@ class CrmRepository {
   /// Moving the due time works offline; the server recalculates the reminder and status on sync.
   Future<void> rescheduleFollowUp(String id, DateTime dueAt) => store.update(Entities.followUps, id, {'dueAt': dueAt.toUtc().toIso8601String()});
 
+  // Deals (edited offline; payments and payouts travel inside the deal, each with its own id)
+  Future<List<Deal>> deals({String search = '', String? stage, bool? open, String? clientId, String? propertyId, String? agentId}) async {
+    final rows = await db.list(Entities.deals, search: search, where: (d) {
+      final x = Deal(d);
+      return (clientId != null || propertyId != null || _inBranch(d)) &&
+          (stage == null || x.stage == stage) &&
+          (open == null || x.isOpen == open) &&
+          (clientId == null || x.clientId == clientId) &&
+          (propertyId == null || x.propertyId == propertyId) &&
+          (agentId == null || x.hasAgent(agentId));
+    });
+    return rows.map((r) => Deal(r.data, local: r)).toList();
+  }
+
+  Future<Deal?> deal(String id) async {
+    final r = await db.get(Entities.deals, id);
+    return r == null || r.deleted ? null : Deal(r.data, local: r);
+  }
+
+  Future<Deal> saveDeal(Map<String, dynamic> fields, {String? id}) async {
+    if (id == null && fields['branchId'] == null && fields['clientId'] is String) {
+      final c = await db.get(Entities.clients, fields['clientId'] as String);
+      final b = JsonModel.refId(c?.data['branchId']) ?? branch?.defaultId;
+      if (b != null) fields = {...fields, 'branchId': b};
+    }
+    if (id == null) fields = {'stage': 'INQUIRY', ...fields};
+    final r = id == null ? await store.create(Entities.deals, fields) : await store.update(Entities.deals, id, fields);
+    return Deal(r.data, local: r);
+  }
+
+  Future<void> deleteDeal(String id) => store.delete(Entities.deals, id);
+
+  /// Moves the deal; the server records the stage history when it syncs (shown locally meanwhile).
+  Future<void> changeDealStage(String id, String stage, {required String? by, String? lostReason}) async {
+    final d = await deal(id);
+    if (d == null) return;
+    await store.update(Entities.deals, id, {'stage': stage, 'lostReason': ?lostReason});
+    // Local-only display of the new step (not part of the outbox mutation).
+    final r = (await db.get(Entities.deals, id))!;
+    final history = [...d.stageHistory, {'stage': stage, 'at': DateTime.now().toUtc().toIso8601String(), 'by': by}];
+    await db.put(LocalRecord(entity: r.entity, uuid: r.uuid, serverId: r.serverId, version: r.version, data: {...r.data, 'stageHistory': history}, syncStatus: r.syncStatus));
+    db.notify(Entities.deals);
+  }
+
+  static List<Map<String, dynamic>> _strip(List<Map<String, dynamic>> items, Set<String> keep) =>
+      items.map((m) => {for (final e in m.entries) if (keep.contains(e.key) && e.value != null) e.key: e.value}).toList();
+  static const _paymentKeys = {'_id', 'side', 'amount', 'date', 'method', 'reference', 'notes'};
+  static const _payoutKeys = {'_id', 'userId', 'amount', 'date', 'status', 'notes'};
+
+  Future<void> addDealPayment(String id, Map<String, dynamic> payment) async {
+    final d = await deal(id);
+    if (d == null) return;
+    final next = [...d.payments, {'_id': const Uuid().v4(), ...payment}];
+    await store.update(Entities.deals, id, {'payments': _strip(next, _paymentKeys)});
+  }
+
+  Future<void> removeDealPayment(String id, String paymentId) async {
+    final d = await deal(id);
+    if (d == null) return;
+    await store.update(Entities.deals, id, {'payments': _strip(d.payments.where((p) => p['_id'] != paymentId).toList(), _paymentKeys)});
+  }
+
+  Future<void> addDealPayout(String id, Map<String, dynamic> payout) async {
+    final d = await deal(id);
+    if (d == null) return;
+    final next = [...d.payouts, {'_id': const Uuid().v4(), 'status': 'PENDING', ...payout}];
+    await store.update(Entities.deals, id, {'payouts': _strip(next.map((p) => {...p, 'userId': JsonModel.refId(p['userId'])}).toList(), _payoutKeys)});
+  }
+
+  Future<void> markDealPayoutPaid(String id, String payoutId) async {
+    final d = await deal(id);
+    if (d == null) return;
+    final now = DateTime.now().toUtc().toIso8601String();
+    final next = d.payouts.map((p) => p['_id'] == payoutId ? {...p, 'status': 'PAID', 'date': p['date'] ?? now} : p).toList();
+    await store.update(Entities.deals, id, {'payouts': _strip(next.map((p) => {...p, 'userId': JsonModel.refId(p['userId'])}).toList(), _payoutKeys)});
+  }
+
   // Notes
   Future<List<Note>> notes(String entityType, String entityId) async {
     final rows = await db.list(Entities.notes, where: (d) => d['entityType'] == entityType && d['entityId'] == entityId);
@@ -565,6 +643,12 @@ class OnlineRepository {
       rethrow;
     }
   }
+
+  /// Commission report (computed on the server; the last result stays visible offline).
+  Future<({Map<String, dynamic> data, DateTime? cachedAt})> commissionReport({String groupBy = 'month', DateTime? from, DateTime? to}) => _cached(
+        'cache.commissions.$groupBy.${from?.toIso8601String()}.${to?.toIso8601String()}',
+        () => api.get<Map<String, dynamic>>('/reports/commissions', query: {'groupBy': groupBy, 'from': from?.toIso8601String(), 'to': to?.toIso8601String()}),
+      );
 
   // Branches (management needs a connection; the list itself is synced to the phone)
   Future<Map<String, dynamic>> createBranch(Map<String, dynamic> body) => api.post<Map<String, dynamic>>('/branches', body);

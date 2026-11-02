@@ -7,6 +7,7 @@ import {
   branchController,
   categoryController,
   clientController,
+  dealController,
   dashboardController,
   documentController,
   exportController,
@@ -61,6 +62,19 @@ r.patch('/clients/:id', can(P.CLIENTS_UPDATE), validate({ params: idParams, body
 r.delete('/clients/:id', can(P.CLIENTS_DELETE), id, h(clientController.remove));
 r.post('/clients/:id/communications', can(P.CLIENTS_READ), validate({ params: idParams, body: s.communicationSchema }), h(clientController.communicate));
 r.get('/clients/:id/matches', can(P.MATCHES_READ), validate({ params: idParams, query: s.matchListQuery }), h(clientController.matches));
+
+// Deals & commission (agents without deals:read_all only see their own deals; enforced in the service)
+r.get('/deals', can(P.DEALS_READ), validate({ query: s.dealListQuery }), h(dealController.list));
+r.post('/deals', can(P.DEALS_CREATE), validate({ body: s.dealCreateSchema }), h(dealController.create));
+r.get('/deals/:id', can(P.DEALS_READ), id, h(dealController.get));
+r.patch('/deals/:id', can(P.DEALS_UPDATE), validate({ params: idParams, body: s.dealUpdateSchema }), h(dealController.update));
+r.post('/deals/:id/stage', can(P.DEALS_UPDATE), validate({ params: idParams, body: s.dealStageSchema }), h(dealController.stage));
+r.post('/deals/:id/payments', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), validate({ params: idParams, body: s.dealPaymentSchema }), h(dealController.addPayment));
+r.delete('/deals/:id/payments/:subId', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), validate({ params: s.subIdParams }), h(dealController.removePayment));
+r.post('/deals/:id/payouts', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), validate({ params: idParams, body: s.dealPayoutSchema }), h(dealController.addPayout));
+r.patch('/deals/:id/payouts/:subId', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), validate({ params: s.subIdParams, body: s.dealPayoutUpdateSchema }), h(dealController.updatePayout));
+r.delete('/deals/:id', can(P.DEALS_DELETE), id, h(dealController.remove));
+r.get('/reports/commissions', can(P.DEALS_READ, P.REPORTS_READ), validate({ query: s.commissionReportQuery }), h(dealController.report));
 
 // Owners
 r.get('/owners', can(P.OWNERS_READ), validate({ query: s.ownerListQuery }), h(ownerController.list));

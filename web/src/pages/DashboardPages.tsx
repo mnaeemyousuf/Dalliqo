@@ -28,7 +28,7 @@ import { dashboardApi, followUpApi } from '@/api/endpoints';
 import type { FollowUp } from '@/api/types';
 import { MatchCard, PropertyCard, Stat } from '@/components/domain';
 import { Button, Card, EmptyState, ErrorState, PageHeader, PageLoader, Tabs } from '@/components/ui';
-import { formatRange, formatTime, relativeTime } from '@/lib/format';
+import { formatRange, formatTime, relativeTime, formatPkr } from '@/lib/format';
 import { useCategories, useOnError } from '@/lib/hooks';
 import { useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
@@ -111,6 +111,14 @@ export function DashboardPage() {
         <Stat label={t('dashboard.newClientsToday')} value={s.today.newClients} icon={<UserPlus className={i} />} />
         <Stat label={t('dashboard.newPropertiesToday')} value={s.today.newProperties} icon={<Home className={i} />} />
         <Stat label={t('dashboard.newMatchesToday')} value={s.today.newMatches} icon={<Handshake className={i} />} tone="green" to="/matches" />
+        {s.deals && (
+          <>
+            <Stat label={t('dashboard.openDeals')} value={s.deals.open} icon={<Handshake className={i} />} tone="purple" to="/deals" />
+            <Stat label={t('dashboard.dealsWonThisMonth')} value={s.deals.wonThisMonth} icon={<CheckCircle2 className={i} />} tone="green" to="/deals?view=table&stage=CLOSED_WON" />
+            <Stat label={t('dashboard.commissionThisMonth')} value={<span className="ltr-nums">{formatPkr(s.deals.receivedThisMonth)}</span>} icon={<CheckCircle2 className={i} />} tone="green" to="/reports" />
+            <Stat label={t('dashboard.commissionOutstanding')} value={<span className="ltr-nums">{formatPkr(s.deals.outstanding)}</span>} icon={<AlarmClock className={i} />} tone="amber" to="/deals?view=table&commissionStatus=PARTIALLY_RECEIVED" />
+          </>
+        )}
       </div>
 
       {canReports && (

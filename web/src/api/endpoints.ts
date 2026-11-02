@@ -9,7 +9,9 @@ import type {
   Business,
   Category,
   Client,
+  CommissionReport,
   DashboardSummary,
+  Deal,
   DeviceSession,
   FileAsset,
   FollowUp,
@@ -60,6 +62,20 @@ export const branchApi = {
   list: (includeArchived = false) => api<Branch[]>({ url: '/branches', params: includeArchived ? { includeArchived: true } : undefined }),
   create: (body: Body) => api<Branch>({ method: 'POST', url: '/branches', data: body }),
   update: (id: string, body: Body) => api<Branch>({ method: 'PATCH', url: `/branches/${id}`, data: body }),
+};
+
+export const dealApi = {
+  list: (params: Params) => apiPage<Deal>('/deals', params),
+  get: (id: string) => api<Deal & { summary: NonNullable<Deal['summary']> }>({ url: `/deals/${id}` }),
+  create: (body: Body) => api<Deal>({ method: 'POST', url: '/deals', data: body }),
+  update: (id: string, body: Body) => api<Deal>({ method: 'PATCH', url: `/deals/${id}`, data: body }),
+  stage: (id: string, body: Body) => api<Deal>({ method: 'POST', url: `/deals/${id}/stage`, data: body }),
+  addPayment: (id: string, body: Body) => api<Deal>({ method: 'POST', url: `/deals/${id}/payments`, data: body }),
+  removePayment: (id: string, paymentId: string) => api<Deal>({ method: 'DELETE', url: `/deals/${id}/payments/${paymentId}` }),
+  addPayout: (id: string, body: Body) => api<Deal>({ method: 'POST', url: `/deals/${id}/payouts`, data: body }),
+  updatePayout: (id: string, payoutId: string, body: Body) => api<Deal>({ method: 'PATCH', url: `/deals/${id}/payouts/${payoutId}`, data: body }),
+  remove: (id: string) => api<null>({ method: 'DELETE', url: `/deals/${id}` }),
+  report: (params: Params) => api<CommissionReport>({ url: '/reports/commissions', params: clean(params) }),
 };
 
 export const categoryApi = {

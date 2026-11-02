@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/auth_controller.dart';
 import '../../features/auth/auth_screens.dart';
 import '../../features/branches/branch_screens.dart';
+import '../../features/deals/deal_screens.dart';
 import '../../features/clients/client_screens.dart';
 import '../../features/dashboard/dashboard_screens.dart';
 import '../../features/followups/followup_screens.dart';
@@ -96,6 +97,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
       GoRoute(path: '/sync', builder: (_, _) => const SyncScreen()),
       GoRoute(path: '/branches', builder: (_, _) => const BranchesScreen()),
+      GoRoute(path: '/deals', builder: (_, _) => const DealsScreen()),
+      GoRoute(path: '/deals/new', builder: (_, s) => DealFormScreen(clientId: s.uri.queryParameters['clientId'], propertyId: s.uri.queryParameters['propertyId'])),
+      GoRoute(path: '/deals/:id', builder: (_, s) => DealDetailScreen(id: s.pathParameters['id']!)),
+      GoRoute(path: '/deals/:id/edit', builder: (_, s) => DealFormScreen(id: s.pathParameters['id'])),
+      GoRoute(path: '/reports/commissions', builder: (_, _) => const CommissionReportScreen()),
       GoRoute(path: '/pick-location', builder: (_, s) => LocationPickerScreen(initial: s.extra as ({double lat, double lng})?)),
     ],
   );

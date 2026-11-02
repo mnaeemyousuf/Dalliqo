@@ -94,7 +94,8 @@
     "settings": "ترتیبات",
     "logout": "سائن آؤٹ",
     "profile": "پروفائل",
-    "myDay": "میرا دن"
+    "myDay": "میرا دن",
+    "deals": "ڈیلز"
   },
   "topbar": {
     "searchPlaceholder": "کلائنٹس، پراپرٹیز، مالکان تلاش کریں…",
@@ -180,7 +181,11 @@
     "member": "رکن",
     "followUpsCompleted": "مکمل فالو اپ",
     "followUpsOverdue": "اس وقت تاخیر شدہ",
-    "activeClients": "فعال کلائنٹس"
+    "activeClients": "فعال کلائنٹس",
+    "openDeals": "جاری ڈیلز",
+    "dealsWonThisMonth": "اس ماہ مکمل ڈیلز",
+    "commissionThisMonth": "اس ماہ کا کمیشن",
+    "commissionOutstanding": "باقی کمیشن"
   },
   "myDay": {
     "title": "میرا دن",
@@ -460,7 +465,8 @@
       "notes": "نوٹس",
       "documents": "دستاویزات",
       "reports": "رپورٹس اور ایکسپورٹ",
-      "administration": "انتظامیہ"
+      "administration": "انتظامیہ",
+      "deals": "ڈیلز اور کمیشن"
     },
     "template": "ٹیمپلیٹ سے شروع کریں",
     "access": "رسائی",
@@ -650,14 +656,17 @@
       "client": "کلائنٹ",
       "property": "پراپرٹی",
       "owner": "مالک",
-      "followUp": "فالو اپ"
+      "followUp": "فالو اپ",
+      "deal": "ڈیل"
     },
     "exportResource": {
       "clients": "کلائنٹس",
       "properties": "پراپرٹیز",
       "owners": "مالکان",
       "followups": "فالو اپس",
-      "matches": "میچز"
+      "matches": "میچز",
+      "deals": "ڈیلز",
+      "commissions": "وصول شدہ کمیشن"
     },
     "matchReason": {
       "TYPE_MATCH": "پراپرٹی کی قسم",
@@ -708,7 +717,48 @@
       "business:manage": "کاروبار کی تفصیلات میں ترمیم",
       "settings:manage": "ترتیبات تبدیل کریں",
       "audit:read": "آڈٹ لاگ دیکھیں",
-      "branches:manage": "برانچوں کا انتظام"
+      "branches:manage": "برانچوں کا انتظام",
+      "deals:read": "اپنی ڈیلز دیکھیں",
+      "deals:read_all": "تمام ڈیلز اور کمیشن دیکھیں",
+      "deals:create": "ڈیل بنائیں",
+      "deals:update": "ڈیل میں ترمیم",
+      "deals:delete": "ڈیل حذف کریں",
+      "commissions:manage": "کمیشن ادائیگیاں درج کریں"
+    },
+    "dealStage": {
+      "INQUIRY": "انکوائری",
+      "SITE_VISIT": "سائٹ وزٹ",
+      "OFFER": "آفر",
+      "TOKEN": "ٹوکن / بیعانہ",
+      "AGREEMENT": "معاہدہ",
+      "TRANSFER": "ٹرانسفر",
+      "CLOSED_WON": "مکمل (کامیاب)",
+      "CLOSED_LOST": "ناکام"
+    },
+    "commissionStatus": {
+      "PENDING": "زیرِ التوا",
+      "PARTIALLY_RECEIVED": "جزوی وصول",
+      "RECEIVED": "وصول"
+    },
+    "commissionMode": {
+      "PERCENT": "قیمت کا فیصد",
+      "FIXED": "مقررہ رقم"
+    },
+    "dealSide": {
+      "BUYER": "خریدار کی جانب",
+      "SELLER": "فروخت کنندہ کی جانب"
+    },
+    "paymentMethod": {
+      "CASH": "نقد",
+      "BANK_TRANSFER": "بینک ٹرانسفر",
+      "CHEQUE": "چیک",
+      "JAZZCASH": "جاز کیش",
+      "EASYPAISA": "ایزی پیسہ",
+      "OTHER": "دیگر"
+    },
+    "payoutStatus": {
+      "PENDING": "زیرِ التوا",
+      "PAID": "ادا شدہ"
     }
   },
   "errors": {
@@ -729,7 +779,10 @@
     "NO_ACTIVE_MEMBERSHIP": "اب آپ کو اس کاروبار تک رسائی حاصل نہیں ہے۔",
     "BRANCH_NOT_FOUND": "برانچ نہیں ملی",
     "BRANCH_FORBIDDEN": "آپ کو اس برانچ تک رسائی نہیں",
-    "BRANCH_IS_DEFAULT": "مرکزی برانچ محفوظ نہیں کی جا سکتی"
+    "BRANCH_IS_DEFAULT": "مرکزی برانچ محفوظ نہیں کی جا سکتی",
+    "DEAL_NOT_FOUND": "ڈیل نہیں ملی",
+    "INVALID_AGENT_SHARES": "ایجنٹس کے حصے کل 100% ہونے چاہئیں",
+    "PAYMENT_NOT_FOUND": "ادائیگی نہیں ملی"
   },
   "branch": {
     "branch": "برانچ",
@@ -756,5 +809,69 @@
     "chooseOne": "کم از کم ایک برانچ منتخب کریں",
     "crossBranch": "دوسری برانچوں کی پراپرٹیز سے بھی میچ کریں",
     "crossBranchHint": "بند: کلائنٹس کو صرف ان کی اپنی برانچ کی پراپرٹیز سے میچ کیا جاتا ہے۔"
+  },
+  "deal": {
+    "title": "ڈیلز",
+    "subtitle": "انکوائری سے ٹرانسفر تک، کمیشن کے ساتھ",
+    "add": "نئی ڈیل",
+    "edit": "ڈیل میں ترمیم",
+    "created": "ڈیل بن گئی",
+    "updated": "ڈیل اپڈیٹ ہو گئی",
+    "deleted": "ڈیل حذف ہو گئی",
+    "deleteConfirm": "ڈیل {{no}} حذف کریں؟ اس کی ادائیگیاں بھی حذف ہو جائیں گی۔",
+    "board": "پائپ لائن",
+    "empty": "ابھی کوئی ڈیل نہیں",
+    "emptyHint": "جب کلائنٹ کسی پراپرٹی میں سنجیدہ ہو تو ڈیل شروع کریں۔",
+    "searchPlaceholder": "ڈیل نمبر، عنوان یا کلائنٹ",
+    "dealNo": "ڈیل",
+    "titleField": "عنوان",
+    "titlePlaceholder": "مثلاً 120 مربع گز پلاٹ، گلشن بلاک 13-D",
+    "client": "کلائنٹ",
+    "property": "پراپرٹی",
+    "stage": "مرحلہ",
+    "agreedPrice": "طے شدہ قیمت",
+    "finalPrice": "حتمی قیمت",
+    "expectedClose": "متوقع تکمیل",
+    "commission": "کمیشن",
+    "mode": "قسم",
+    "value": "مقدار",
+    "defaultPct": "ڈیفالٹ %",
+    "expectedPreview": "متوقع کمیشن: {{amount}}",
+    "agents": "ایجنٹس",
+    "agent": "ایجنٹ",
+    "share": "حصہ %",
+    "addAgent": "ایجنٹ شامل کریں",
+    "shareTotal": "کل {{total}}% (100% ہونا چاہیے)",
+    "expected": "متوقع",
+    "received": "وصول",
+    "receivedShort": "وصول",
+    "outstanding": "باقی",
+    "commissionStatus": "کمیشن",
+    "details": "ڈیل کی تفصیل",
+    "payments": "وصول شدہ ادائیگیاں",
+    "payouts": "ایجنٹ ادائیگیاں",
+    "addPayment": "ادائیگی درج کریں",
+    "addPayout": "ایجنٹ ادائیگی",
+    "noPayments": "ابھی کوئی ادائیگی نہیں",
+    "noPayouts": "ابھی کوئی ایجنٹ ادائیگی نہیں",
+    "paymentSaved": "ادائیگی درج ہو گئی",
+    "payoutSaved": "ایجنٹ ادائیگی محفوظ",
+    "markPaid": "ادا شدہ",
+    "paidOut": "ادا شدہ",
+    "owed": "واجب",
+    "side": "فریق",
+    "amount": "رقم",
+    "method": "طریقہ",
+    "reference": "حوالہ / چیک نمبر",
+    "lostReason": "ڈیل ختم ہونے کی وجہ",
+    "reportTitle": "کمیشن",
+    "groupBy": "ترتیب",
+    "byMonth": "مہینہ",
+    "byAgent": "ایجنٹ",
+    "month": "مہینہ",
+    "paymentsCount": "ادائیگیاں",
+    "outstandingDeals": "جن ڈیلز کا کمیشن باقی ہے",
+    "defaultBuyerPct": "خریدار کی جانب سے ڈیفالٹ کمیشن",
+    "defaultSellerPct": "فروخت کنندہ کی جانب سے ڈیفالٹ کمیشن"
   }
 }

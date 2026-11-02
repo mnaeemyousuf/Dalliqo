@@ -1,5 +1,6 @@
 import { ERROR_CODES, PERMISSIONS, type EntityType } from '@recrm/shared';
 import { Client } from '../models/Client';
+import { Deal } from '../models/Deal';
 import { FollowUp } from '../models/FollowUp';
 import { Property } from '../models/Property';
 import { PropertyOwner } from '../models/PropertyOwner';
@@ -9,7 +10,7 @@ import { badRequest, forbidden } from '../utils/AppError';
 import { branchFilter } from './branchScope';
 import { activityService } from './activityService';
 
-const ENTITY_MODELS = { client: Client, property: Property, owner: PropertyOwner, followUp: FollowUp } as const;
+const ENTITY_MODELS = { client: Client, property: Property, owner: PropertyOwner, followUp: FollowUp, deal: Deal } as const;
 
 /** Confirms the record exists in this business (and the member's branches); returns a label for timelines. */
 export async function assertEntity(ctx: TenantContext, entityType: EntityType, entityId: string): Promise<string> {

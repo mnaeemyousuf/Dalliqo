@@ -34,6 +34,16 @@ export const PERMISSIONS = {
   DOCUMENTS_UPLOAD: 'documents:upload',
   DOCUMENTS_DELETE: 'documents:delete',
 
+  /** Deals the user is an agent on. */
+  DEALS_READ: 'deals:read',
+  /** Every deal (not only the user's own) and all commission figures. */
+  DEALS_READ_ALL: 'deals:read_all',
+  DEALS_CREATE: 'deals:create',
+  DEALS_UPDATE: 'deals:update',
+  DEALS_DELETE: 'deals:delete',
+  /** Record commission payments received and agent payouts. */
+  COMMISSIONS_MANAGE: 'commissions:manage',
+
   REPORTS_READ: 'reports:read',
   EXPORTS_CREATE: 'exports:create',
 
@@ -75,6 +85,14 @@ export const PERMISSION_GROUPS: Record<string, readonly Permission[]> = {
   ],
   notes: [PERMISSIONS.NOTES_CREATE, PERMISSIONS.NOTES_MANAGE_ALL],
   documents: [PERMISSIONS.DOCUMENTS_READ, PERMISSIONS.DOCUMENTS_UPLOAD, PERMISSIONS.DOCUMENTS_DELETE],
+  deals: [
+    PERMISSIONS.DEALS_READ,
+    PERMISSIONS.DEALS_READ_ALL,
+    PERMISSIONS.DEALS_CREATE,
+    PERMISSIONS.DEALS_UPDATE,
+    PERMISSIONS.DEALS_DELETE,
+    PERMISSIONS.COMMISSIONS_MANAGE,
+  ],
   reports: [PERMISSIONS.REPORTS_READ, PERMISSIONS.EXPORTS_CREATE],
   administration: [
     PERMISSIONS.MEMBERS_READ,

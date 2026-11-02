@@ -24,6 +24,7 @@ import {
   WifiOff,
   X,
   Sparkles,
+  HandCoins,
 } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -61,6 +62,7 @@ function useNav(): NavItem[][] {
       { to: '/owners', label: t('nav.owners'), icon: <Building2 className={i} />, perm: PERMISSIONS.OWNERS_READ },
       { to: '/matches', label: t('nav.matches'), icon: <Handshake className={i} />, perm: PERMISSIONS.MATCHES_READ },
       { to: '/followups', label: t('nav.followups'), icon: <CalendarCheck className={i} />, perm: PERMISSIONS.FOLLOWUPS_READ },
+      { to: '/deals', label: t('nav.deals'), icon: <HandCoins className={i} />, perm: PERMISSIONS.DEALS_READ },
       { to: '/documents', label: t('nav.documents'), icon: <FolderOpen className={i} />, perm: PERMISSIONS.DOCUMENTS_READ },
       { to: '/reports', label: t('nav.reports'), icon: <FileText className={i} />, perm: PERMISSIONS.EXPORTS_CREATE },
     ],

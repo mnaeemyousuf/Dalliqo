@@ -10,6 +10,7 @@ import type { Client, Requirement } from '@/api/types';
 import { ClientCard, ContactActions, MatchCard, PriorityBadge } from '@/components/domain';
 import { ActivityPanel, DocumentsPanel, FollowUpForm, FollowUpsPanel, NotesPanel } from '@/components/domain/panels';
 import { BranchField, useBranchName, useBranches } from '@/components/branches';
+import { DealsPanel } from '@/pages/DealPages';
 import { Badge, Button, Card, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column } from '@/components/ui';
 import { formatDate, formatRange, mailHref, smsHref, splitList, telHref, waHref } from '@/lib/format';
 import { useCategories, useDebounce, useEnumOptions, useMembers, useOnError, useUrlState } from '@/lib/hooks';
@@ -374,7 +375,7 @@ export function ClientsPage() {
 
 /* ───────────── Detail ───────────── */
 
-type ClientTab = 'overview' | 'requirements' | 'matches' | 'followups' | 'notes' | 'documents' | 'activity' | 'communication';
+type ClientTab = 'overview' | 'requirements' | 'matches' | 'followups' | 'deals' | 'notes' | 'documents' | 'activity' | 'communication';
 
 function Info({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -413,6 +414,7 @@ export function ClientDetailPage() {
   const { t } = useTranslation();
   const branches = useBranches();
   const branchName = useBranchName();
+  const canDeals = useCan(PERMISSIONS.DEALS_READ);
   const qc = useQueryClient();
   const navigate = useNavigate();
   const onError = useOnError();
@@ -454,6 +456,7 @@ export function ClientDetailPage() {
     { value: 'requirements', label: t('client.tabs.requirements'), count: c.requirements.length },
     { value: 'matches', label: t('client.tabs.matches'), count: c.matchCount },
     { value: 'followups', label: t('client.tabs.followups') },
+    ...(canDeals ? [{ value: 'deals' as const, label: t('nav.deals') }] : []),
     { value: 'notes', label: t('client.tabs.notes') },
     { value: 'documents', label: t('client.tabs.documents') },
     { value: 'activity', label: t('client.tabs.activity') },
@@ -531,6 +534,7 @@ export function ClientDetailPage() {
           <div className="space-y-2">{matches.data.items.map((m) => <MatchCard key={m._id} match={m} perspective="client" />)}</div>
         ))}
       {tab === 'followups' && <FollowUpsPanel clientId={id} />}
+      {tab === 'deals' && <DealsPanel clientId={id} />}
       {tab === 'notes' && <Card><NotesPanel entityType="client" entityId={id} /></Card>}
       {tab === 'documents' && <Card><DocumentsPanel entityType="client" entityId={id} /></Card>}
       {tab === 'activity' && <Card><ActivityPanel entityId={id} /></Card>}

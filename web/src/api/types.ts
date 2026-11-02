@@ -16,6 +16,11 @@ import type {
   Role,
   SizeUnit,
   BranchAccess,
+  CommissionMode,
+  CommissionSummary,
+  DealSide,
+  DealStage,
+  PaymentMethod,
 } from '@recrm/shared';
 
 export interface ApiSuccess<T> {
@@ -299,11 +304,49 @@ export interface AuditEntry {
   createdAt: string;
 }
 
+export interface Deal {
+  _id: string;
+  uuid: string;
+  version: number;
+  branchId?: string;
+  dealNo: string;
+  title?: string;
+  clientId: string | { _id: string; fullName: string; mobileNumber?: string };
+  propertyId?: string | { _id: string; propertyId: string; society?: string; block?: string } | null;
+  agents: { userId: string | { _id: string; fullName: string }; sharePct: number }[];
+  stage: DealStage;
+  lostReason?: string;
+  stageHistory: { stage: DealStage; at: string; by?: string | { _id: string; fullName: string }; note?: string }[];
+  agreedPrice?: number;
+  finalPrice?: number;
+  expectedCloseDate?: string | null;
+  closedAt?: string | null;
+  notes?: string;
+  commission: { buyer: { mode: CommissionMode; value: number }; seller: { mode: CommissionMode; value: number } };
+  payments: { _id: string; side: DealSide; amount: number; date: string; method: PaymentMethod; reference?: string; notes?: string }[];
+  payouts: { _id: string; userId: string; amount: number; date?: string | null; status: 'PENDING' | 'PAID'; notes?: string }[];
+  expectedTotal: number;
+  receivedTotal: number;
+  outstanding: number;
+  commissionStatus: 'PENDING' | 'PARTIALLY_RECEIVED' | 'RECEIVED';
+  createdAt: string;
+  updatedAt: string;
+  summary?: CommissionSummary;
+}
+
+export interface CommissionReport {
+  groupBy: 'month' | 'agent';
+  rows: { key: string; label: string; received: number; payments: number }[];
+  totals: { expected: number; received: number; outstanding: number };
+  outstanding: { _id: string; dealNo: string; title?: string; stage: DealStage; expectedTotal: number; receivedTotal: number; outstanding: number }[];
+}
+
 export interface DashboardSummary {
   properties: { total: number; available: number; reserved: number; sold: number; rented: number; withdrawn: number; inactive: number; needsVerification: number };
   clients: { total: number; buyers: number; rental: number; owners: number; byCategory: { categoryId: string | null; name: string; count: number }[] };
   followUps: { today: number; overdue: number };
   today: { newClients: number; newProperties: number; newMatches: number };
+  deals?: { open: number; wonThisMonth: number; receivedThisMonth: number; outstanding: number };
   generatedAt: string;
 }
 
@@ -330,6 +373,7 @@ export interface MyDay {
 
 export interface Settings {
   matching: { weights: Record<'type' | 'location' | 'budget' | 'size' | 'purpose', number>; storeThreshold: number; notifyThreshold: number; crossBranch: boolean };
+  commission: { defaultBuyerPct: number; defaultSellerPct: number; autoCreateIncome: boolean };
   sqftPerUnit: Record<SizeUnit, number>;
   reminders: { defaultMinutesBefore: number };
 }

@@ -13,7 +13,7 @@ import { useDebounce, useEnumOptions, useMembers, useOnError } from '@/lib/hooks
 import { useAuth, useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
 
-type Entity = 'client' | 'property' | 'owner' | 'followUp';
+type Entity = 'client' | 'property' | 'owner' | 'followUp' | 'deal';
 
 export function NotesPanel({ entityType, entityId }: { entityType: Entity; entityId: string }) {
   const { t } = useTranslation();
@@ -150,7 +150,7 @@ export function RenameDocumentModal({ doc, onClose, onSaved }: { doc: { _id: str
   );
 }
 
-export function DocumentsPanel({ entityType, entityId }: { entityType: 'client' | 'property' | 'owner'; entityId: string }) {
+export function DocumentsPanel({ entityType, entityId }: { entityType: 'client' | 'property' | 'owner' | 'deal'; entityId: string }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const onError = useOnError();

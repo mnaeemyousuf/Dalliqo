@@ -155,6 +155,12 @@ class DashboardScreen extends ConsumerWidget {
               ('dashboard.newClientsToday', t['newClients'], Icons.person_add_alt, Colors.blue, null),
               ('dashboard.newPropertiesToday', t['newProperties'], Icons.add_home_outlined, Colors.blue, null),
               ('dashboard.newMatchesToday', t['newMatches'], Icons.handshake, Colors.green, '/matches'),
+              if (d['deals'] is Map) ...[
+                ('dashboard.openDeals', (d['deals'] as Map)['open'], Icons.handshake_outlined, Colors.purple, '/deals'),
+                ('dashboard.dealsWonThisMonth', (d['deals'] as Map)['wonThisMonth'], Icons.emoji_events_outlined, Colors.green, '/deals'),
+                ('dashboard.commissionThisMonth', formatPkr((d['deals'] as Map)['receivedThisMonth'] as num?, urdu: context.l10n.isRtl), Icons.payments_outlined, Colors.green, '/reports/commissions'),
+                ('dashboard.commissionOutstanding', formatPkr((d['deals'] as Map)['outstanding'] as num?, urdu: context.l10n.isRtl), Icons.pending_actions_outlined, Colors.amber, '/reports/commissions'),
+              ],
             ];
             return ListView(padding: const EdgeInsets.all(16), children: [
               if (r.cachedAt != null) _CachedBanner(r.cachedAt!),

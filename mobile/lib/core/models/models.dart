@@ -164,6 +164,30 @@ class FollowUp extends JsonModel {
   String? get outcome => os('outcome');
 }
 
+/// A deal: client + property + agents through the pipeline, with commission (see commission.dart).
+class Deal extends JsonModel {
+  Deal(super.json, {super.local});
+  String get dealNo => (json['dealNo'] as String?) ?? '…';
+  String? get title => os('title');
+  String? get clientId => JsonModel.refId(json['clientId']);
+  String? get propertyId => JsonModel.refId(json['propertyId']);
+  Map<String, dynamic>? get client => JsonModel.refObj(json['clientId']);
+  Map<String, dynamic>? get property => JsonModel.refObj(json['propertyId']);
+  String get stage => (json['stage'] as String?) ?? 'INQUIRY';
+  bool get isOpen => stage != 'CLOSED_WON' && stage != 'CLOSED_LOST';
+  String? get lostReason => os('lostReason');
+  num? get agreedPrice => n('agreedPrice');
+  num? get finalPrice => n('finalPrice');
+  DateTime? get expectedCloseDate => parseDate(json['expectedCloseDate']);
+  String? get notes => os('notes');
+  List<Map<String, dynamic>> get agents => ((json['agents'] as List?) ?? const []).map((a) => Map<String, dynamic>.from(a as Map)).toList();
+  List<Map<String, dynamic>> get payments => ((json['payments'] as List?) ?? const []).map((a) => Map<String, dynamic>.from(a as Map)).toList();
+  List<Map<String, dynamic>> get payouts => ((json['payouts'] as List?) ?? const []).map((a) => Map<String, dynamic>.from(a as Map)).toList();
+  List<Map<String, dynamic>> get stageHistory => ((json['stageHistory'] as List?) ?? const []).map((a) => Map<String, dynamic>.from(a as Map)).toList();
+  Map<String, dynamic> term(String side) => Map<String, dynamic>.from(((json['commission'] as Map?)?[side] as Map?) ?? {'mode': 'PERCENT', 'value': 0});
+  bool hasAgent(String? userId) => agents.any((a) => JsonModel.refId(a['userId']) == userId);
+}
+
 class Note extends JsonModel {
   Note(super.json, {super.local});
   String get content => s('content');

@@ -16,7 +16,8 @@ class Entities {
   static const notes = 'notes';
   static const categories = 'clientCategories';
   static const branches = 'branches';
-  static const all = [branches, categories, clients, owners, properties, followUps, notes];
+  static const deals = 'deals';
+  static const all = [branches, categories, clients, owners, properties, followUps, notes, deals];
 }
 
 /// A locally stored record. `data` is the record as the API returns it
@@ -208,7 +209,7 @@ class AppDatabase {
 
   static String searchText(Map<String, dynamic> d) => [
         d['fullName'], d['mobileNumber'], d['whatsappNumber'], d['email'], d['propertyId'], d['society'], d['area'],
-        d['block'], d['plotNumber'], d['preferredSociety'], d['preferredArea'], d['name'], d['content'],
+        d['block'], d['plotNumber'], d['preferredSociety'], d['preferredArea'], d['name'], d['content'], d['dealNo'], d['title'],
       ].whereType<String>().join(' ').toLowerCase();
 
   Map<String, Object?> _row(LocalRecord r) => {
@@ -218,7 +219,7 @@ class AppDatabase {
         'version': r.version,
         'data': jsonEncode(r.data),
         'search': searchText(r.data),
-        'sort_key': (r.data['fullName'] ?? r.data['propertyId'] ?? r.data['name'] ?? '') as String,
+        'sort_key': (r.data['fullName'] ?? r.data['propertyId'] ?? r.data['dealNo'] ?? r.data['name'] ?? '') as String,
         'sync_status': r.syncStatus.name,
         'sync_error': r.syncError,
         'deleted': r.deleted ? 1 : 0,

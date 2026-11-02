@@ -20,6 +20,7 @@ import '../../core/widgets/domain_widgets.dart';
 import '../../data/repositories.dart';
 import '../auth/auth_controller.dart';
 import '../branches/branch_screens.dart';
+import '../deals/deal_screens.dart';
 import '../clients/client_screens.dart' show propertyTypes, sizeUnits;
 import '../common/record_panels.dart';
 
@@ -386,6 +387,7 @@ class _Overview extends ConsumerWidget {
       InfoRow(l.t('property.bathrooms'), p.bathrooms?.toString()),
       InfoRow(l.t('property.floors'), p.floors?.toString()),
       InfoRow(l.t('common.dateAdded'), formatDate(p.createdAt, locale: l.locale.languageCode)),
+      if (ref.watch(authProvider).can('deals:read')) DealsPanel(propertyId: p.id),
       if (owner != null) ...[
         SectionHeader(l.t('property.owner')),
         ListTile(

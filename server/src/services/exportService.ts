@@ -3,13 +3,13 @@ import ExcelJS from 'exceljs';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import PDFDocument from 'pdfkit';
-import { ERROR_CODES, BRAND } from '@recrm/shared';
+import { ERROR_CODES, BRAND, PERMISSIONS } from '@recrm/shared';
 import { Business } from '../models/Business';
 import { ClientCategory } from '../models/ClientCategory';
 import { User } from '../models/User';
 import { memberRepository } from '../repositories/memberRepository';
 import type { AuthContext } from '../types/context';
-import { AppError } from '../utils/AppError';
+import { AppError, forbidden } from '../utils/AppError';
 import { formatPkr } from '../utils/text';
 import { clientService, type ClientQuery } from './clientService';
 import { followUpService, type FollowUpQuery } from './followUpService';
@@ -18,8 +18,9 @@ import { ownerService } from './ownerService';
 import { propertyService, type PropertyQuery } from './propertyService';
 import { auditService } from './auditService';
 import { MAX_EXPORT_ROWS as MAX_ROWS } from '../constants';
+import { dealService, type DealQuery } from './dealService';
 
-export type ExportResource = 'clients' | 'properties' | 'owners' | 'followups' | 'matches';
+export type ExportResource = 'clients' | 'properties' | 'owners' | 'followups' | 'matches' | 'deals' | 'commissions';
 export type ExportFormat = 'xlsx' | 'pdf';
 
 
@@ -60,7 +61,64 @@ async function build(auth: AuthContext, resource: ExportResource, filters: Recor
   // Only this business's members, never the global users collection.
   const memberIds = await memberRepository.activeUserIds(auth);
   const userNames = new Map((await User.find({ _id: { $in: memberIds } }).select('fullName').lean()).map((u) => [u._id.toString(), u.fullName]));
+  if ((resource === 'deals' || resource === 'commissions') && !auth.permissions.includes(PERMISSIONS.DEALS_READ)) throw forbidden();
   switch (resource) {
+    case 'deals': {
+      const items = await fetchAll((page, limit) => dealService.list(auth, { ...(filters as Partial<DealQuery>), page, limit }));
+      return {
+        title: 'Deals',
+        columns: [
+          { header: 'Deal', key: 'dealNo', width: 12, pdf: 1.1 },
+          { header: 'Stage', key: 'stage', width: 13, pdf: 1.2 },
+          { header: 'Client', key: 'client', width: 22, pdf: 2 },
+          { header: 'Property', key: 'property', width: 13, pdf: 1.2 },
+          { header: 'Agents', key: 'agents', width: 24, pdf: 2 },
+          { header: 'Final / agreed price', key: 'price', width: 18, pdf: 1.6, money: true },
+          { header: 'Commission expected', key: 'expected', width: 18, pdf: 1.5, money: true },
+          { header: 'Received', key: 'received', width: 16, pdf: 1.4, money: true },
+          { header: 'Outstanding', key: 'outstanding', width: 16, pdf: 1.4, money: true },
+          { header: 'Commission status', key: 'cstatus', width: 18, pdf: 1.4 },
+          { header: 'Created', key: 'created', width: 12 },
+        ],
+        rows: items.map((d) => {
+          const c = d.clientId as unknown as { fullName?: string } | undefined;
+          const p = d.propertyId as unknown as { propertyId?: string } | undefined;
+          const agents = d.agents.map((a) => `${(a.userId as unknown as { fullName?: string })?.fullName ?? userNames.get(String(a.userId)) ?? ''} ${a.sharePct}%`).join(', ');
+          return {
+            dealNo: d.dealNo, stage: label(d.stage), client: c?.fullName, property: p?.propertyId, agents, price: d.finalPrice ?? d.agreedPrice,
+            expected: d.expectedTotal, received: d.receivedTotal, outstanding: d.outstanding, cstatus: label(d.commissionStatus), created: date(d.createdAt),
+          };
+        }),
+      };
+    }
+    case 'commissions': {
+      // One row per payment received (what actually came in), newest first.
+      const items = await fetchAll((page, limit) => dealService.list(auth, { ...(filters as Partial<DealQuery>), page, limit }));
+      const from = filters.from ? new Date(String(filters.from)) : null;
+      const to = filters.to ? new Date(String(filters.to)) : null;
+      const rows = items
+        .flatMap((d) => d.payments.map((p) => ({ d, p })))
+        .filter(({ p }) => (!from || new Date(p.date) >= from) && (!to || new Date(p.date) <= to))
+        .sort((a, b) => +new Date(b.p.date) - +new Date(a.p.date));
+      return {
+        title: 'Commission received',
+        columns: [
+          { header: 'Date', key: 'date', width: 12, pdf: 1.1 },
+          { header: 'Deal', key: 'dealNo', width: 12, pdf: 1.1 },
+          { header: 'Client', key: 'client', width: 22, pdf: 2 },
+          { header: 'Side', key: 'side', width: 9, pdf: 0.9 },
+          { header: 'Amount', key: 'amount', width: 16, pdf: 1.5, money: true },
+          { header: 'Method', key: 'method', width: 15, pdf: 1.3 },
+          { header: 'Reference', key: 'reference', width: 18, pdf: 1.5 },
+          { header: 'Agents (share)', key: 'agents', width: 26, pdf: 2.2 },
+        ],
+        rows: rows.map(({ d, p }) => ({
+          date: date(p.date), dealNo: d.dealNo, client: (d.clientId as unknown as { fullName?: string })?.fullName, side: label(p.side), amount: p.amount,
+          method: label(p.method), reference: p.reference,
+          agents: d.agents.map((a) => `${(a.userId as unknown as { fullName?: string })?.fullName ?? userNames.get(String(a.userId)) ?? ''} ${a.sharePct}%`).join(', '),
+        })),
+      };
+    }
     case 'clients': {
       const cats = new Map((await ClientCategory.find({ businessId: auth.businessId }).lean()).map((c) => [c._id.toString(), c.name]));
       const items = await fetchAll((page, limit) => clientService.list(auth, { ...(filters as Partial<ClientQuery>), page, limit }));

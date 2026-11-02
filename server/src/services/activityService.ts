@@ -3,13 +3,14 @@ import type { ActivityType, EntityType } from '@recrm/shared';
 import { logger } from '../config/logger';
 import { Activity, type ActivityDoc } from '../models/Activity';
 import { Client } from '../models/Client';
+import { Deal } from '../models/Deal';
 import { FollowUp } from '../models/FollowUp';
 import { Property } from '../models/Property';
 import { PropertyOwner } from '../models/PropertyOwner';
 import { branchFilter } from './branchScope';
 
 /** Models whose records carry a branch; the timeline entry inherits it from the first such ref. */
-const BRANCHED = { client: Client, property: Property, owner: PropertyOwner, followUp: FollowUp } as unknown as Partial<Record<string, typeof Client>>;
+const BRANCHED = { deal: Deal, client: Client, property: Property, owner: PropertyOwner, followUp: FollowUp } as unknown as Partial<Record<string, typeof Client>>;
 
 async function branchOf(ctx: TenantContext, refs: ActivityRef[]): Promise<Types.ObjectId | null> {
   for (const r of refs) {
@@ -22,7 +23,7 @@ async function branchOf(ctx: TenantContext, refs: ActivityRef[]): Promise<Types.
 }
 import type { TenantContext } from '../types/context';
 
-const READ_PERMISSION: Record<EntityType, string> = { client: 'clients:read', property: 'properties:read', owner: 'owners:read', followUp: 'followups:read' };
+const READ_PERMISSION: Record<EntityType, string> = { client: 'clients:read', property: 'properties:read', owner: 'owners:read', followUp: 'followups:read', deal: 'deals:read' };
 
 export interface ActivityRef {
   entityType: EntityType;

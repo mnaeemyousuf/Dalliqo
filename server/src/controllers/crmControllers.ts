@@ -3,6 +3,7 @@ import { authOf } from '../middleware/authenticate';
 import { activityService } from '../services/activityService';
 import { branchService } from '../services/branchService';
 import { categoryService } from '../services/categoryService';
+import { dealService } from '../services/dealService';
 import { clientService } from '../services/clientService';
 import { dashboardService } from '../services/dashboardService';
 import { exportService, type ExportFormat, type ExportResource } from '../services/exportService';
@@ -18,7 +19,7 @@ import { searchService } from '../services/searchService';
 import { settingsService } from '../services/settingsService';
 import { syncService } from '../services/syncService';
 import { clientRepository, propertyRepository } from '../repositories/entityRepositories';
-import { clientListQuery, documentUploadFields, followUpListQuery, matchListQuery, ownerListQuery, propertyListQuery } from '../validators/crm.schemas';
+import { clientListQuery, dealListQuery, documentUploadFields, followUpListQuery, matchListQuery, ownerListQuery, propertyListQuery } from '../validators/crm.schemas';
 import type { ZodTypeAny } from 'zod';
 
 const EXPORT_FILTERS: Record<ExportResource, ZodTypeAny> = {
@@ -27,6 +28,8 @@ const EXPORT_FILTERS: Record<ExportResource, ZodTypeAny> = {
   owners: ownerListQuery,
   followups: followUpListQuery,
   matches: matchListQuery,
+  deals: dealListQuery,
+  commissions: dealListQuery,
 };
 import { forbidden } from '../utils/AppError';
 import { pageMeta, sendSuccess } from '../utils/http';
@@ -60,6 +63,47 @@ export const branchController = {
   async update(req: Request, res: Response) {
     const { body, baseVersion } = versioned(req);
     sendSuccess(res, await branchService.update(authOf(req), req.params.id, body, { baseVersion, meta: requestMeta(req) }), { message: 'Branch updated' });
+  },
+};
+
+export const dealController = {
+  async list(req: Request, res: Response) {
+    const q = query<Q>(req);
+    list(res, q.page, q.limit, await dealService.list(authOf(req), q));
+  },
+  async get(req: Request, res: Response) {
+    sendSuccess(res, await dealService.get(authOf(req), req.params.id));
+  },
+  async create(req: Request, res: Response) {
+    sendSuccess(res, await dealService.create(authOf(req), req.body, requestMeta(req)), { status: 201, message: 'Deal created' });
+  },
+  async update(req: Request, res: Response) {
+    const { body, baseVersion } = versioned(req);
+    sendSuccess(res, await dealService.update(authOf(req), req.params.id, body, { baseVersion, meta: requestMeta(req) }), { message: 'Deal updated' });
+  },
+  async stage(req: Request, res: Response) {
+    const { stage, note, lostReason, baseVersion } = req.body as { stage: never; note?: string; lostReason?: string; baseVersion?: number };
+    sendSuccess(res, await dealService.changeStage(authOf(req), req.params.id, stage, { note, lostReason, baseVersion, meta: requestMeta(req) }), { message: 'Stage changed' });
+  },
+  async addPayment(req: Request, res: Response) {
+    sendSuccess(res, await dealService.addPayment(authOf(req), req.params.id, req.body, requestMeta(req)), { status: 201, message: 'Payment recorded' });
+  },
+  async removePayment(req: Request, res: Response) {
+    sendSuccess(res, await dealService.removePayment(authOf(req), req.params.id, req.params.subId, requestMeta(req)), { message: 'Payment removed' });
+  },
+  async addPayout(req: Request, res: Response) {
+    sendSuccess(res, await dealService.addPayout(authOf(req), req.params.id, req.body, requestMeta(req)), { status: 201, message: 'Payout recorded' });
+  },
+  async updatePayout(req: Request, res: Response) {
+    sendSuccess(res, await dealService.updatePayout(authOf(req), req.params.id, req.params.subId, req.body, requestMeta(req)), { message: 'Payout updated' });
+  },
+  async remove(req: Request, res: Response) {
+    const { baseVersion } = versioned(req);
+    await dealService.remove(authOf(req), req.params.id, { baseVersion, meta: requestMeta(req) });
+    sendSuccess(res, null, { message: 'Deal deleted' });
+  },
+  async report(req: Request, res: Response) {
+    sendSuccess(res, await dealService.report(authOf(req), req.query as never));
   },
 };
 
@@ -329,7 +373,13 @@ export const notificationController = {
 
 export const dashboardController = {
   async summary(req: Request, res: Response) {
-    sendSuccess(res, await dashboardService.summary(authOf(req)));
+    const auth = authOf(req);
+    // Deal figures depend on who asks (agents only count their own deals), so they are not cached with the rest.
+    const [summary, deals] = await Promise.all([
+      dashboardService.summary(auth),
+      auth.permissions.includes('deals:read') ? dealService.stats(auth) : Promise.resolve(undefined),
+    ]);
+    sendSuccess(res, deals ? { ...summary, deals } : summary);
   },
   async analytics(req: Request, res: Response) {
     sendSuccess(res, await dashboardService.analytics(authOf(req), (req.query as { range: '7d' | '30d' | '12m' }).range));

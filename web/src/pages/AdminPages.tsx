@@ -388,7 +388,7 @@ function MatchingSettings() {
     if (q.data && !draft) setDraft(q.data);
   }, [q.data, draft]);
   const save = useMutation({
-    mutationFn: () => settingsApi.update({ matching: draft!.matching, sqftPerUnit: { MARLA: draft!.sqftPerUnit.MARLA }, reminders: draft!.reminders }),
+    mutationFn: () => settingsApi.update({ matching: draft!.matching, sqftPerUnit: { MARLA: draft!.sqftPerUnit.MARLA }, reminders: draft!.reminders, commission: draft!.commission }),
     onSuccess: (s) => (setDraft(s), toast.success(t('settings.matchingSaved')), qc.invalidateQueries({ queryKey: ['matches'] })),
     onError,
   });
@@ -415,6 +415,12 @@ function MatchingSettings() {
           <Checkbox label={t('branch.crossBranch')} checked={!!draft.matching.crossBranch} disabled={!canManage} onChange={(on) => setDraft({ ...draft, matching: { ...draft.matching, crossBranch: on } })} />
           <p className="ms-6 text-xs text-muted">{t('branch.crossBranchHint')}</p>
         </div>
+        {draft.commission && (
+          <>
+            <Input label={`${t('deal.defaultBuyerPct')} (%)`} type="number" min={0} max={20} step="0.1" value={draft.commission.defaultBuyerPct} disabled={!canManage} onChange={(e) => setDraft({ ...draft, commission: { ...draft.commission, defaultBuyerPct: Number(e.target.value) } })} />
+            <Input label={`${t('deal.defaultSellerPct')} (%)`} type="number" min={0} max={20} step="0.1" value={draft.commission.defaultSellerPct} disabled={!canManage} onChange={(e) => setDraft({ ...draft, commission: { ...draft.commission, defaultSellerPct: Number(e.target.value) } })} />
+          </>
+        )}
       </div>
       {canManage && <div className="mt-4"><Button disabled={total !== 100} loading={save.isPending} onClick={() => save.mutate()}>{t('common.save')}</Button></div>}
     </Card>

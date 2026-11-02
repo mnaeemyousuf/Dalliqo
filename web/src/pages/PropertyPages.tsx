@@ -9,6 +9,7 @@ import type { FileAsset, Property } from '@/api/types';
 import { MatchCard, PropertyCard, PropertyStatusBadge, locationLabel, useSizeLabel, usePropertyShareText, VerificationBadge } from '@/components/domain';
 import { ActivityPanel, DocumentsPanel, FollowUpForm, FollowUpsPanel, NotesPanel } from '@/components/domain/panels';
 import { BranchField, useBranchName, useBranches } from '@/components/branches';
+import { DealsPanel } from '@/pages/DealPages';
 import { Badge, Button, Card, Checkbox, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column } from '@/components/ui';
 import { formatDate, formatPkr, waHref } from '@/lib/format';
 import { useDebounce, useEnumOptions, useOnError, useUrlState } from '@/lib/hooks';
@@ -450,7 +451,7 @@ function MediaGallery({ property }: { property: Property }) {
 
 /* ───────────── Detail ───────────── */
 
-type PropTab = 'overview' | 'media' | 'matches' | 'followups' | 'documents' | 'notes' | 'activity';
+type PropTab = 'overview' | 'media' | 'matches' | 'followups' | 'deals' | 'documents' | 'notes' | 'activity';
 
 function Info({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -466,6 +467,7 @@ export function PropertyDetailPage() {
   const { t } = useTranslation();
   const branches = useBranches();
   const branchName = useBranchName();
+  const canDeals = useCan(PERMISSIONS.DEALS_READ);
   const qc = useQueryClient();
   const navigate = useNavigate();
   const onError = useOnError();
@@ -588,6 +590,7 @@ export function PropertyDetailPage() {
           { value: 'media', label: t('property.tabs.media') },
           { value: 'matches', label: t('property.tabs.matches'), count: p.matchCount },
           { value: 'followups', label: t('property.tabs.followups') },
+          ...(canDeals ? [{ value: 'deals' as const, label: t('nav.deals') }] : []),
           { value: 'documents', label: t('property.tabs.documents') },
           { value: 'notes', label: t('property.tabs.notes') },
           { value: 'activity', label: t('property.tabs.activity') },
@@ -669,6 +672,7 @@ export function PropertyDetailPage() {
           <div className="space-y-2">{matches.data.items.map((m) => <MatchCard key={m._id} match={m} perspective="property" />)}</div>
         ))}
       {tab === 'followups' && <FollowUpsPanel propertyId={id} />}
+      {tab === 'deals' && <DealsPanel propertyId={id} />}
       {tab === 'documents' && <Card><DocumentsPanel entityType="property" entityId={id} /></Card>}
       {tab === 'notes' && <Card><NotesPanel entityType="property" entityId={id} /></Card>}
       {tab === 'activity' && <Card><ActivityPanel entityId={id} /></Card>}

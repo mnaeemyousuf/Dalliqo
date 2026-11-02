@@ -28,6 +28,7 @@ import { Match } from '../models/Match';
 import { Property } from '../models/Property';
 import { mediaService } from '../services/mediaService';
 import { branchService } from '../services/branchService';
+import { dealService } from '../services/dealService';
 import { demoDocumentPdf, demoPropertyImage } from './demoImages';
 import type { AuthContext } from '../types/context';
 import { normalizePhone } from '../utils/phone';
@@ -294,12 +295,42 @@ export async function seed(opts: { reset?: boolean } = {}): Promise<Record<strin
   }
   for (const c of clients.slice(16, 20)) await clientService.update(father, c._id.toString(), { branchId: String(clifton._id) });
 
+  // Deals through the pipeline, with commission received and agent payouts (main branch).
+  const mainProps = properties.filter((p) => !['Clifton', 'DHA Karachi'].includes(String(p.society)));
+  const day = (n: number) => new Date(Date.now() - n * 86_400_000);
+  const dealSpecs: { c: number; p: number; stage: 'INQUIRY' | 'SITE_VISIT' | 'OFFER' | 'TOKEN' | 'AGREEMENT' | 'CLOSED_WON'; split: [AuthContext, number][]; paid?: [ 'BUYER' | 'SELLER', number, number ][] }[] = [
+    { c: 0, p: 0, stage: 'CLOSED_WON', split: [[father, 60], [son, 40]], paid: [['BUYER', 1, 40], ['SELLER', 1, 25]] },
+    { c: 1, p: 1, stage: 'AGREEMENT', split: [[son, 100]], paid: [['BUYER', 0.5, 6]] },
+    { c: 2, p: 2, stage: 'TOKEN', split: [[agent, 70], [father, 30]] },
+    { c: 3, p: 3, stage: 'OFFER', split: [[agent, 100]] },
+    { c: 4, p: 4, stage: 'SITE_VISIT', split: [[father, 100]] },
+    { c: 5, p: 5, stage: 'INQUIRY', split: [[son, 100]] },
+  ];
+  for (const s of dealSpecs) {
+    const p = mainProps[s.p];
+    const price = Math.round((p.askingPrice * 0.97) / 100_000) * 100_000;
+    const deal = await dealService.create(s.split[0][0], {
+      clientId: clients[s.c]._id.toString(), propertyId: p._id.toString(), title: `${p.propertyId} · ${clients[s.c].fullName}`,
+      agreedPrice: price, ...(s.stage === 'CLOSED_WON' ? { finalPrice: price } : {}),
+      agents: s.split.map(([u, pct]) => ({ userId: u.userId, sharePct: pct })),
+    });
+    for (const st of ['SITE_VISIT', 'OFFER', 'TOKEN', 'AGREEMENT', 'TRANSFER', 'CLOSED_WON'] as const) {
+      await dealService.changeStage(father, deal._id.toString(), st, {});
+      if (st === s.stage) break;
+    }
+    for (const [side, pct, daysAgo] of s.paid ?? []) {
+      await dealService.addPayment(father, deal._id.toString(), { side, amount: Math.round((price * pct) / 100), date: day(daysAgo), method: side === 'BUYER' ? 'BANK_TRANSFER' : 'CASH' });
+    }
+    if (s.stage === 'CLOSED_WON') await dealService.addPayout(father, deal._id.toString(), { userId: son.userId, amount: Math.round((price * 0.8) / 100), status: 'PAID', date: day(20) });
+  }
+
   return {
     users: 1 + team.length,
     owners: owners.length,
     properties: properties.length,
     clients: clients.length,
     followUps: 20,
+    deals: 6,
     matches: await Match.countDocuments({ businessId: father.businessId }),
   };
 }

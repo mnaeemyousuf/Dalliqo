@@ -14,6 +14,7 @@ import '../../core/widgets/domain_widgets.dart';
 import '../../data/repositories.dart';
 import '../auth/auth_controller.dart';
 import '../branches/branch_screens.dart';
+import '../deals/deal_screens.dart';
 import '../common/record_panels.dart';
 
 const propertyTypes = ['RESIDENTIAL_PLOT', 'HOUSE', 'FLAT', 'APARTMENT', 'PORTION', 'SHOP', 'OFFICE', 'COMMERCIAL', 'OTHER'];
@@ -307,6 +308,7 @@ class ClientDetailScreen extends ConsumerWidget {
                 InfoRow(l.t('client.lastContacted'), c.lastContactedAt == null ? null : formatDate(c.lastContactedAt, time: true, locale: l.locale.languageCode)),
                 InfoRow(l.t('common.notes'), c.notes),
                 InfoRow(l.t('common.dateAdded'), formatDate(c.createdAt, locale: l.locale.languageCode)),
+                if (auth.can('deals:read')) DealsPanel(clientId: c.id),
                 if (c.local?.syncError != null) Text(c.local!.syncError!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
               ]),
               ListView(padding: const EdgeInsets.all(16), children: [for (final r in c.requirements) _RequirementCard(r)]),

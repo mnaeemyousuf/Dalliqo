@@ -17,12 +17,15 @@ const clients = () => import('@/pages/ClientPages');
 const dash = () => import('@/pages/DashboardPages');
 const props = () => import('@/pages/PropertyPages');
 const work = () => import('@/pages/WorkPages');
+const deals = () => import('@/pages/DealPages');
 const DashboardPage = page(dash, 'DashboardPage');
 const MyDayPage = page(dash, 'MyDayPage');
 const ClientsPage = page(clients, 'ClientsPage');
 const ClientDetailPage = page(clients, 'ClientDetailPage');
 const PropertiesPage = page(props, 'PropertiesPage');
 const PropertyDetailPage = page(props, 'PropertyDetailPage');
+const DealsPage = page(deals, 'DealsPage');
+const DealDetailPage = page(deals, 'DealDetailPage');
 const OwnersPage = page(work, 'OwnersPage');
 const OwnerDetailPage = page(work, 'OwnerDetailPage');
 const MatchesPage = page(work, 'MatchesPage');
@@ -80,6 +83,8 @@ export function AppRoutes() {
         <Route path="clients/:id" element={<ClientDetailPage />} />
         <Route path="properties" element={<PropertiesPage />} />
         <Route path="properties/:id" element={<PropertyDetailPage />} />
+        <Route path="deals" element={<DealsPage />} />
+        <Route path="deals/:id" element={<DealDetailPage />} />
         <Route path="owners" element={<OwnersPage />} />
         <Route path="owners/:id" element={<OwnerDetailPage />} />
         <Route path="matches" element={<MatchesPage />} />
