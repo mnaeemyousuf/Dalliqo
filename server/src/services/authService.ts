@@ -17,6 +17,7 @@ import { eventBus } from '../utils/eventBus';
 import { isDuplicateKeyError } from '../utils/mongoErrors';
 import { withTransaction } from '../utils/transaction';
 import { auditService } from './auditService';
+import { branchService } from './branchService';
 import { categoryService } from './categoryService';
 import { settingsService } from './settingsService';
 import { mailService } from './mailService';
@@ -44,7 +45,14 @@ export interface AuthResult {
 }
 
 function membershipView(member: BusinessMemberDoc) {
-  return { _id: member._id, role: member.role, permissions: resolvePermissions(member.role, member.permissions) };
+  const all = member.role === ROLES.OWNER || (member.branchAccess ?? 'ALL') === 'ALL';
+  return {
+    _id: member._id,
+    role: member.role,
+    permissions: resolvePermissions(member.role, member.permissions),
+    branchAccess: all ? 'ALL' : 'SELECTED',
+    branchIds: all ? [] : (member.branchIds ?? []).map(String),
+  };
 }
 
 async function issueSession(user: UserDoc, member: BusinessMemberDoc, meta: SessionMeta): Promise<TokenPair> {
@@ -114,6 +122,7 @@ export const authService = {
         const member = await memberRepository.create(ctx, { userId, role: ROLES.OWNER, permissions: [] }, session);
         await categoryService.seedDefaults(ctx, session);
         await settingsService.createDefaults(ctx, session);
+        await branchService.createDefault(ctx, session);
         await auditService.record(
           ctx,
           { action: 'business.created', entityType: 'business', entityId: businessId, entityLabel: business.name, ip: meta.ip },
@@ -300,7 +309,13 @@ export const authService = {
     return {
       user: toPublicUser(user),
       business,
-      membership: { _id: auth.memberId, role: auth.role, permissions: auth.permissions },
+      membership: {
+        _id: auth.memberId,
+        role: auth.role,
+        permissions: auth.permissions,
+        branchAccess: auth.allowedBranchIds ? 'SELECTED' : 'ALL',
+        branchIds: auth.allowedBranchIds ?? [],
+      },
     };
   },
 

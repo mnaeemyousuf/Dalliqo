@@ -36,7 +36,7 @@ api.get('/meta/permissions', ...secured, metaController.permissions);
 
 // CRM modules. Auth runs only for these prefixes so unknown paths still 404.
 const CRM_PREFIXES = [
-  '/dashboard', '/my-day', '/search', '/client-categories', '/clients', '/owners', '/properties', '/media',
+  '/dashboard', '/my-day', '/search', '/branches', '/client-categories', '/clients', '/owners', '/properties', '/media',
   '/documents', '/uploads', '/notes', '/activities', '/matches', '/settings', '/followups', '/notifications',
   '/devices', '/exports', '/sync',
 ];

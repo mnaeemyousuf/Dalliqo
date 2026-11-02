@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/widgets/app_widgets.dart';
+import '../../core/providers.dart';
 import '../auth/auth_controller.dart';
+import '../branches/branch_screens.dart';
 
 /// Bottom navigation + the global "+" button. The most common actions are
 /// one or two taps away from every tab.
@@ -74,11 +76,13 @@ class MoreScreen extends ConsumerWidget {
           title: Text(auth.user?['fullName'] as String? ?? ''),
           subtitle: Text(context.l10n.enumLabel('role', auth.membership?['role'] as String?)),
         ),
+        const BranchSwitcherTile(),
         const Divider(),
         tile(Icons.dashboard_outlined, context.t('nav.dashboard'), '/dashboard'),
         if (auth.can('owners:read')) tile(Icons.apartment, context.t('nav.owners'), '/owners'),
         if (auth.can('followups:read')) tile(Icons.event_note, context.t('nav.followups'), '/followups'),
         tile(Icons.notifications_outlined, context.t('nav.notifications'), '/notifications'),
+        if (auth.can('branches:manage') || ref.watch(branchScopeProvider).hasChoice) tile(Icons.store_mall_directory_outlined, context.t('settings.branches'), '/branches'),
         tile(Icons.sync, context.t('mobile.sync.title'), '/sync'),
         tile(Icons.settings_outlined, context.t('nav.settings'), '/settings'),
       ]),

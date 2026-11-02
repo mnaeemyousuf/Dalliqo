@@ -15,6 +15,7 @@ import type {
   PropertyType,
   Role,
   SizeUnit,
+  BranchAccess,
 } from '@recrm/shared';
 
 export interface ApiSuccess<T> {
@@ -69,6 +70,22 @@ export interface Membership {
   _id: string;
   role: Role;
   permissions: Permission[];
+  branchAccess?: BranchAccess;
+  branchIds?: string[];
+}
+
+export interface Branch {
+  _id: string;
+  uuid: string;
+  name: string;
+  nameUr?: string;
+  code?: string;
+  address?: string;
+  phone?: string;
+  isDefault: boolean;
+  archivedAt?: string | null;
+  memberCount?: number;
+  version: number;
 }
 
 export interface Session {
@@ -82,6 +99,8 @@ export interface Member {
   role: Role;
   status: 'ACTIVE' | 'SUSPENDED' | 'REMOVED';
   permissions: Permission[];
+  branchAccess: BranchAccess;
+  branchIds: string[];
   joinedAt: string;
   user: { _id: string; email: string; fullName: string; mobileNumber?: string; lastLoginAt?: string; mustChangePassword: boolean };
 }
@@ -125,6 +144,7 @@ interface Versioned {
 }
 
 export interface Client extends Versioned {
+  branchId?: string;
   fullName: string;
   mobileNumber: string;
   alternateNumber?: string;
@@ -153,6 +173,7 @@ export interface Client extends Versioned {
 }
 
 export interface Owner extends Versioned {
+  branchId?: string;
   fullName: string;
   mobileNumber: string;
   alternateNumber?: string;
@@ -165,6 +186,7 @@ export interface Owner extends Versioned {
 }
 
 export interface Property extends Versioned {
+  branchId?: string;
   propertyId: string;
   propertyType: PropertyType;
   listingPurpose: ListingPurpose;
@@ -211,6 +233,7 @@ export interface Match {
 }
 
 export interface FollowUp extends Versioned {
+  branchId?: string;
   clientId: string | { _id: string; fullName: string; mobileNumber: string; whatsappNumber?: string };
   propertyId?: string | { _id: string; propertyId: string; society?: string; area?: string; propertyType: PropertyType };
   type: FollowUpType;
@@ -306,7 +329,7 @@ export interface MyDay {
 }
 
 export interface Settings {
-  matching: { weights: Record<'type' | 'location' | 'budget' | 'size' | 'purpose', number>; storeThreshold: number; notifyThreshold: number };
+  matching: { weights: Record<'type' | 'location' | 'budget' | 'size' | 'purpose', number>; storeThreshold: number; notifyThreshold: number; crossBranch: boolean };
   sqftPerUnit: Record<SizeUnit, number>;
   reminders: { defaultMinutesBefore: number };
 }

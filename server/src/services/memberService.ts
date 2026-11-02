@@ -6,6 +6,7 @@ import {
   ROLES,
   SOCKET_EVENTS,
   resolvePermissions,
+  type BranchAccess,
   type Permission,
   type Role,
 } from '@recrm/shared';
@@ -14,12 +15,13 @@ import { memberRepository, type MemberWithUser } from '../repositories/memberRep
 import { sessionRepository } from '../repositories/sessionRepository';
 import { userRepository } from '../repositories/userRepository';
 import type { AuthContext, RequestMeta } from '../types/context';
-import { conflict, forbidden, notFound } from '../utils/AppError';
+import { badRequest, conflict, forbidden, notFound } from '../utils/AppError';
 import { diffFields } from '../utils/diff';
 import { eventBus } from '../utils/eventBus';
 import { isDuplicateKeyError } from '../utils/mongoErrors';
 import { withTransaction } from '../utils/transaction';
 import { auditService } from './auditService';
+import { branchService } from './branchService';
 import { passwordService } from './passwordService';
 
 function view(m: MemberWithUser) {
@@ -28,6 +30,8 @@ function view(m: MemberWithUser) {
     role: m.role,
     status: m.status,
     permissions: resolvePermissions(m.role, m.permissions),
+    branchAccess: m.role === ROLES.OWNER ? 'ALL' : (m.branchAccess ?? 'ALL'),
+    branchIds: m.role === ROLES.OWNER ? [] : (m.branchIds ?? []).map(String),
     joinedAt: m.joinedAt,
     user: m.userId,
     createdAt: m.createdAt,
@@ -66,7 +70,7 @@ export const memberService = {
    */
   async create(
     auth: AuthContext,
-    input: { fullName: string; email: string; mobileNumber?: string; temporaryPassword: string; role?: Role; permissions?: Permission[] },
+    input: { fullName: string; email: string; mobileNumber?: string; temporaryPassword: string; role?: Role; permissions?: Permission[]; branchAccess?: BranchAccess; branchIds?: string[] },
     meta: RequestMeta,
   ): Promise<MemberView> {
     const role = input.role ?? ROLES.MEMBER;
@@ -75,6 +79,9 @@ export const memberService = {
       throw conflict(ERROR_CODES.EMAIL_IN_USE, 'An account with this email already exists');
     }
     const permissions = input.permissions ?? [...ROLE_PRESETS[role]];
+    const branchAccess: BranchAccess = input.branchAccess ?? 'ALL';
+    const branchIds = branchAccess === 'SELECTED' ? [...new Set(input.branchIds ?? [])] : [];
+    await branchService.assertBranches(auth, branchIds);
     const passwordHash = await passwordService.hash(input.temporaryPassword);
 
     let memberId: Types.ObjectId;
@@ -91,7 +98,7 @@ export const memberService = {
           },
           session,
         );
-        const member = await memberRepository.create(auth, { userId: user._id, role, permissions }, session);
+        const member = await memberRepository.create(auth, { userId: user._id, role, permissions, branchAccess, branchIds }, session);
         await auditService.record(
           auth,
           {
@@ -99,7 +106,7 @@ export const memberService = {
             entityType: 'member',
             entityId: member._id,
             entityLabel: user.fullName,
-            meta: { role, permissions },
+            meta: { role, permissions, branchAccess, branchIds },
             ip: meta.ip,
           },
           session,
@@ -118,11 +125,11 @@ export const memberService = {
   async update(
     auth: AuthContext,
     memberId: string,
-    input: { role?: Role; permissions?: Permission[]; status?: Exclude<MemberStatus, 'REMOVED'> },
+    input: { role?: Role; permissions?: Permission[]; status?: Exclude<MemberStatus, 'REMOVED'>; branchAccess?: BranchAccess; branchIds?: string[] },
     meta: RequestMeta,
   ): Promise<MemberView> {
     const before = await loadEditable(auth, memberId);
-    const update: { role?: Role; permissions?: string[]; status?: MemberStatus } = {};
+    const update: { role?: Role; permissions?: string[]; status?: MemberStatus; branchAccess?: BranchAccess; branchIds?: string[] } = {};
 
     if (input.role && input.role !== before.role) {
       if (!ASSIGNABLE_ROLES.includes(input.role)) {
@@ -134,6 +141,12 @@ export const memberService = {
       update.permissions = Array.from(new Set(input.permissions));
     }
     if (input.status) update.status = input.status;
+    if (input.branchAccess !== undefined || input.branchIds !== undefined) {
+      update.branchAccess = input.branchAccess ?? before.branchAccess ?? 'ALL';
+      update.branchIds = update.branchAccess === 'SELECTED' ? [...new Set(input.branchIds ?? (before.branchIds ?? []).map(String))] : [];
+      if (update.branchAccess === 'SELECTED' && !update.branchIds.length) throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'Choose at least one branch');
+      await branchService.assertBranches(auth, update.branchIds);
+    }
 
     const updated = await memberRepository.update(auth, memberId, update);
     if (!updated) throw notFound(ERROR_CODES.MEMBER_NOT_FOUND, 'Member not found');
@@ -151,7 +164,7 @@ export const memberService = {
       });
     }
 
-    const changes = diffFields(before as unknown as Record<string, unknown>, update, ['role', 'permissions', 'status']);
+    const changes = diffFields(before as unknown as Record<string, unknown>, update, ['role', 'permissions', 'status', 'branchAccess', 'branchIds']);
     if (changes.length) {
       await auditService.record(auth, { action: 'member.updated', entityType: 'member', entityId: updated._id, changes, ip: meta.ip });
       publish(auth, SOCKET_EVENTS.MEMBER_UPDATED, memberId);

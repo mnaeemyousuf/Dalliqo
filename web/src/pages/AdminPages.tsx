@@ -3,10 +3,11 @@ import { Archive, Bell, CheckCheck, KeyRound, Laptop, LogOut, Plus, Smartphone, 
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { PERMISSION_GROUPS, PERMISSIONS, ROLE_PRESETS, SIZE_UNITS, type Permission } from '@recrm/shared';
+import { PERMISSION_GROUPS, PERMISSIONS, ROLE_PRESETS, SIZE_UNITS, type BranchAccess, type Permission } from '@recrm/shared';
 import { auditApi, authApi, businessApi, categoryApi, memberApi, notificationApi, settingsApi } from '@/api/endpoints';
 import type { Member, Settings } from '@/api/types';
 import { BrandLogo } from '@/components/BrandLogo';
+import { BranchAccessEditor, BranchSettings, useBranchName } from '@/components/branches';
 import { Badge, Button, Card, Checkbox, ConfirmDialog, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Tabs } from '@/components/ui';
 import { formatDate, relativeTime } from '@/lib/format';
 import { useEnumOptions, useOnError, useUrlState } from '@/lib/hooks';
@@ -76,11 +77,14 @@ export function UsersPage() {
   const [tempPassword, setTempPassword] = useState('');
   const [form, setForm] = useState({ fullName: '', email: '', mobileNumber: '', temporaryPassword: '' });
   const [newPerms, setNewPerms] = useState<Permission[]>([...ROLE_PRESETS.MEMBER]);
+  const [newBranches, setNewBranches] = useState<{ branchAccess: BranchAccess; branchIds: string[] }>({ branchAccess: 'ALL', branchIds: [] });
+  const [branches, setBranches] = useState<{ branchAccess: BranchAccess; branchIds: string[] }>({ branchAccess: 'ALL', branchIds: [] });
+  const branchName = useBranchName();
   const refresh = () => qc.invalidateQueries({ queryKey: ['members'] });
 
   const create = useMutation({
-    mutationFn: () => memberApi.create({ ...form, mobileNumber: form.mobileNumber || undefined, permissions: newPerms }),
-    onSuccess: () => (toast.success(t('user.added')), setAdding(false), setForm({ fullName: '', email: '', mobileNumber: '', temporaryPassword: '' }), refresh()),
+    mutationFn: () => memberApi.create({ ...form, mobileNumber: form.mobileNumber || undefined, permissions: newPerms, ...newBranches }),
+    onSuccess: () => (toast.success(t('user.added')), setAdding(false), setForm({ fullName: '', email: '', mobileNumber: '', temporaryPassword: '' }), setNewBranches({ branchAccess: 'ALL', branchIds: [] }), refresh()),
     onError,
   });
   const update = useMutation({ mutationFn: ({ id, body }: { id: string; body: Record<string, unknown> }) => memberApi.update(id, body), onSuccess: () => (toast.success(t('user.permissionsSaved')), setEditing(null), refresh()), onError });
@@ -117,10 +121,12 @@ export function UsersPage() {
               <p className="mt-2 text-xs text-muted">
                 {t('user.lastLogin')}: {m.user.lastLoginAt ? relativeTime(m.user.lastLoginAt) : t('user.never')} · {t('user.access')}:{' '}
                 {isOwner ? t('user.fullAccess') : templateOf(m.permissions) ? t(`user.templates.${templateOf(m.permissions)}`) : `${t('user.custom')} (${m.permissions.length})`}
+                {' · '}
+                {t('branch.branches')}: {m.branchAccess === 'SELECTED' ? m.branchIds.map((id) => branchName(id) ?? '…').join(', ') : t('branch.accessMode.ALL')}
               </p>
               {canManage && !isOwner && !isMe && (
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => (setEditing(m), setPerms(m.permissions))}>{t('user.permissions')}</Button>
+                  <Button size="sm" variant="secondary" onClick={() => (setEditing(m), setPerms(m.permissions), setBranches({ branchAccess: m.branchAccess ?? 'ALL', branchIds: m.branchIds ?? [] }))}>{t('user.permissions')}</Button>
                   <Button size="sm" variant="secondary" icon={<KeyRound className="h-3.5 w-3.5" />} onClick={() => setResetting(m)}>{t('user.resetPassword')}</Button>
                   <Button size="sm" variant="secondary" onClick={() => update.mutate({ id: m._id, body: { status: m.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE' } })}>
                     {m.status === 'ACTIVE' ? t('user.suspend') : t('user.activate')}
@@ -140,10 +146,16 @@ export function UsersPage() {
           <Input label={t('auth.mobile')} type="tel" value={form.mobileNumber} onChange={(e) => setForm({ ...form, mobileNumber: e.target.value })} />
           <Input label={t('user.temporaryPassword')} required value={form.temporaryPassword} onChange={(e) => setForm({ ...form, temporaryPassword: e.target.value })} hint={t('auth.passwordHint')} />
         </div>
+        <div className="mt-5">
+          <BranchAccessEditor access={newBranches.branchAccess} branchIds={newBranches.branchIds} onChange={setNewBranches} />
+        </div>
         <p className="mb-2 mt-5 text-sm font-medium">{t('user.permissions')}</p>
         <PermissionMatrix value={newPerms} onChange={setNewPerms} />
       </Modal>
-      <Modal open={!!editing} onClose={() => setEditing(null)} title={`${t('user.permissions')} · ${editing?.user.fullName ?? ''}`} size="lg" footer={<Button loading={update.isPending} onClick={() => update.mutate({ id: editing!._id, body: { permissions: perms } })}>{t('common.save')}</Button>}>
+      <Modal open={!!editing} onClose={() => setEditing(null)} title={`${t('user.permissions')} · ${editing?.user.fullName ?? ''}`} size="lg" footer={<Button loading={update.isPending} onClick={() => update.mutate({ id: editing!._id, body: { permissions: perms, ...branches } })}>{t('common.save')}</Button>}>
+        <div className="mb-4">
+          <BranchAccessEditor access={branches.branchAccess} branchIds={branches.branchIds} onChange={setBranches} />
+        </div>
         <PermissionMatrix value={perms} onChange={setPerms} />
       </Modal>
       <Modal open={!!resetting} onClose={() => setResetting(null)} title={t('user.resetPassword')} size="sm" footer={<Button loading={reset.isPending} onClick={() => reset.mutate()}>{t('common.save')}</Button>}>
@@ -280,7 +292,7 @@ export function AuditPage() {
 
 /* ═════════════ Settings ═════════════ */
 
-type SettingsTab = 'profile' | 'business' | 'categories' | 'matching' | 'security' | 'appearance' | 'about';
+type SettingsTab = 'profile' | 'business' | 'branches' | 'categories' | 'matching' | 'security' | 'appearance' | 'about';
 
 function ProfileSettings() {
   const { t } = useTranslation();
@@ -399,6 +411,10 @@ function MatchingSettings() {
         <Input label={`${t('settings.notifyThreshold')} (%)`} type="number" min={0} max={100} value={draft.matching.notifyThreshold} disabled={!canManage} onChange={(e) => setDraft({ ...draft, matching: { ...draft.matching, notifyThreshold: Number(e.target.value) } })} />
         <Input label={t('settings.marla')} type="number" min={1} value={draft.sqftPerUnit.MARLA} disabled={!canManage} onChange={(e) => setDraft({ ...draft, sqftPerUnit: { ...draft.sqftPerUnit, MARLA: Number(e.target.value) } })} />
         <Input label={t('settings.reminderDefault')} type="number" min={0} value={draft.reminders.defaultMinutesBefore} disabled={!canManage} onChange={(e) => setDraft({ ...draft, reminders: { defaultMinutesBefore: Number(e.target.value) } })} />
+        <div className="sm:col-span-2">
+          <Checkbox label={t('branch.crossBranch')} checked={!!draft.matching.crossBranch} disabled={!canManage} onChange={(on) => setDraft({ ...draft, matching: { ...draft.matching, crossBranch: on } })} />
+          <p className="ms-6 text-xs text-muted">{t('branch.crossBranchHint')}</p>
+        </div>
       </div>
       {canManage && <div className="mt-4"><Button disabled={total !== 100} loading={save.isPending} onClick={() => save.mutate()}>{t('common.save')}</Button></div>}
     </Card>
@@ -468,11 +484,12 @@ export function SettingsPage() {
       <Tabs<SettingsTab>
         value={tab}
         onChange={setTab}
-        tabs={(['profile', 'business', 'categories', 'matching', 'security', 'appearance', 'about'] as const).map((v) => ({ value: v, label: t(`settings.${v}`) }))}
+        tabs={(['profile', 'business', 'branches', 'categories', 'matching', 'security', 'appearance', 'about'] as const).map((v) => ({ value: v, label: t(`settings.${v}`) }))}
       />
       <div className="mt-4">
         {tab === 'profile' && <ProfileSettings />}
         {tab === 'business' && <BusinessSettings />}
+        {tab === 'branches' && <BranchSettings />}
         {tab === 'categories' && <CategorySettings />}
         {tab === 'matching' && <MatchingSettings />}
         {tab === 'security' && <SecuritySettings />}

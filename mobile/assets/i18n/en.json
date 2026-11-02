@@ -533,7 +533,8 @@
     "reminderDefault": "Default reminder (minutes before)",
     "version": "Version {{version}}",
     "aboutText": "Dalliqo keeps your clients, properties, owners, matches and follow-ups in one place. Data is stored securely in the cloud and syncs between all your devices.",
-    "clientCount_one": "{{count}} client"
+    "clientCount_one": "{{count}} client",
+    "branches": "Branches"
   },
   "enums": {
     "propertyType": {
@@ -706,7 +707,8 @@
       "members:manage": "Manage users",
       "business:manage": "Edit business details",
       "settings:manage": "Change settings",
-      "audit:read": "View audit log"
+      "audit:read": "View audit log",
+      "branches:manage": "Manage branches"
     }
   },
   "errors": {
@@ -724,7 +726,10 @@
     "OWNER_HAS_PROPERTIES": "Reassign or delete this owner's properties first.",
     "INVALID_STATUS_TRANSITION": "That status change isn't allowed.",
     "PASSWORD_CHANGE_REQUIRED": "Please set your own password first.",
-    "NO_ACTIVE_MEMBERSHIP": "You no longer have access to this business."
+    "NO_ACTIVE_MEMBERSHIP": "You no longer have access to this business.",
+    "BRANCH_NOT_FOUND": "Branch not found",
+    "BRANCH_FORBIDDEN": "You do not have access to this branch",
+    "BRANCH_IS_DEFAULT": "The main branch cannot be archived"
   },
   "mobile": {
     "tabs": {
@@ -806,5 +811,31 @@
       "title": "Follow-up reminder",
       "body": "{{type}} · {{client}}"
     }
+  },
+  "branch": {
+    "branch": "Branch",
+    "branches": "Branches",
+    "all": "All branches",
+    "switch": "Branch",
+    "main": "Main branch",
+    "archived": "Archived",
+    "restore": "Restore",
+    "add": "Add branch",
+    "name": "Branch name",
+    "nameUr": "Name (Urdu)",
+    "code": "Code",
+    "created": "Branch added",
+    "updated": "Branch updated",
+    "memberCount": "{{count}} members assigned",
+    "memberCount_one": "1 member assigned",
+    "intro": "Offices of your business. Owners see every branch; each member sees all branches or only the ones you choose for them.",
+    "access": "Branch access",
+    "accessMode": {
+      "ALL": "All branches",
+      "SELECTED": "Only selected branches"
+    },
+    "chooseOne": "Choose at least one branch",
+    "crossBranch": "Match clients with properties of other branches too",
+    "crossBranchHint": "Off: clients are matched only with properties of their own branch."
   }
 }

@@ -160,12 +160,15 @@ export interface MatchingSettings {
   weights: { type: number; location: number; budget: number; size: number; purpose: number };
   storeThreshold: number;
   notifyThreshold: number;
+  /** Multi-branch: also match clients with properties of other branches. */
+  crossBranch: boolean;
 }
 
 export const DEFAULT_MATCHING_SETTINGS: MatchingSettings = {
   weights: { type: 25, location: 25, budget: 25, size: 15, purpose: 10 },
   storeThreshold: 60,
   notifyThreshold: 80,
+  crossBranch: false,
 };
 
 /** Codes the clients translate; params fill placeholders such as {society}. */
@@ -199,5 +202,12 @@ export const PROPERTY_STATUS_TRANSITIONS: Record<PropertyStatus, PropertyStatus[
   INACTIVE: ['AVAILABLE'],
 };
 
-export const SYNC_ENTITIES = ['clients', 'owners', 'properties', 'followUps', 'notes', 'clientCategories', 'matches'] as const;
+/** Which branches a member can see: every branch, or only the ones on the membership. */
+export const BRANCH_ACCESS = ['ALL', 'SELECTED'] as const;
+export type BranchAccess = (typeof BRANCH_ACCESS)[number];
+
+/** Header the web and mobile apps send with the branch picked in the branch switcher. */
+export const BRANCH_HEADER = 'X-Branch-Id';
+
+export const SYNC_ENTITIES = ['clients', 'owners', 'properties', 'followUps', 'notes', 'clientCategories', 'matches', 'branches'] as const;
 export type SyncEntity = (typeof SYNC_ENTITIES)[number];

@@ -32,6 +32,11 @@ export const ERROR_CODES = {
 
   // Entities
   BUSINESS_NOT_FOUND: 'BUSINESS_NOT_FOUND',
+  BRANCH_NOT_FOUND: 'BRANCH_NOT_FOUND',
+  /** The record or the selected branch is outside the branches this member may see. */
+  BRANCH_FORBIDDEN: 'BRANCH_FORBIDDEN',
+  /** The default branch cannot be archived. */
+  BRANCH_IS_DEFAULT: 'BRANCH_IS_DEFAULT',
   MEMBER_NOT_FOUND: 'MEMBER_NOT_FOUND',
   SESSION_NOT_FOUND: 'SESSION_NOT_FOUND',
   CATEGORY_NOT_FOUND: 'CATEGORY_NOT_FOUND',

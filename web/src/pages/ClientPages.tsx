@@ -9,6 +9,7 @@ import { clientApi } from '@/api/endpoints';
 import type { Client, Requirement } from '@/api/types';
 import { ClientCard, ContactActions, MatchCard, PriorityBadge } from '@/components/domain';
 import { ActivityPanel, DocumentsPanel, FollowUpForm, FollowUpsPanel, NotesPanel } from '@/components/domain/panels';
+import { BranchField, useBranchName, useBranches } from '@/components/branches';
 import { Badge, Button, Card, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column } from '@/components/ui';
 import { formatDate, formatRange, mailHref, smsHref, splitList, telHref, waHref } from '@/lib/format';
 import { useCategories, useDebounce, useEnumOptions, useMembers, useOnError, useUrlState } from '@/lib/hooks';
@@ -114,6 +115,7 @@ export function ClientFormDrawer({ open, onClose, client }: { open: boolean; onC
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [duplicates, setDuplicates] = useState<{ _id: string; fullName: string; mobileNumber: string; status: string }[]>([]);
   const [form, setForm] = useState({
+    branchId: client?.branchId ?? '',
     fullName: client?.fullName ?? '',
     mobileNumber: client?.mobileNumber ?? '',
     whatsappNumber: client?.whatsappNumber ?? '',
@@ -207,6 +209,7 @@ export function ClientFormDrawer({ open, onClose, client }: { open: boolean; onC
         </div>
       )}
       <form className="space-y-4" onSubmit={(e) => (e.preventDefault(), save.mutate(false))}>
+        <BranchField value={form.branchId} onChange={(v) => setForm((f) => ({ ...f, branchId: v }))} />
         <div className="grid gap-3 sm:grid-cols-2">
           <Input label={t('client.fullName')} required value={form.fullName} onChange={set('fullName')} error={errors.fullName} wrapperClassName="sm:col-span-2" />
           <Input label={t('client.mobile')} type="tel" required value={form.mobileNumber} onChange={set('mobileNumber')} error={errors.mobileNumber} placeholder="0300 1234567" />
@@ -408,6 +411,8 @@ function RequirementSummary({ r }: { r: Requirement }) {
 export function ClientDetailPage() {
   const { id = '' } = useParams();
   const { t } = useTranslation();
+  const branches = useBranches();
+  const branchName = useBranchName();
   const qc = useQueryClient();
   const navigate = useNavigate();
   const onError = useOnError();
@@ -498,6 +503,7 @@ export function ClientDetailPage() {
               <Info label={t('client.assignedTo')}>{members.name(c.assignedTo) ?? t('client.unassigned')}</Info>
               <Info label={t('client.lastContacted')}>{c.lastContactedAt ? formatDate(c.lastContactedAt, true) : ''}</Info>
               <Info label={t('common.dateAdded')}>{formatDate(c.createdAt)}</Info>
+              {(branches.data?.length ?? 0) > 1 && <Info label={t('branch.branch')}>{branchName(c.branchId)}</Info>}
               {c.notes && <Info label={t('common.notes')}>{c.notes}</Info>}
             </dl>
           </Card>

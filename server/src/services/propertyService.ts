@@ -28,6 +28,7 @@ import { settingsService } from './settingsService';
 
 export interface PropertyInput {
   uuid?: string;
+  branchId?: string;
   propertyType: PropertyType;
   listingPurpose?: ListingPurpose;
   status?: PropertyStatus;
@@ -77,13 +78,13 @@ export interface PropertyQuery {
 }
 
 const EDITABLE = [
-  'propertyType', 'listingPurpose', 'title', 'area', 'society', 'block', 'street', 'plotNumber', 'city', 'size', 'sizeUnit',
+  'branchId', 'propertyType', 'listingPurpose', 'title', 'area', 'society', 'block', 'street', 'plotNumber', 'city', 'size', 'sizeUnit',
   'askingPrice', 'expectedFinalPrice', 'minimumPrice', 'negotiable', 'ownerId', 'description', 'latitude', 'longitude',
   'googleMapsUrl', 'bedrooms', 'bathrooms', 'floors',
 ] as const;
 
 /** Changes to these fields can change which clients match. */
-const MATCH_FIELDS = ['propertyType', 'listingPurpose', 'area', 'society', 'block', 'size', 'sizeUnit', 'askingPrice', 'minimumPrice', 'negotiable'];
+const MATCH_FIELDS = ['branchId', 'propertyType', 'listingPurpose', 'area', 'society', 'block', 'size', 'sizeUnit', 'askingPrice', 'minimumPrice', 'negotiable'];
 
 const SORTS: Record<string, Record<string, 1 | -1>> = {
   '-updatedAt': { updatedAt: -1, _id: -1 },

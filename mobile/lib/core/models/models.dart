@@ -17,6 +17,9 @@ abstract class JsonModel {
   int get version => local?.version ?? (json['version'] as num?)?.toInt() ?? 0;
   SyncStatus get syncStatus => local?.syncStatus ?? SyncStatus.synced;
   DateTime? get createdAt => parseDate(json['createdAt']);
+
+  /// Branch of a branch-scoped record (null on records created before branches existed = main branch).
+  String? get branchId => JsonModel.refId(json['branchId']);
   DateTime? get updatedAt => parseDate(json['updatedAt']);
 
   String s(String k) => (json[k] as String?) ?? '';
@@ -27,6 +30,18 @@ abstract class JsonModel {
   /// Reference fields may be a plain id or a populated object.
   static String? refId(dynamic v) => v is Map ? v['_id'] as String? : v as String?;
   static Map<String, dynamic>? refObj(dynamic v) => v is Map ? Map<String, dynamic>.from(v) : null;
+}
+
+/// An office of the business (multi-branch).
+class Branch extends JsonModel {
+  Branch(super.json, {super.local});
+  String get name => s('name');
+  String? get nameUr => os('nameUr');
+  String? get code => os('code');
+  String? get address => os('address');
+  bool get isDefault => json['isDefault'] == true;
+  bool get archived => json['archivedAt'] != null;
+  String label(bool urdu) => urdu && (nameUr?.isNotEmpty ?? false) ? nameUr! : name;
 }
 
 class Category extends JsonModel {

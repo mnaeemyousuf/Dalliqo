@@ -10,6 +10,19 @@ export const tenantFields = {
   updatedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 } as const;
 
+/**
+ * Branch of a branch-scoped record (multi-branch businesses). Set by the repository on create
+ * (explicit branch → selected branch → member's only branch → default branch) and enforced on
+ * every query of a branch-restricted member (see createTenantRepository).
+ */
+export const branchField = {
+  branchId: { type: Schema.Types.ObjectId, ref: 'Branch', required: true },
+} as const;
+
+export function branchIndexes(schema: Schema): void {
+  schema.index({ businessId: 1, branchId: 1, deletedAt: 1, updatedAt: -1 });
+}
+
 const GUARDED_QUERY_OPS: MongooseQueryMiddleware[] = [
   'find',
   'findOne',

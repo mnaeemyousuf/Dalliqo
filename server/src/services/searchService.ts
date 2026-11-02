@@ -2,6 +2,7 @@ import { PERMISSIONS } from '@recrm/shared';
 import { scopedPopulate } from '../models/plugins/tenant';
 import { Match } from '../models/Match';
 import type { AuthContext } from '../types/context';
+import { branchFilter } from './branchScope';
 import { clientService } from './clientService';
 import { ownerService } from './ownerService';
 import { propertyService } from './propertyService';
@@ -28,6 +29,7 @@ export const searchService = {
       if (clientIds.length || propertyIds.length) {
         matches = await Match.find({
           businessId: auth.businessId,
+          ...branchFilter(auth, 'branchIds'),
           status: { $ne: 'STALE' },
           $or: [{ clientId: { $in: clientIds } }, { propertyId: { $in: propertyIds } }],
         })

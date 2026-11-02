@@ -1,6 +1,8 @@
 import type { NextFunction, Request, Response } from 'express';
 import { ERROR_CODES } from '@recrm/shared';
+import { BRANCH_HEADER } from '@recrm/shared';
 import { resolveAuthContext } from '../services/authContextService';
+import { narrowToSelectedBranch } from '../services/branchScope';
 import { tokenService } from '../services/tokenService';
 import type { AuthContext } from '../types/context';
 import { forbidden, unauthorized } from '../utils/AppError';
@@ -15,7 +17,7 @@ export function bearerToken(req: Request): string | undefined {
 export const authenticate = asyncHandler(async (req, _res, next) => {
   const token = bearerToken(req);
   if (!token) throw unauthorized();
-  req.auth = await resolveAuthContext(tokenService.verifyAccessToken(token));
+  req.auth = await narrowToSelectedBranch(await resolveAuthContext(tokenService.verifyAccessToken(token)), req.get(BRANCH_HEADER));
   next();
 });
 

@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import { authOf } from '../middleware/authenticate';
 import { activityService } from '../services/activityService';
+import { branchService } from '../services/branchService';
 import { categoryService } from '../services/categoryService';
 import { clientService } from '../services/clientService';
 import { dashboardService } from '../services/dashboardService';
@@ -42,6 +43,25 @@ function versioned<T extends { baseVersion?: number }>(req: Request): { body: Om
   const { baseVersion, ...body } = req.body as T;
   return { body, baseVersion: baseVersion ?? (header && /^\d+$/.test(header) ? Number(header) : undefined) };
 }
+
+export const branchController = {
+  async list(req: Request, res: Response) {
+    const auth = authOf(req);
+    const items = await branchService.list(auth, { includeArchived: Boolean((req.query as { includeArchived?: boolean }).includeArchived) });
+    const counts = auth.permissions.includes('branches:manage') ? await branchService.memberCounts(auth) : {};
+    sendSuccess(res, items.map((b) => ({ ...b, memberCount: counts[String(b._id)] ?? 0 })));
+  },
+  async get(req: Request, res: Response) {
+    sendSuccess(res, await branchService.get(authOf(req), req.params.id));
+  },
+  async create(req: Request, res: Response) {
+    sendSuccess(res, await branchService.create(authOf(req), req.body, requestMeta(req)), { status: 201, message: 'Branch created' });
+  },
+  async update(req: Request, res: Response) {
+    const { body, baseVersion } = versioned(req);
+    sendSuccess(res, await branchService.update(authOf(req), req.params.id, body, { baseVersion, meta: requestMeta(req) }), { message: 'Branch updated' });
+  },
+};
 
 export const categoryController = {
   async list(req: Request, res: Response) {

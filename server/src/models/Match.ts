@@ -11,6 +11,8 @@ export interface MatchDoc {
   _id: Types.ObjectId;
   businessId: Types.ObjectId;
   clientId: Types.ObjectId;
+  /** Branches of the client and of the property (they differ only with cross-branch matching). */
+  branchIds: Types.ObjectId[];
   requirementId: Types.ObjectId;
   propertyId: Types.ObjectId;
   matchScore: number;
@@ -28,6 +30,7 @@ const schema = new Schema<MatchDoc>(
   {
     businessId: { type: Schema.Types.ObjectId, ref: 'Business', required: true, immutable: true },
     clientId: { type: Schema.Types.ObjectId, ref: 'Client', required: true },
+    branchIds: { type: [{ type: Schema.Types.ObjectId, ref: 'Branch' }], default: [] },
     requirementId: { type: Schema.Types.ObjectId, required: true },
     propertyId: { type: Schema.Types.ObjectId, ref: 'Property', required: true },
     matchScore: { type: Number, required: true, min: 0, max: 100 },
@@ -52,6 +55,7 @@ schema.index({ businessId: 1, clientId: 1, matchScore: -1 });
 schema.index({ businessId: 1, propertyId: 1, matchScore: -1 });
 schema.index({ businessId: 1, status: 1, matchScore: -1 });
 schema.index({ businessId: 1, createdAt: -1 });
+schema.index({ businessId: 1, branchIds: 1, status: 1 });
 schema.index({ businessId: 1, updatedAt: 1, _id: 1 });
 schema.plugin(tenantGuardPlugin);
 

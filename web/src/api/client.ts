@@ -21,8 +21,39 @@ export const tokenStore = {
 
 export const http = axios.create({ baseURL: '/api', withCredentials: true, timeout: 30_000 });
 
+/**
+ * Branch picked in the branch switcher (null = all branches the member can see). Sent as the
+ * X-Branch-Id header on every API call; remembered per browser.
+ */
+let selectedBranch: string | null = (() => {
+  try {
+    return localStorage.getItem('recrm.branch');
+  } catch {
+    return null;
+  }
+})();
+const branchListeners = new Set<(id: string | null) => void>();
+export const branchSelection = {
+  get: () => selectedBranch,
+  set: (id: string | null) => {
+    selectedBranch = id;
+    try {
+      if (id) localStorage.setItem('recrm.branch', id);
+      else localStorage.removeItem('recrm.branch');
+    } catch {
+      /* storage unavailable: the choice just isn't remembered */
+    }
+    branchListeners.forEach((fn) => fn(id));
+  },
+  subscribe: (fn: (id: string | null) => void) => {
+    branchListeners.add(fn);
+    return () => void branchListeners.delete(fn);
+  },
+};
+
 http.interceptors.request.use((config) => {
   if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`;
+  if (selectedBranch) config.headers['X-Branch-Id'] = selectedBranch;
   return config;
 });
 

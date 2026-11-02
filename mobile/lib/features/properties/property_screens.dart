@@ -19,6 +19,7 @@ import '../../core/widgets/app_widgets.dart';
 import '../../core/widgets/domain_widgets.dart';
 import '../../data/repositories.dart';
 import '../auth/auth_controller.dart';
+import '../branches/branch_screens.dart';
 import '../clients/client_screens.dart' show propertyTypes, sizeUnits;
 import '../common/record_panels.dart';
 
@@ -596,6 +597,7 @@ class _PropertyFormScreenState extends ConsumerState<PropertyFormScreen> {
   String _unit = 'SQ_YARD';
   bool _negotiable = true;
   String? _ownerId;
+  String? _branchId;
   double? _lat;
   double? _lng;
   Property? _editing;
@@ -618,6 +620,7 @@ class _PropertyFormScreenState extends ConsumerState<PropertyFormScreen> {
       _unit = p.sizeUnit;
       _negotiable = p.negotiable;
       _ownerId = p.ownerId;
+      _branchId = p.branchId;
       _lat = p.latitude;
       _lng = p.longitude;
       for (final k in _c.keys) {
@@ -633,6 +636,7 @@ class _PropertyFormScreenState extends ConsumerState<PropertyFormScreen> {
     if (!_form.currentState!.validate()) return;
     setState(() => _saving = true);
     final fields = <String, dynamic>{
+      if (_branchId != null) 'branchId': _branchId,
       'propertyType': _type,
       'listingPurpose': _purpose,
       'size': _num('size'),
@@ -671,6 +675,7 @@ class _PropertyFormScreenState extends ConsumerState<PropertyFormScreen> {
       body: Form(
         key: _form,
         child: ListView(padding: const EdgeInsets.all(16), children: [
+          BranchDropdown(value: _branchId, onChanged: (v) => setState(() => _branchId = v)),
           AppDropdown<String>(label: l.t('property.type'), value: _type, items: {for (final t in propertyTypes) t: l.enumLabel('propertyType', t)}, onChanged: (v) => setState(() => _type = v ?? _type)),
           const SizedBox(height: 12),
           SegmentedButton<String>(

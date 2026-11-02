@@ -27,6 +27,8 @@ const schema = new Schema<SettingsDoc>(
       },
       storeThreshold: { type: Number, default: DEFAULT_MATCHING_SETTINGS.storeThreshold },
       notifyThreshold: { type: Number, default: DEFAULT_MATCHING_SETTINGS.notifyThreshold },
+      /** Match clients with properties of other branches too (default: same branch only). */
+      crossBranch: { type: Boolean, default: false },
     },
     sqftPerUnit: {
       SQ_FT: { type: Number, default: DEFAULT_SQFT_PER_UNIT.SQ_FT },

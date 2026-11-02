@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+import 'branch/branch_scope.dart';
 import 'database/app_database.dart';
 import 'network/api_client.dart';
 import 'storage/secure_store.dart';
@@ -14,6 +15,14 @@ final databaseProvider = Provider<AppDatabase>((ref) => throw UnimplementedError
 final secureStoreProvider = Provider<SecureStore>((ref) => SecureStore());
 
 final apiClientProvider = Provider<ApiClient>((ref) => ApiClient(ref.watch(secureStoreProvider)));
+
+/// The branch switcher's state; also tells the API client which branch to send (X-Branch-Id).
+final branchScopeProvider = ChangeNotifierProvider<BranchScope>((ref) {
+  final scope = BranchScope(ref.watch(databaseProvider));
+  ref.read(apiClientProvider).branchHeader = () => scope.selected;
+  scope.load();
+  return scope;
+});
 
 final localStoreProvider = Provider<LocalStore>((ref) {
   final store = LocalStore(ref.watch(databaseProvider));

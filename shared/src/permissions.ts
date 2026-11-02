@@ -40,6 +40,9 @@ export const PERMISSIONS = {
   MEMBERS_READ: 'members:read',
   MEMBERS_MANAGE: 'members:manage',
 
+  /** Create, rename and archive branches. Which branches a member can SEE is set on the membership. */
+  BRANCHES_MANAGE: 'branches:manage',
+
   BUSINESS_MANAGE: 'business:manage',
   SETTINGS_MANAGE: 'settings:manage',
   AUDIT_READ: 'audit:read',
@@ -76,6 +79,7 @@ export const PERMISSION_GROUPS: Record<string, readonly Permission[]> = {
   administration: [
     PERMISSIONS.MEMBERS_READ,
     PERMISSIONS.MEMBERS_MANAGE,
+    PERMISSIONS.BRANCHES_MANAGE,
     PERMISSIONS.BUSINESS_MANAGE,
     PERMISSIONS.SETTINGS_MANAGE,
     PERMISSIONS.AUDIT_READ,

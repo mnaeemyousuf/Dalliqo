@@ -11,6 +11,7 @@ import { publishChange } from './publish';
 
 export interface OwnerInput {
   uuid?: string;
+  branchId?: string;
   fullName: string;
   mobileNumber: string;
   alternateNumber?: string;
@@ -20,7 +21,7 @@ export interface OwnerInput {
   notes?: string;
 }
 
-const FIELDS = ['fullName', 'mobileNumber', 'alternateNumber', 'whatsappNumber', 'email', 'address', 'notes'] as const;
+const FIELDS = ['branchId', 'fullName', 'mobileNumber', 'alternateNumber', 'whatsappNumber', 'email', 'address', 'notes'] as const;
 
 export const ownerService = {
   async create(auth: AuthContext, input: OwnerInput, meta: RequestMeta = {}): Promise<PropertyOwnerDoc> {

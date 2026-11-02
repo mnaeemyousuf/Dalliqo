@@ -9,7 +9,8 @@ describe('development seed', () => {
   it('creates a realistic demo business through the real services', async () => {
     const counts = await seed();
     expect(counts).toMatchObject({ users: 6, owners: 10, properties: 30, clients: 20, followUps: 20 });
-    expect(counts.matches).toBeGreaterThanOrEqual(50);
+    // Same-branch matching: the demo's Clifton Office listings only match Clifton clients.
+    expect(counts.matches).toBeGreaterThanOrEqual(35);
 
     const father = await login(app, DEMO.ownerEmail, DEMO.password);
     const dash = await request(app).get('/api/dashboard').set({ Authorization: `Bearer ${father.accessToken}` });

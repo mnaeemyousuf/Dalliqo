@@ -11,6 +11,7 @@ import '../../core/widgets/app_widgets.dart';
 import '../../core/widgets/domain_widgets.dart';
 import '../../data/repositories.dart';
 import '../auth/auth_controller.dart';
+import '../branches/branch_screens.dart';
 import '../common/record_panels.dart';
 
 final ownerSearchProvider = StateProvider<String>((ref) => '');
@@ -152,6 +153,7 @@ class _OwnerFormScreenState extends ConsumerState<OwnerFormScreen> {
   final _form = GlobalKey<FormState>();
   final _c = {for (final k in const ['fullName', 'mobileNumber', 'whatsappNumber', 'alternateNumber', 'email', 'address', 'notes']) k: TextEditingController()};
   Owner? _editing;
+  String? _branchId;
   bool _saving = false;
 
   @override
@@ -162,6 +164,7 @@ class _OwnerFormScreenState extends ConsumerState<OwnerFormScreen> {
         if (o == null || !mounted) return;
         setState(() {
           _editing = o;
+          _branchId = o.branchId;
           for (final k in _c.keys) {
             _c[k]!.text = (o.json[k] as String?) ?? '';
           }
@@ -176,6 +179,7 @@ class _OwnerFormScreenState extends ConsumerState<OwnerFormScreen> {
     final fields = <String, dynamic>{
       for (final e in _c.entries)
         if (e.value.text.trim().isNotEmpty) e.key: e.key.contains('Number') ? normalizePhone(e.value.text) : e.value.text.trim(),
+      if (_branchId != null) 'branchId': _branchId,
     };
     try {
       final repo = ref.read(crmRepositoryProvider);
@@ -203,6 +207,7 @@ class _OwnerFormScreenState extends ConsumerState<OwnerFormScreen> {
       body: Form(
         key: _form,
         child: ListView(padding: const EdgeInsets.all(16), children: [
+          BranchDropdown(value: _branchId, onChanged: (v) => setState(() => _branchId = v)),
           AppTextField(label: l.t('common.name'), controller: _c['fullName'], validator: (v) => (v == null || v.trim().length < 2) ? l.t('common.required') : null),
           const SizedBox(height: 12),
           AppTextField(label: l.t('client.mobile'), controller: _c['mobileNumber'], keyboardType: TextInputType.phone, textDirection: TextDirection.ltr, validator: (v) => phone(v, required: true)),

@@ -17,6 +17,8 @@ export const SOCKET_EVENTS = {
   MEMBER_CREATED: 'member.created',
   MEMBER_UPDATED: 'member.updated',
   BUSINESS_UPDATED: 'business.updated',
+  BRANCH_CREATED: 'branch.created',
+  BRANCH_UPDATED: 'branch.updated',
   /** Sent to a single user's sockets right before the server disconnects them. */
   SESSION_REVOKED: 'session.revoked',
 } as const;

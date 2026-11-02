@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/auth_controller.dart';
 import '../../features/auth/auth_screens.dart';
+import '../../features/branches/branch_screens.dart';
 import '../../features/clients/client_screens.dart';
 import '../../features/dashboard/dashboard_screens.dart';
 import '../../features/followups/followup_screens.dart';
@@ -94,6 +95,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/notifications', builder: (_, _) => const NotificationsScreen()),
       GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
       GoRoute(path: '/sync', builder: (_, _) => const SyncScreen()),
+      GoRoute(path: '/branches', builder: (_, _) => const BranchesScreen()),
       GoRoute(path: '/pick-location', builder: (_, s) => LocationPickerScreen(initial: s.extra as ({double lat, double lng})?)),
     ],
   );

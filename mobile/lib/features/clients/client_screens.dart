@@ -13,6 +13,7 @@ import '../../core/widgets/app_widgets.dart';
 import '../../core/widgets/domain_widgets.dart';
 import '../../data/repositories.dart';
 import '../auth/auth_controller.dart';
+import '../branches/branch_screens.dart';
 import '../common/record_panels.dart';
 
 const propertyTypes = ['RESIDENTIAL_PLOT', 'HOUSE', 'FLAT', 'APARTMENT', 'PORTION', 'SHOP', 'OFFICE', 'COMMERCIAL', 'OTHER'];
@@ -440,6 +441,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
   String _priority = 'MEDIUM';
   String? _source;
   String? _assignedTo;
+  String? _branchId;
   List<_ReqDraft> _reqs = [_ReqDraft()];
   Client? _editing;
   bool _saving = false;
@@ -472,6 +474,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
       _priority = c.priority;
       _source = c.source;
       _assignedTo = c.assignedTo;
+      _branchId = c.branchId;
       if (c.requirements.isNotEmpty) _reqs = c.requirements.map(_ReqDraft.new).toList();
     });
   }
@@ -491,6 +494,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
       'priority': _priority,
       if (_source != null) 'source': _source,
       if (_assignedTo != null) 'assignedTo': _assignedTo,
+      if (_branchId != null) 'branchId': _branchId,
       'requirements': [for (var i = 0; i < _reqs.length; i++) _reqs[i].toJson(i == 0)],
     };
     // Keep the list/card summary right while offline (the server recomputes it on sync).
@@ -557,6 +561,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
       body: Form(
         key: _form,
         child: ListView(padding: const EdgeInsets.all(16), children: [
+          BranchDropdown(value: _branchId, onChanged: (v) => setState(() => _branchId = v)),
           AppTextField(label: l.t('client.fullName'), controller: _name, validator: (v) => (v == null || v.trim().length < 2) ? l.t('common.required') : null),
           const SizedBox(height: 12),
           AppTextField(label: l.t('client.mobile'), controller: _mobile, keyboardType: TextInputType.phone, hint: '0300 1234567', textDirection: TextDirection.ltr, validator: (v) => phone(v, required: true)),

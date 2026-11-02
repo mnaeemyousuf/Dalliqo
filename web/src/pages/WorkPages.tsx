@@ -8,6 +8,7 @@ import { documentApi, exportApi, followUpApi, matchApi, ownerApi } from '@/api/e
 import type { Owner } from '@/api/types';
 import { ContactActions, MatchCard, PropertyStatusBadge, locationLabel, useSizeLabel } from '@/components/domain';
 import { ActivityPanel, DocumentsPanel, FollowUpForm, FollowUpItem, NotesPanel, RenameDocumentModal } from '@/components/domain/panels';
+import { BranchField } from '@/components/branches';
 import { Badge, Button, Card, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column } from '@/components/ui';
 import { formatBytes, formatDate, formatPkr } from '@/lib/format';
 import { useDebounce, useEnumOptions, useErrorText, useMembers, useOnError, useUrlState } from '@/lib/hooks';
@@ -23,6 +24,7 @@ function OwnerFormDrawer({ open, onClose, owner }: { open: boolean; onClose(): v
   const onError = useOnError();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
+    branchId: owner?.branchId ?? '',
     fullName: owner?.fullName ?? '',
     mobileNumber: owner?.mobileNumber ?? '',
     whatsappNumber: owner?.whatsappNumber ?? '',
@@ -59,6 +61,9 @@ function OwnerFormDrawer({ open, onClose, owner }: { open: boolean; onClose(): v
       }
     >
       <form className="grid gap-3 sm:grid-cols-2" onSubmit={(e) => (e.preventDefault(), save.mutate())}>
+        <div className="sm:col-span-2">
+          <BranchField value={form.branchId} onChange={(v) => setForm((f) => ({ ...f, branchId: v }))} />
+        </div>
         <Input label={t('common.name')} required value={form.fullName} onChange={set('fullName')} error={errors.fullName} wrapperClassName="sm:col-span-2" />
         <Input label={t('client.mobile')} type="tel" required value={form.mobileNumber} onChange={set('mobileNumber')} error={errors.mobileNumber} />
         <Input label={t('client.whatsapp')} type="tel" value={form.whatsappNumber} onChange={set('whatsappNumber')} error={errors.whatsappNumber} />

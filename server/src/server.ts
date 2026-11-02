@@ -4,10 +4,13 @@ import { connectDatabase, disconnectDatabase } from './config/database';
 import { env } from './config/env';
 import { logger } from './config/logger';
 import { startScheduler } from './jobs/scheduler';
+import { runMigrations } from './migrations';
 import { createSocketServer } from './sockets';
 
 async function main(): Promise<void> {
   await connectDatabase();
+  // Idempotent data migrations (e.g. default branch + branch backfill) before serving requests.
+  await runMigrations();
 
   const app = createApp();
   const httpServer = createServer(app);

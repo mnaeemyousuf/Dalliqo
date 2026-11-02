@@ -10,6 +10,7 @@ import { tenantGuardPlugin } from './plugins/tenant';
 export interface ActivityDoc {
   _id: Types.ObjectId;
   businessId: Types.ObjectId;
+  branchId?: Types.ObjectId | null;
   type: ActivityType;
   summary: string;
   refs: { entityType: EntityType; entityId: Types.ObjectId; label?: string }[];
@@ -21,6 +22,7 @@ export interface ActivityDoc {
 const schema = new Schema<ActivityDoc>(
   {
     businessId: { type: Schema.Types.ObjectId, ref: 'Business', required: true, immutable: true },
+    branchId: { type: Schema.Types.ObjectId, ref: 'Branch', default: null },
     type: { type: String, enum: ACTIVITY_TYPES, required: true },
     summary: { type: String, required: true, maxlength: 500 },
     refs: {

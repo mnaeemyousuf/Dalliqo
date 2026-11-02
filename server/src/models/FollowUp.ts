@@ -1,11 +1,12 @@
 import { Schema, model, type Types } from 'mongoose';
 import { FOLLOWUP_STATUSES, FOLLOWUP_TYPES, PRIORITIES, type FollowUpStatus, type FollowUpType, type Priority } from '@recrm/shared';
-import { tenantFields, tenantGuardPlugin } from './plugins/tenant';
+import { branchField, branchIndexes, tenantFields, tenantGuardPlugin } from './plugins/tenant';
 import { syncFields, syncIndexes, type SyncDoc } from './plugins/sync';
 
 export interface FollowUpDoc extends SyncDoc {
   _id: Types.ObjectId;
   businessId: Types.ObjectId;
+  branchId: Types.ObjectId;
   clientId: Types.ObjectId;
   propertyId?: Types.ObjectId;
   type: FollowUpType;
@@ -30,6 +31,7 @@ const schema = new Schema<FollowUpDoc>(
   {
     ...tenantFields,
     ...syncFields,
+    ...branchField,
     clientId: { type: Schema.Types.ObjectId, ref: 'Client', required: true },
     propertyId: { type: Schema.Types.ObjectId, ref: 'Property' },
     type: { type: String, enum: FOLLOWUP_TYPES, required: true },
@@ -47,6 +49,7 @@ const schema = new Schema<FollowUpDoc>(
 );
 
 syncIndexes(schema);
+branchIndexes(schema);
 schema.index({ businessId: 1, assignedTo: 1, status: 1, dueAt: 1 });
 schema.index({ businessId: 1, clientId: 1, dueAt: -1 });
 schema.index({ businessId: 1, propertyId: 1, dueAt: -1 });

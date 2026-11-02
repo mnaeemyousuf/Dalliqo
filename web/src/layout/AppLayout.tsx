@@ -38,6 +38,7 @@ import { useDebounce } from '@/lib/hooks';
 import { useRealtime } from '@/realtime/socket';
 import { useAuth, useCan } from '@/store/auth';
 import { useUi } from '@/store/ui';
+import { BranchSwitcher } from '@/components/branches';
 
 interface NavItem {
   to: string;
@@ -242,6 +243,7 @@ function Topbar() {
       </button>
       <GlobalSearch />
       <div className="ms-auto flex items-center gap-1">
+        <BranchSwitcher />
         <span className={clsx('hidden items-center gap-1 text-xs sm:flex', connected ? 'text-emerald-600' : 'text-muted')} title={connected ? t('topbar.live') : t('topbar.reconnecting')}>
           {connected ? <Wifi className="h-3.5 w-3.5" /> : <WifiOff className="h-3.5 w-3.5" />}
           {connected ? t('topbar.live') : t('topbar.reconnecting')}

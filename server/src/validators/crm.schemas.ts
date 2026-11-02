@@ -31,6 +31,24 @@ const bool = z.union([z.boolean(), z.enum(['true', 'false']).transform((v) => v 
 const list = <T extends z.ZodTypeAny>(item: T) =>
   z.union([z.array(item), z.string().transform((s) => s.split(',').map((x) => x.trim()).filter(Boolean))]).pipe(z.array(item));
 
+// ── Branches ──
+const branchFields = {
+  name: shortText(80).min(2),
+  nameUr: optionalText(80),
+  code: optionalText(12),
+  address: optionalText(300),
+  phone: phone.optional(),
+};
+export const branchCreateSchema = z.object({ uuid: uuid.optional(), ...branchFields }).strict();
+export const branchUpdateSchema = z
+  .object(branchFields)
+  .partial()
+  .extend({ archived: z.boolean().optional(), baseVersion: z.number().int().positive().optional() })
+  .strict();
+export const branchListQuery = z.object({ includeArchived: bool.optional() });
+/** Optional branch on branch-scoped records (defaults to the selected / member's / main branch). */
+const branchRef = objectId.optional();
+
 // ── Categories ──
 export const categoryCreateSchema = z.object({ uuid: uuid.optional(), name: shortText(80).min(2), nameUr: optionalText(80), sortOrder: z.number().int().optional() }).strict();
 export const categoryUpdateSchema = z
@@ -60,6 +78,7 @@ export const requirementSchema = z
   .strict();
 
 const clientFields = {
+  branchId: branchRef,
   fullName: personName,
   mobileNumber: phone,
   alternateNumber: phone.optional(),
@@ -92,6 +111,7 @@ export const clientUpdateSchema = z.object(clientFields).partial().extend({ base
 
 export const clientListQuery = pagination.extend({
   q: optionalText(100),
+  branchId: objectId.optional(),
   categoryId: objectId.optional(),
   status: z.enum(CLIENT_STATUSES).optional(),
   priority: z.enum(PRIORITIES).optional(),
@@ -113,6 +133,7 @@ export const communicationSchema = z.object({ channel: z.enum(COMMUNICATION_CHAN
 
 // ── Owners ──
 const ownerFields = {
+  branchId: branchRef,
   fullName: personName,
   mobileNumber: phone,
   alternateNumber: phone.optional(),
@@ -123,12 +144,13 @@ const ownerFields = {
 };
 export const ownerCreateSchema = z.object({ uuid: uuid.optional(), ...ownerFields }).strict();
 export const ownerUpdateSchema = z.object(ownerFields).partial().extend({ baseVersion: z.number().int().positive().optional() }).strict();
-export const ownerListQuery = pagination.extend({ q: optionalText(100), sort: z.enum(['-updatedAt', 'fullName', '-propertyCount']).optional() });
+export const ownerListQuery = pagination.extend({ q: optionalText(100), branchId: objectId.optional(), sort: z.enum(['-updatedAt', 'fullName', '-propertyCount']).optional() });
 
 // ── Properties ──
 const lat = z.coerce.number().min(-90).max(90);
 const lng = z.coerce.number().min(-180).max(180);
 const propertyFields = {
+  branchId: branchRef,
   propertyType: z.enum(PROPERTY_TYPES),
   listingPurpose: z.enum(LISTING_PURPOSES).optional(),
   status: z.enum(PROPERTY_STATUSES).optional(),
@@ -174,6 +196,7 @@ export const propertyStatusSchema = z.object({ status: z.enum(PROPERTY_STATUSES)
 export const propertyListQuery = pagination
   .extend({
     q: optionalText(100),
+    branchId: objectId.optional(),
     propertyId: optionalText(20),
     propertyType: z.enum(PROPERTY_TYPES).optional(),
     status: z.enum(PROPERTY_STATUSES).optional(),
@@ -239,6 +262,7 @@ export const settingsUpdateSchema = z
         weights: z.object({ type: weight, location: weight, budget: weight, size: weight, purpose: weight }).partial().strict().optional(),
         storeThreshold: z.number().int().min(0).max(100).optional(),
         notifyThreshold: z.number().int().min(0).max(100).optional(),
+        crossBranch: z.boolean().optional(),
       })
       .strict()
       .optional(),

@@ -18,6 +18,7 @@ function effective(doc: Partial<SettingsDoc> | null): EffectiveSettings {
       weights: { ...DEFAULT_MATCHING_SETTINGS.weights, ...(doc?.matching?.weights ?? {}) },
       storeThreshold: doc?.matching?.storeThreshold ?? DEFAULT_MATCHING_SETTINGS.storeThreshold,
       notifyThreshold: doc?.matching?.notifyThreshold ?? DEFAULT_MATCHING_SETTINGS.notifyThreshold,
+      crossBranch: doc?.matching?.crossBranch ?? DEFAULT_MATCHING_SETTINGS.crossBranch,
     },
     sqftPerUnit: { ...DEFAULT_SQFT_PER_UNIT, ...(doc?.sqftPerUnit ?? {}) },
     reminders: { defaultMinutesBefore: doc?.reminders?.defaultMinutesBefore ?? 30 },
@@ -25,7 +26,7 @@ function effective(doc: Partial<SettingsDoc> | null): EffectiveSettings {
 }
 
 export type SettingsUpdate = {
-  matching?: { weights?: Partial<MatchingSettings['weights']>; storeThreshold?: number; notifyThreshold?: number };
+  matching?: { weights?: Partial<MatchingSettings['weights']>; storeThreshold?: number; notifyThreshold?: number; crossBranch?: boolean };
   sqftPerUnit?: Partial<Record<SizeUnit, number>>;
   reminders?: { defaultMinutesBefore?: number };
 };
@@ -51,6 +52,7 @@ export const settingsService = {
         weights: { ...before.matching.weights, ...(input.matching?.weights ?? {}) },
         storeThreshold: input.matching?.storeThreshold ?? before.matching.storeThreshold,
         notifyThreshold: input.matching?.notifyThreshold ?? before.matching.notifyThreshold,
+        crossBranch: input.matching?.crossBranch ?? before.matching.crossBranch,
       },
       sqftPerUnit: { ...before.sqftPerUnit, ...(input.sqftPerUnit ?? {}) },
       reminders: { defaultMinutesBefore: input.reminders?.defaultMinutesBefore ?? before.reminders.defaultMinutesBefore },

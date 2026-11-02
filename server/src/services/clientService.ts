@@ -57,6 +57,8 @@ export interface FlatRequirementInput {
 
 export interface ClientInput extends FlatRequirementInput {
   uuid?: string;
+  /** Branch (multi-branch businesses); defaults to the selected / member's / main branch. */
+  branchId?: string;
   /** Save even when another client uses the same phone number. */
   allowDuplicate?: boolean;
   fullName: string;
@@ -97,7 +99,7 @@ export interface ClientQuery {
 }
 
 const AUDITED_FIELDS = [
-  'fullName', 'mobileNumber', 'alternateNumber', 'whatsappNumber', 'email', 'address', 'categoryId',
+  'branchId', 'fullName', 'mobileNumber', 'alternateNumber', 'whatsappNumber', 'email', 'address', 'categoryId',
   'status', 'priority', 'source', 'assignedTo', 'notes', 'requirements',
 ] as const;
 
@@ -265,6 +267,7 @@ export const clientService = {
 
     const client = await clientRepository.create(auth, {
       ...(input.uuid ? { uuid: input.uuid } : {}),
+      branchId: input.branchId,
       fullName: input.fullName,
       mobileNumber: input.mobileNumber,
       alternateNumber: input.alternateNumber,
@@ -347,7 +350,7 @@ export const clientService = {
     if (input.assignedTo) await assertAssignee(auth, input.assignedTo);
 
     const set: Record<string, unknown> = {};
-    for (const k of ['fullName', 'mobileNumber', 'alternateNumber', 'whatsappNumber', 'email', 'address', 'categoryId', 'status', 'priority', 'source', 'assignedTo', 'notes'] as const) {
+    for (const k of ['branchId', 'fullName', 'mobileNumber', 'alternateNumber', 'whatsappNumber', 'email', 'address', 'categoryId', 'status', 'priority', 'source', 'assignedTo', 'notes'] as const) {
       if (has(input, k)) set[k] = input[k];
     }
     const primary = before.requirements.find((r) => r.isPrimary);

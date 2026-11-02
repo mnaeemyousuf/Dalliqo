@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../core/branch/branch_scope.dart';
 import '../core/database/app_database.dart';
 import '../core/models/models.dart';
 import '../core/network/api_client.dart';
@@ -284,10 +285,25 @@ class PropertyFilter {
 
 /// Offline-first CRUD for the synced entities.
 class CrmRepository {
-  CrmRepository(this.db, this.store);
+  CrmRepository(this.db, this.store, {this.branch});
 
   final AppDatabase db;
   final LocalStore store;
+
+  /// Branch switcher: lists show only the selected branch; new records go to it.
+  final BranchScope? branch;
+
+  bool _inBranch(Map<String, dynamic> d) => branch?.contains(d) ?? true;
+
+  /// Adds the branch to a record created on this phone (the server applies the same default).
+  Map<String, dynamic> _withBranch(Map<String, dynamic> fields) {
+    if (fields['branchId'] != null) return fields;
+    final b = branch?.branchForNewRecord();
+    return b == null ? fields : {...fields, 'branchId': b};
+  }
+
+  // Branches
+  Future<List<Branch>> branches() async => branch?.branches ?? (await db.list(Entities.branches)).map((r) => Branch(r.data, local: r)).toList();
 
   // Categories
   Future<List<Category>> categories() async {
@@ -301,7 +317,7 @@ class CrmRepository {
     final rows = await db.list(
       Entities.clients,
       search: f.search,
-      where: f.matches,
+      where: (d) => _inBranch(d) && f.matches(d),
       sort: switch (f.sort) {
         'name' => (a, b) => (a.data['fullName'] as String? ?? '').toLowerCase().compareTo((b.data['fullName'] as String? ?? '').toLowerCase()),
         'matches' => (a, b) => ((b.data['matchCount'] as num?) ?? 0).compareTo((a.data['matchCount'] as num?) ?? 0),
@@ -328,7 +344,7 @@ class CrmRepository {
   }
 
   Future<Client> saveClient(Map<String, dynamic> fields, {String? id}) async {
-    final r = id == null ? await store.create(Entities.clients, fields) : await store.update(Entities.clients, id, fields);
+    final r = id == null ? await store.create(Entities.clients, _withBranch(fields)) : await store.update(Entities.clients, id, fields);
     return Client(r.data, local: r);
   }
 
@@ -336,7 +352,7 @@ class CrmRepository {
 
   // Owners
   Future<List<Owner>> owners({String search = '', int limit = 50, int offset = 0}) async {
-    final rows = await db.list(Entities.owners, search: search, limit: limit, offset: offset);
+    final rows = await db.list(Entities.owners, search: search, where: _inBranch, limit: limit, offset: offset);
     return rows.map((r) => Owner(r.data, local: r)).toList();
   }
 
@@ -346,7 +362,7 @@ class CrmRepository {
   }
 
   Future<Owner> saveOwner(Map<String, dynamic> fields, {String? id}) async {
-    final r = id == null ? await store.create(Entities.owners, fields) : await store.update(Entities.owners, id, fields);
+    final r = id == null ? await store.create(Entities.owners, _withBranch(fields)) : await store.update(Entities.owners, id, fields);
     return Owner(r.data, local: r);
   }
 
@@ -357,7 +373,7 @@ class CrmRepository {
     final rows = await db.list(
       Entities.properties,
       search: f.search,
-      where: f.matches,
+      where: (d) => _inBranch(d) && f.matches(d),
       sort: switch (f.sort) {
         'priceAsc' => (a, b) => ((a.data['askingPrice'] as num?) ?? 0).compareTo((b.data['askingPrice'] as num?) ?? 0),
         'priceDesc' => (a, b) => ((b.data['askingPrice'] as num?) ?? 0).compareTo((a.data['askingPrice'] as num?) ?? 0),
@@ -376,7 +392,7 @@ class CrmRepository {
   }
 
   Future<Property> saveProperty(Map<String, dynamic> fields, {String? id}) async {
-    final r = id == null ? await store.create(Entities.properties, fields) : await store.update(Entities.properties, id, fields);
+    final r = id == null ? await store.create(Entities.properties, _withBranch(fields)) : await store.update(Entities.properties, id, fields);
     return Property(r.data, local: r);
   }
 
@@ -386,7 +402,9 @@ class CrmRepository {
   Future<List<FollowUp>> followUps({String? clientId, String? propertyId, String? assignedTo, String? status}) async {
     final rows = await db.list(Entities.followUps, where: (d) {
       final f = FollowUp(d);
-      return (clientId == null || f.clientId == clientId) &&
+      // On a client/property screen show all of its follow-ups; lists follow the branch switcher.
+      return (clientId != null || propertyId != null || _inBranch(d)) &&
+          (clientId == null || f.clientId == clientId) &&
           (propertyId == null || f.propertyId == propertyId) &&
           (assignedTo == null || f.assignedTo == assignedTo) &&
           (status == null || f.status == status);
@@ -401,6 +419,12 @@ class CrmRepository {
   }
 
   Future<FollowUp> saveFollowUp(Map<String, dynamic> fields, {String? id}) async {
+    if (id == null && fields['branchId'] == null && fields['clientId'] is String) {
+      // A follow-up belongs to its client's branch (the server does the same).
+      final c = await db.get(Entities.clients, fields['clientId'] as String);
+      final b = JsonModel.refId(c?.data['branchId']) ?? branch?.defaultId;
+      if (b != null) fields = {...fields, 'branchId': b};
+    }
     final r = id == null ? await store.create(Entities.followUps, fields) : await store.update(Entities.followUps, id, fields);
     return FollowUp(r.data, local: r);
   }
@@ -428,7 +452,7 @@ class CrmRepository {
   Future<void> deleteNote(String id) => store.delete(Entities.notes, id);
 }
 
-final crmRepositoryProvider = Provider<CrmRepository>((ref) => CrmRepository(ref.watch(databaseProvider), ref.watch(localStoreProvider)));
+final crmRepositoryProvider = Provider<CrmRepository>((ref) => CrmRepository(ref.watch(databaseProvider), ref.watch(localStoreProvider), branch: ref.watch(branchScopeProvider)));
 
 /// Server-only features (computed on the server, need a connection).
 /// Results are cached so the last view is still visible offline.
@@ -541,6 +565,11 @@ class OnlineRepository {
       rethrow;
     }
   }
+
+  // Branches (management needs a connection; the list itself is synced to the phone)
+  Future<Map<String, dynamic>> createBranch(Map<String, dynamic> body) => api.post<Map<String, dynamic>>('/branches', body);
+  Future<Map<String, dynamic>> updateBranch(String id, Map<String, dynamic> body) => api.patch<Map<String, dynamic>>('/branches/$id', body);
+  Future<List<Map<String, dynamic>>> allBranches() async => (await api.get<List<dynamic>>('/branches', query: {'includeArchived': true})).cast<Map<String, dynamic>>();
 
   Future<List<Map<String, dynamic>>> sessions() async => (await api.get<List<dynamic>>('/auth/sessions')).cast<Map<String, dynamic>>();
   Future<void> revokeSession(String id) => api.delete('/auth/sessions/$id');

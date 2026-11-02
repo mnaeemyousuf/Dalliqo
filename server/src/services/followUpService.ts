@@ -89,6 +89,7 @@ export const followUpService = {
     const { reminderMinutesBefore: _r, ...rest } = input;
     const followUp = await followUpRepository.create(auth, {
       ...rest,
+      branchId: client.branchId,
       propertyId: input.propertyId ?? undefined,
       assignedTo,
       reminderAt,
@@ -150,7 +151,7 @@ export const followUpService = {
     const before = await followUpRepository.getById(auth, id, 'Follow-up not found');
     if (input.status === 'COMPLETED') return this.complete(auth, id, input.outcome, baseVersion);
     if (input.status === 'CANCELLED') return this.cancel(auth, id, input.outcome, baseVersion);
-    if (input.clientId || input.propertyId) await context(auth, input.clientId ?? before.clientId.toString(), input.propertyId);
+    const moved = input.clientId || input.propertyId ? await context(auth, input.clientId ?? before.clientId.toString(), input.propertyId) : null;
     if (input.assignedTo && !(await memberRepository.isActiveMemberUser(auth, input.assignedTo))) {
       throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'Assigned user is not an active member of this business');
     }
@@ -161,6 +162,7 @@ export const followUpService = {
       if (input[k] === null) unset.push(k);
       else set[k] = input[k];
     }
+    if (input.clientId && moved && String(moved.client.branchId) !== String(before.branchId)) set.branchId = moved.client.branchId;
     if (set.dueAt) {
       const due = set.dueAt as Date;
       if (input.reminderAt === undefined) {

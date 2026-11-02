@@ -27,6 +27,7 @@ import { propertyService } from '../services/propertyService';
 import { Match } from '../models/Match';
 import { Property } from '../models/Property';
 import { mediaService } from '../services/mediaService';
+import { branchService } from '../services/branchService';
 import { demoDocumentPdf, demoPropertyImage } from './demoImages';
 import type { AuthContext } from '../types/context';
 import { normalizePhone } from '../utils/phone';
@@ -285,6 +286,13 @@ export async function seed(opts: { reset?: boolean } = {}): Promise<Record<strin
   // A couple of realistic status changes.
   await propertyService.changeStatus(father, properties[3]._id.toString(), 'RESERVED', 'Token received');
   await propertyService.changeStatus(son, properties[11]._id.toString(), 'SOLD');
+
+  // A second office, so the branch switcher has something to show: a few listings and buyers move there.
+  const clifton = await branchService.create(father, { name: 'Clifton Office', nameUr: 'کلفٹن آفس', code: 'CLF', address: 'Block 5, Clifton, Karachi' });
+  for (const p of properties.filter((x) => x.society === 'Clifton' || x.society === 'DHA Karachi').slice(0, 6)) {
+    await propertyService.update(father, p._id.toString(), { branchId: String(clifton._id) });
+  }
+  for (const c of clients.slice(16, 20)) await clientService.update(father, c._id.toString(), { branchId: String(clifton._id) });
 
   return {
     users: 1 + team.length,

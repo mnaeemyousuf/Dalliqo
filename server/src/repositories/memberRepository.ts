@@ -1,5 +1,6 @@
 import type { ClientSession, Types } from 'mongoose';
 import type { Role } from '@recrm/shared';
+import type { BranchAccess } from '@recrm/shared';
 import { BusinessMember, type BusinessMemberDoc, type MemberStatus } from '../models/BusinessMember';
 import type { UserDoc } from '../models/User';
 import type { TenantContext } from '../types/context';
@@ -13,7 +14,7 @@ const USER_FIELDS = 'email fullName mobileNumber status lastLoginAt mustChangePa
 export const memberRepository = {
   async create(
     ctx: TenantContext,
-    data: { userId: Types.ObjectId; role: Role; permissions: string[] },
+    data: { userId: Types.ObjectId; role: Role; permissions: string[]; branchAccess?: BranchAccess; branchIds?: string[] },
     session?: ClientSession,
   ): Promise<BusinessMemberDoc> {
     const [doc] = await BusinessMember.create(
@@ -51,7 +52,7 @@ export const memberRepository = {
     return { items, total };
   },
 
-  update(ctx: TenantContext, memberId: string, update: Partial<Pick<BusinessMemberDoc, 'role' | 'permissions' | 'status'>>) {
+  update(ctx: TenantContext, memberId: string, update: Partial<Pick<BusinessMemberDoc, 'role' | 'permissions' | 'status' | 'branchAccess'>> & { branchIds?: string[] }) {
     return BusinessMember.findOneAndUpdate(
       { _id: memberId, businessId: ctx.businessId },
       { $set: { ...update, updatedBy: ctx.userId } },

@@ -10,6 +10,7 @@ import { Match } from '../models/Match';
 import { Property } from '../models/Property';
 import { PropertyOwner } from '../models/PropertyOwner';
 import type { TenantContext } from '../types/context';
+import { branchFilter } from './branchScope';
 import { eventBus } from '../utils/eventBus';
 import { dayRange } from '../utils/time';
 
@@ -35,6 +36,9 @@ async function cached<T>(key: string, ttlMs: number, fn: () => Promise<T>): Prom
   return value;
 }
 
+/** Distinguishes cached numbers for different branch scopes of the same business. */
+const scopeKey = (ctx: TenantContext) => (ctx.branchIds ? [...ctx.branchIds].sort().join(',') : 'all');
+
 export const dashboardService = {
   invalidate(businessId: string) {
     for (const k of cache.keys()) if (k.startsWith(businessId)) cache.delete(k);
@@ -42,12 +46,13 @@ export const dashboardService = {
 
   /** All numbers are computed from the database at request time (cached 15 s). */
   summary(ctx: TenantContext) {
-    return cached(`${ctx.businessId}:summary`, 15_000, async () => {
+    return cached(`${ctx.businessId}:${scopeKey(ctx)}:summary`, 15_000, async () => {
       const businessId = oid(ctx.businessId);
       const tz = await timezoneOf(ctx);
       const { start, end } = dayRange(tz);
       const now = new Date();
-      const live = { businessId, deletedAt: null };
+      const live = { businessId, deletedAt: null, ...branchFilter(ctx) };
+      const matchScope = { businessId, ...branchFilter(ctx, 'branchIds') };
 
       const staleCutoff = new Date(now.getTime() - LISTING_VERIFICATION_STALE_DAYS * 86_400_000);
       const [propertyStatus, clientPurpose, owners, categoryRows, todayFollowUps, overdue, newClients, newProperties, newMatches, needsVerification] = await Promise.all([
@@ -59,7 +64,7 @@ export const dashboardService = {
         FollowUp.countDocuments({ ...live, $or: [{ status: 'OVERDUE' }, { status: 'PENDING', dueAt: { $lt: now } }] }),
         Client.countDocuments({ ...live, createdAt: { $gte: start, $lt: end } }),
         Property.countDocuments({ ...live, createdAt: { $gte: start, $lt: end } }),
-        Match.countDocuments({ businessId, createdAt: { $gte: start, $lt: end } }),
+        Match.countDocuments({ ...matchScope, createdAt: { $gte: start, $lt: end } }),
         Property.countDocuments({ ...live, status: 'AVAILABLE', $or: [{ lastVerifiedAt: { $lt: staleCutoff } }, { lastVerifiedAt: null }] }),
       ]);
       const categories = await ClientCategory.find({ businessId }).select('name key').lean();
@@ -101,18 +106,19 @@ export const dashboardService = {
   },
 
   analytics(ctx: TenantContext, range: '7d' | '30d' | '12m') {
-    return cached(`${ctx.businessId}:analytics:${range}`, 30_000, async () => {
+    return cached(`${ctx.businessId}:${scopeKey(ctx)}:analytics:${range}`, 30_000, async () => {
       const businessId = oid(ctx.businessId);
       const tz = await timezoneOf(ctx);
       const monthly = range === '12m';
       const days = range === '7d' ? 7 : 30;
       const since = monthly ? new Date(Date.now() - 365 * 86_400_000) : new Date(dayRange(tz).start.getTime() - (days - 1) * 86_400_000);
       const fmt = monthly ? '%Y-%m' : '%Y-%m-%d';
-      const live = { businessId, deletedAt: null };
+      const live = { businessId, deletedAt: null, ...branchFilter(ctx) };
+      const matchScope = { businessId, ...branchFilter(ctx, 'branchIds') };
 
       const series = (model: typeof Client | typeof Property | typeof Match, extra: Record<string, unknown> = {}) =>
         (model as typeof Client).aggregate<{ _id: string; n: number }>([
-          { $match: { businessId, createdAt: { $gte: since }, ...extra } },
+          { $match: { ...(model === Match ? matchScope : { businessId, ...branchFilter(ctx) }), createdAt: { $gte: since }, ...extra } },
           { $group: { _id: { $dateToString: { format: fmt, date: '$createdAt', timezone: tz } }, n: { $sum: 1 } } },
           { $sort: { _id: 1 } },
         ] as PipelineStage[]);
@@ -129,7 +135,7 @@ export const dashboardService = {
         series(Client, { deletedAt: null }),
         series(Property, { deletedAt: null }),
         series(Match),
-        Match.aggregate<{ _id: string; n: number }>([{ $match: { businessId, status: { $ne: 'STALE' } } }, { $group: { _id: '$band', n: { $sum: 1 } } }]),
+        Match.aggregate<{ _id: string; n: number }>([{ $match: { ...matchScope, status: { $ne: 'STALE' } } }, { $group: { _id: '$band', n: { $sum: 1 } } }]),
         // Lead sources with their outcome, for a simple conversion view.
         Client.aggregate<{ _id: { source: string | null; status: string }; n: number }>([
           { $match: live },
@@ -224,7 +230,7 @@ export const dashboardService = {
     const tz = await timezoneOf(ctx);
     const { start, end } = dayRange(tz);
     const now = new Date();
-    const live = { businessId, deletedAt: null };
+    const live = { businessId, deletedAt: null, ...branchFilter(ctx) };
     const mine = scope === 'mine' ? { assignedTo: oid(ctx.userId) } : {};
     const populate = (q: ReturnType<typeof FollowUp.find>) =>
       q.populate(scopedPopulate('clientId', 'fullName mobileNumber whatsappNumber')).populate(scopedPopulate('propertyId', 'propertyId society area propertyType')).populate('assignedTo', 'fullName').lean();
@@ -236,7 +242,7 @@ export const dashboardService = {
       Client.find({ ...live, createdAt: { $gte: start, $lt: end } }).sort({ createdAt: -1 }).limit(20).select('fullName mobileNumber categoryId preferredSociety minBudget maxBudget matchCount').lean(),
       Property.find({ ...live, createdAt: { $gte: start, $lt: end } }).sort({ createdAt: -1 }).limit(20)
         .select('propertyId propertyType society area size sizeUnit askingPrice status matchCount coverThumbnailUrl').lean(),
-      Match.find({ businessId, createdAt: { $gte: start, $lt: end }, status: { $ne: 'STALE' } }).sort({ matchScore: -1 }).limit(20)
+      Match.find({ businessId, ...branchFilter(ctx, 'branchIds'), createdAt: { $gte: start, $lt: end }, status: { $ne: 'STALE' } }).sort({ matchScore: -1 }).limit(20)
         .populate(scopedPopulate('clientId', 'fullName mobileNumber whatsappNumber')).populate(scopedPopulate('propertyId', 'propertyId propertyType society area size sizeUnit askingPrice')).lean(),
     ]);
     const isType = (t: string) => (f: { type: string }) => f.type === t;

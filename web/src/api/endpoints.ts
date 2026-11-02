@@ -5,6 +5,7 @@ import type {
   Analytics,
   AppNotification,
   AuditEntry,
+  Branch,
   Business,
   Category,
   Client,
@@ -53,6 +54,12 @@ export const memberApi = {
   update: (id: string, body: Body) => api<Member>({ method: 'PATCH', url: `/members/${id}`, data: body }),
   remove: (id: string) => api<null>({ method: 'DELETE', url: `/members/${id}` }),
   resetPassword: (id: string, temporaryPassword: string) => api<null>({ method: 'POST', url: `/members/${id}/reset-password`, data: { temporaryPassword } }),
+};
+
+export const branchApi = {
+  list: (includeArchived = false) => api<Branch[]>({ url: '/branches', params: includeArchived ? { includeArchived: true } : undefined }),
+  create: (body: Body) => api<Branch>({ method: 'POST', url: '/branches', data: body }),
+  update: (id: string, body: Body) => api<Branch>({ method: 'PATCH', url: `/branches/${id}`, data: body }),
 };
 
 export const categoryApi = {

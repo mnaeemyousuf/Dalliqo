@@ -64,7 +64,7 @@ export function createApp(): Express {
     cors({
       origin: (origin, cb) => cb(null, !origin || corsOrigins.includes(origin)),
       credentials: true,
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Client-Type', 'X-Request-Id'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Client-Type', 'X-Request-Id', 'X-Branch-Id'],
       exposedHeaders: ['X-Request-Id', 'RateLimit', 'RateLimit-Policy'],
       maxAge: 600,
     }),

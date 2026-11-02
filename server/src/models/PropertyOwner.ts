@@ -1,10 +1,11 @@
 import { Schema, model, type Types } from 'mongoose';
-import { tenantFields, tenantGuardPlugin } from './plugins/tenant';
+import { branchField, branchIndexes, tenantFields, tenantGuardPlugin } from './plugins/tenant';
 import { syncFields, syncIndexes, type SyncDoc } from './plugins/sync';
 
 export interface PropertyOwnerDoc extends SyncDoc {
   _id: Types.ObjectId;
   businessId: Types.ObjectId;
+  branchId: Types.ObjectId;
   fullName: string;
   mobileNumber: string;
   alternateNumber?: string;
@@ -24,6 +25,7 @@ const schema = new Schema<PropertyOwnerDoc>(
   {
     ...tenantFields,
     ...syncFields,
+    ...branchField,
     fullName: { type: String, required: true, trim: true, maxlength: 120 },
     mobileNumber: { type: String, required: true },
     alternateNumber: String,
@@ -38,6 +40,7 @@ const schema = new Schema<PropertyOwnerDoc>(
 );
 
 syncIndexes(schema);
+branchIndexes(schema);
 schema.index({ businessId: 1, deletedAt: 1, fullName: 1 });
 schema.index({ businessId: 1, mobileNumber: 1 });
 schema.index({ businessId: 1, searchText: 1 });

@@ -8,6 +8,7 @@ import request from 'supertest';
 import { createApp } from '../src/app';
 import { Client } from '../src/models/Client';
 import { Property } from '../src/models/Property';
+import { defaultBranchId } from '../src/services/branchScope';
 import { formatPropertyId } from '../src/services/propertyService';
 import { searchBlob } from '../src/utils/text';
 import { bearer, registerOwner } from './support/helpers';
@@ -21,12 +22,13 @@ const TYPES = ['RESIDENTIAL_PLOT', 'HOUSE', 'FLAT', 'APARTMENT', 'PORTION', 'SHO
 async function seedBulk(businessId: string, userId: string, n: number, offset = 0) {
   const bid = new Types.ObjectId(businessId);
   const uid = new Types.ObjectId(userId);
+  const branchId = new Types.ObjectId(await defaultBranchId({ businessId, userId }));
   const clients = Array.from({ length: n }, (_, i) => {
     const society = SOCIETIES[i % SOCIETIES.length];
     const name = `Client ${offset + i} ${['Khan', 'Siddiqui', 'Qureshi', 'Malik'][i % 4]}`;
     const mobile = `+92300${String(1_000_000 + offset + i).padStart(7, '0')}`;
     return {
-      businessId: bid, createdBy: uid, updatedBy: uid, uuid: new Types.UUID().toString(), version: 1, deletedAt: null,
+      businessId: bid, branchId, createdBy: uid, updatedBy: uid, uuid: new Types.UUID().toString(), version: 1, deletedAt: null,
       fullName: name, mobileNumber: mobile, whatsappNumber: mobile, status: 'ACTIVE', priority: 'MEDIUM', purchaseOrRental: 'PURCHASE',
       preferredSociety: society, minBudget: 10_000_000, maxBudget: 20_000_000 + (i % 50) * 1_000_000, matchCount: i % 7,
       preferredBlock: `Block ${i % 20}`,
@@ -35,7 +37,7 @@ async function seedBulk(businessId: string, userId: string, n: number, offset = 
     };
   });
   const properties = Array.from({ length: n }, (_, i) => ({
-    businessId: bid, createdBy: uid, updatedBy: uid, uuid: new Types.UUID().toString(), version: 1, deletedAt: null,
+    businessId: bid, branchId, createdBy: uid, updatedBy: uid, uuid: new Types.UUID().toString(), version: 1, deletedAt: null,
     propertyId: formatPropertyId(offset + i + 1), propertyType: TYPES[i % TYPES.length], listingPurpose: i % 5 ? 'SALE' : 'RENT',
     status: i % 9 ? 'AVAILABLE' : 'SOLD', society: SOCIETIES[i % SOCIETIES.length], area: SOCIETIES[i % SOCIETIES.length], block: `Block ${i % 20}`,
     size: 100 + (i % 400), sizeUnit: 'SQ_YARD', sizeSqft: (100 + (i % 400)) * 9, askingPrice: 5_000_000 + (i % 200) * 500_000, matchCount: i % 5,

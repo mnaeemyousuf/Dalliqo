@@ -152,6 +152,7 @@ class AuthController extends StateNotifier<AuthState> {
     await store.clearTokens();
     await store.clearPin();
     await ref.read(databaseProvider).clearAll();
+    await ref.read(branchScopeProvider).clear();
     state = const AuthState(status: AuthStatus.signedOut);
   }
 }

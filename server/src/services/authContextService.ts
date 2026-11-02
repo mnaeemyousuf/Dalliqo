@@ -1,4 +1,4 @@
-import { ERROR_CODES, resolvePermissions } from '@recrm/shared';
+import { ERROR_CODES, ROLES, resolvePermissions } from '@recrm/shared';
 import { memberRepository } from '../repositories/memberRepository';
 import { sessionRepository } from '../repositories/sessionRepository';
 import { userRepository } from '../repositories/userRepository';
@@ -30,6 +30,9 @@ export async function resolveAuthContext(claims: AccessClaims): Promise<AuthCont
     throw forbidden(ERROR_CODES.NO_ACTIVE_MEMBERSHIP, 'You no longer have access to this business');
   }
 
+  // Owners and members with branch access ALL are not branch-restricted (undefined scope).
+  const restricted = member.role !== ROLES.OWNER && member.branchAccess === 'SELECTED';
+  const allowed = restricted ? (member.branchIds ?? []).map(String) : undefined;
   return {
     userId: claims.sub,
     businessId: claims.bid,
@@ -38,5 +41,7 @@ export async function resolveAuthContext(claims: AccessClaims): Promise<AuthCont
     role: member.role,
     permissions: resolvePermissions(member.role, member.permissions),
     mustChangePassword: user.mustChangePassword,
+    branchIds: allowed,
+    allowedBranchIds: allowed,
   };
 }

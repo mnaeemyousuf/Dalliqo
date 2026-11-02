@@ -67,8 +67,9 @@ Order of work (one commit per phase, all suites after each): **A1–A3 → B4 �
   business's default branch. Follow-ups/deals/agreements default to their client's branch.
 * Matching: candidates restricted to the same branch unless `matching.crossBranch`.
 
-**Permissions**: `branches:read`, `branches:manage`. Templates: Owner (all); Manager `branches:read`; Agent/Accountant/Viewer
-`branches:read`. Branch *visibility* is data scope (member assignment), not a permission.
+**Permissions**: `branches:manage` only (Owner). Every member may list the branches they can see (`GET /branches`, needed by the
+switcher) — a separate read permission would have removed access existing members have today. Branch *visibility* is data scope
+(member assignment), not a permission.
 
 **Migration** (`server/src/migrations/001-branches.ts`, run at API start and via `npm run migrate -w @recrm/server`):
 for every business without a default branch create **"Main Branch"** (`isDefault`), then `updateMany({ branchId: { $exists: false } })`

@@ -1,5 +1,6 @@
 import type { ClientSession, Model, PipelineStage, SortOrder } from 'mongoose';
 import { ERROR_CODES, type ErrorCode } from '@recrm/shared';
+import { branchFilter, hasBranchPath, resolveBranchForWrite } from '../services/branchScope';
 import type { TenantContext } from '../types/context';
 import { conflict, notFound } from '../utils/AppError';
 
@@ -23,14 +24,33 @@ export interface UpdateOptions {
 /**
  * Generic tenant-scoped data access for syncable entities. Every query is
  * built from the TenantContext, soft-deleted rows are hidden unless asked for,
- * and updates bump `version` atomically.
+ * and updates bump `version` atomically. For branch-scoped collections the
+ * context's branch scope is part of every query too, so a branch-restricted
+ * member can neither read nor change another branch's records.
  */
 export function createTenantRepository<T extends { _id: unknown }>(model: Model<T>, notFoundCode: ErrorCode) {
+  const branched = hasBranchPath(model as never);
+  const branchScope = (ctx: TenantContext, filter: Filter): Filter => {
+    if (!branched || !ctx.branchIds) return {};
+    const scoped = branchFilter(ctx) as { branchId: { $in: unknown[] } };
+    // An explicit branch filter can only narrow the scope, never widen it.
+    if (filter.branchId !== undefined && typeof filter.branchId !== 'object') {
+      return { branchId: ctx.branchIds.includes(String(filter.branchId)) ? filter.branchId : { $in: [] } };
+    }
+    return scoped;
+  };
   const scope = (ctx: TenantContext, filter: Filter = {}, includeDeleted = false): Filter => ({
     ...filter,
     businessId: ctx.businessId,
+    ...branchScope(ctx, filter),
     ...(includeDeleted ? {} : { deletedAt: null }),
   });
+
+  /** Branch-scoped records always get a branch: requested → selected → member's only → default. */
+  async function withBranch(ctx: TenantContext, data: Filter, session?: ClientSession): Promise<Filter> {
+    if (!branched) return data;
+    return { ...data, branchId: await resolveBranchForWrite(ctx, data.branchId, session) };
+  }
 
   return {
     model,
@@ -38,7 +58,7 @@ export function createTenantRepository<T extends { _id: unknown }>(model: Model<
 
     async create(ctx: TenantContext, data: Filter, session?: ClientSession): Promise<T> {
       const [doc] = await model.create(
-        [{ ...data, businessId: ctx.businessId, createdBy: ctx.userId, updatedBy: ctx.userId }],
+        [{ ...(await withBranch(ctx, data, session)), businessId: ctx.businessId, createdBy: ctx.userId, updatedBy: ctx.userId }],
         { session },
       );
       return doc.toObject() as T;
@@ -98,6 +118,8 @@ export function createTenantRepository<T extends { _id: unknown }>(model: Model<
      * `baseVersion` is stale.
      */
     async update(ctx: TenantContext, id: string, set: Filter, opts: UpdateOptions = {}): Promise<T> {
+      // Moving a record to another branch: the target branch must exist and be allowed.
+      if (branched && set.branchId !== undefined) set = { ...set, branchId: await resolveBranchForWrite(ctx, set.branchId, opts.session) };
       const filter = scope(ctx, { _id: id, ...(opts.baseVersion !== undefined ? { version: opts.baseVersion } : {}) });
       const update: Filter = { $set: { ...set, updatedBy: ctx.userId }, $inc: { version: 1 } };
       if (opts.unset?.length) update.$unset = Object.fromEntries(opts.unset.map((f) => [f, 1]));
@@ -119,7 +141,7 @@ export function createTenantRepository<T extends { _id: unknown }>(model: Model<
 
     /** Delta feed for sync pull: everything (incl. tombstones) after the cursor. */
     changedSince(ctx: TenantContext, after: { updatedAt: Date; id: string } | null, limit: number) {
-      const filter: Filter = { businessId: ctx.businessId };
+      const filter: Filter = { businessId: ctx.businessId, ...branchScope(ctx, {}) };
       if (after) {
         filter.$or = [{ updatedAt: { $gt: after.updatedAt } }, { updatedAt: after.updatedAt, _id: { $gt: after.id } }];
       }

@@ -20,6 +20,7 @@ export interface FileAssetDoc {
   businessId: Types.ObjectId;
   entityType: DocumentEntityType;
   entityId: Types.ObjectId;
+  branchId?: Types.ObjectId;
   kind: MediaKind;
   category?: DocumentCategory;
   fileName: string;
@@ -48,6 +49,7 @@ function buildSchema() {
       ...tenantFields,
       entityType: { type: String, enum: DOCUMENT_ENTITY_TYPES, required: true },
       entityId: { type: Schema.Types.ObjectId, required: true },
+      branchId: { type: Schema.Types.ObjectId, ref: 'Branch' },
       kind: { type: String, enum: MEDIA_KINDS, required: true },
       category: { type: String, enum: DOCUMENT_CATEGORIES },
       fileName: { type: String, required: true, maxlength: 200 },

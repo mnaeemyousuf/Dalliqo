@@ -12,7 +12,7 @@ import {
   type PropertyType,
   type SizeUnit,
 } from '@recrm/shared';
-import { tenantFields, tenantGuardPlugin } from './plugins/tenant';
+import { branchField, branchIndexes, tenantFields, tenantGuardPlugin } from './plugins/tenant';
 import { syncFields, syncIndexes, type SyncDoc } from './plugins/sync';
 
 /**
@@ -44,6 +44,7 @@ export interface RequirementDoc {
 export interface ClientDoc extends SyncDoc {
   _id: Types.ObjectId;
   businessId: Types.ObjectId;
+  branchId: Types.ObjectId;
   fullName: string;
   mobileNumber: string;
   alternateNumber?: string;
@@ -103,6 +104,7 @@ const schema = new Schema<ClientDoc>(
   {
     ...tenantFields,
     ...syncFields,
+    ...branchField,
     fullName: { type: String, required: true, trim: true, maxlength: 120 },
     mobileNumber: { type: String, required: true },
     alternateNumber: String,
@@ -134,6 +136,7 @@ const schema = new Schema<ClientDoc>(
 );
 
 syncIndexes(schema);
+branchIndexes(schema);
 schema.index({ businessId: 1, deletedAt: 1, updatedAt: -1 });
 schema.index({ businessId: 1, mobileNumber: 1 });
 schema.index({ businessId: 1, status: 1, updatedAt: -1 });

@@ -12,6 +12,7 @@ import { notFound } from '../../utils/AppError';
 import { eventBus } from '../../utils/eventBus';
 import { formatPkr } from '../../utils/text';
 import { activityService } from '../activityService';
+import { branchFilter } from '../branchScope';
 import { notificationService } from '../notificationService';
 import { settingsService, type EffectiveSettings } from '../settingsService';
 import { scoreMatch, type ScoreResult, type ScoringRequirement } from './scoring';
@@ -88,6 +89,8 @@ async function persist(
       {
         $set: {
           clientId: c.client._id,
+          // Visible from both sides' branches (they differ only with cross-branch matching).
+          branchIds: [...new Set([String(c.client.branchId), String(c.property.branchId)].filter((b) => b && b !== 'undefined'))],
           matchScore: c.result.matchScore,
           band: c.result.band,
           breakdown: c.result.breakdown,
@@ -177,6 +180,7 @@ export const matchingService = {
       deletedAt: null,
       status: 'ACTIVE',
       requirements: { $elemMatch: { active: true, purpose } },
+      ...(settings.matching.crossBranch || !property.branchId ? {} : { branchId: property.branchId }),
     }).lean<ClientDoc[]>();
 
     const candidates: Candidate[] = [];
@@ -205,6 +209,7 @@ export const matchingService = {
         status: 'AVAILABLE',
         listingPurpose: listingFor(requirement.purpose),
         ...priceFilter,
+        ...(settings.matching.crossBranch || !client.branchId ? {} : { branchId: client.branchId }),
       }).lean<PropertyDoc[]>();
       for (const property of properties) {
         const result = scoreMatch(toScoringRequirement(requirement), property, settings.matching.weights);
@@ -263,7 +268,7 @@ export const matchingService = {
     ctx: TenantContext,
     q: { clientId?: string; propertyId?: string; minScore?: number; band?: string; status?: MatchStatus; includeStale?: boolean; page: number; limit: number },
   ) {
-    const filter: Record<string, unknown> = { businessId: ctx.businessId };
+    const filter: Record<string, unknown> = { businessId: ctx.businessId, ...branchFilter(ctx, 'branchIds') };
     if (q.clientId) filter.clientId = q.clientId;
     if (q.propertyId) filter.propertyId = q.propertyId;
     if (q.minScore !== undefined) filter.matchScore = { $gte: q.minScore };
@@ -284,7 +289,7 @@ export const matchingService = {
   },
 
   async get(ctx: TenantContext, id: string) {
-    const m = await Match.findOne({ businessId: ctx.businessId, _id: id })
+    const m = await Match.findOne({ businessId: ctx.businessId, _id: id, ...branchFilter(ctx, 'branchIds') })
       .populate(scopedPopulate('clientId', 'fullName mobileNumber whatsappNumber email status'))
       .populate(scopedPopulate('propertyId', ''))
       .lean();
@@ -293,7 +298,7 @@ export const matchingService = {
   },
 
   async setStatus(ctx: TenantContext, id: string, status: MatchStatus) {
-    const m = await Match.findOneAndUpdate({ businessId: ctx.businessId, _id: id }, { $set: { status } }, { new: true }).lean<MatchDoc>();
+    const m = await Match.findOneAndUpdate({ businessId: ctx.businessId, _id: id, ...branchFilter(ctx, 'branchIds') }, { $set: { status } }, { new: true }).lean<MatchDoc>();
     if (!m) throw notFound(ERROR_CODES.MATCH_NOT_FOUND, 'Match not found');
     await recount(ctx, [m.clientId], [m.propertyId]);
     return m;

@@ -53,6 +53,9 @@ class ApiClient {
   /// Called when the session can't be recovered (revoked, password changed, …).
   void Function()? onSessionLost;
 
+  /// Branch picked in the branch switcher, sent as X-Branch-Id (null = all branches).
+  String? Function()? branchHeader;
+
   Future<String?>? _refreshing;
 
   static const _retryable = {'TOKEN_EXPIRED', 'INVALID_TOKEN', 'UNAUTHENTICATED'};
@@ -60,6 +63,8 @@ class ApiClient {
   Future<void> _onRequest(RequestOptions o, RequestInterceptorHandler h) async {
     final token = await _store.accessToken;
     if (token != null && o.headers['Authorization'] == null) o.headers['Authorization'] = 'Bearer $token';
+    final branch = branchHeader?.call();
+    if (branch != null && branch.isNotEmpty && o.headers['X-Branch-Id'] == null) o.headers['X-Branch-Id'] = branch;
     h.next(o);
   }
 

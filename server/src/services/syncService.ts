@@ -15,6 +15,7 @@ import { AppError, forbidden } from '../utils/AppError';
 import { diffFields } from '../utils/diff';
 import { auditService } from './auditService';
 import { authService } from './authService';
+import { branchRepository } from './branchService';
 import { clientService } from './clientService';
 import { followUpService } from './followUpService';
 import { memberService } from './memberService';
@@ -239,6 +240,7 @@ function decode(s?: string): Cursor {
 }
 
 const PULL_REPOS = {
+  branches: branchRepository,
   clientCategories: categoryRepository,
   clients: clientRepository,
   owners: ownerRepository,
@@ -249,6 +251,7 @@ const PULL_REPOS = {
 type PullEntity = keyof typeof PULL_REPOS;
 
 const READ_PERMS: Record<PullEntity, Permission | null> = {
+  branches: null,
   clientCategories: null,
   clients: PERMISSIONS.CLIENTS_READ,
   owners: PERMISSIONS.OWNERS_READ,
@@ -314,9 +317,10 @@ export const syncService = {
         hasMore = true;
         rows.length = limit;
       }
-      changes[entity] = rows;
       const last = rows[rows.length - 1];
       if (last) cursor[entity] = { t: last.updatedAt.toISOString(), id: String(last._id) };
+      // A branch-restricted member only receives their own branches (for the branch switcher).
+      changes[entity] = entity === 'branches' && auth.allowedBranchIds ? rows.filter((b) => auth.allowedBranchIds!.includes(String(b._id))) : rows;
     }
     return { changes, cursor: encode(cursor), hasMore, serverTime: new Date() };
   },

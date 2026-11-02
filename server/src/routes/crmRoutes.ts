@@ -4,6 +4,7 @@ import { PERMISSIONS as P } from '@recrm/shared';
 import { env } from '../config/env';
 import {
   activityController,
+  branchController,
   categoryController,
   clientController,
   dashboardController,
@@ -39,6 +40,12 @@ r.get('/dashboard', h(dashboardController.summary));
 r.get('/dashboard/analytics', can(P.REPORTS_READ), validate({ query: s.analyticsQuery }), h(dashboardController.analytics));
 r.get('/my-day', validate({ query: s.myDayQuery }), h(dashboardController.myDay));
 r.get('/search', validate({ query: s.searchQuery }), h(dashboardController.search));
+
+// Branches (any member may list the branches they can see; managing needs branches:manage)
+r.get('/branches', validate({ query: s.branchListQuery }), h(branchController.list));
+r.post('/branches', can(P.BRANCHES_MANAGE), validate({ body: s.branchCreateSchema }), h(branchController.create));
+r.get('/branches/:id', id, h(branchController.get));
+r.patch('/branches/:id', can(P.BRANCHES_MANAGE), validate({ params: idParams, body: s.branchUpdateSchema }), h(branchController.update));
 
 // Client categories
 r.get('/client-categories', can(P.CLIENTS_READ), validate({ query: s.categoryListQuery }), h(categoryController.list));

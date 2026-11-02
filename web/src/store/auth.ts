@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Permission } from '@recrm/shared';
 import { authApi } from '@/api/endpoints';
-import { refreshAccessToken, tokenStore } from '@/api/client';
+import { refreshAccessToken, tokenStore, branchSelection } from '@/api/client';
 import type { Business, Membership, Session, User } from '@/api/types';
 import { useUi } from './ui';
 
@@ -66,6 +66,8 @@ export const useAuth = create<AuthState>((set, get) => ({
   async signOut(callServer = true) {
     if (callServer) await authApi.logout().catch(() => undefined);
     tokenStore.set(null);
+    // The next person on this browser starts with all their branches, not this user's pick.
+    branchSelection.set(null);
     set({ status: 'anonymous', user: null, business: null, membership: null });
   },
 }));

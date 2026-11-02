@@ -8,7 +8,8 @@ import type { AuthContext, TenantContext } from '../types/context';
 import { AppError, badRequest, notFound } from '../utils/AppError';
 import { activityService } from './activityService';
 import { auditService } from './auditService';
-import { assertEntity } from './noteService';
+import { assertEntity, entityInfo } from './noteService';
+import { branchFilter } from './branchScope';
 import { propertyService } from './propertyService';
 import { storage, type ResourceType } from './storage/storage';
 import { DOCUMENT_MIMES as DOC_MIMES, IMAGE_MIMES, VIDEO_MIMES } from '../constants';
@@ -203,7 +204,7 @@ export const mediaService = {
 
   async removeMedia(auth: AuthContext, id: string) {
     const m = await PropertyMedia.findOneAndUpdate(
-      { businessId: auth.businessId, _id: id, deletedAt: null },
+      { businessId: auth.businessId, _id: id, deletedAt: null, ...branchFilter(auth) },
       { $set: { deletedAt: new Date(), updatedBy: auth.userId } },
       { new: true },
     ).lean<FileAssetDoc>();
@@ -224,7 +225,7 @@ export const mediaService = {
     file: UploadedFile | undefined,
   ) {
     if (!file) throw badRequest(ERROR_CODES.INVALID_FILE, 'No file received');
-    const label = await assertEntity(auth, input.entityType, input.entityId);
+    const { label, branchId } = await entityInfo(auth, input.entityType, input.entityId);
     const detected = await sniff(file);
     if (!DOC_MIMES.includes(detected.mime)) {
       throw badRequest(ERROR_CODES.INVALID_FILE, 'Only PDF, JPEG, PNG, WebP, Word (.docx) and Excel (.xlsx) files are allowed');
@@ -236,6 +237,7 @@ export const mediaService = {
       businessId: auth.businessId,
       entityType: input.entityType,
       entityId: input.entityId,
+      branchId,
       category: input.category ?? 'OTHER',
       fileName: safeDisplayName(input.fileName ?? file.originalname),
       isPrivate: true,
@@ -251,7 +253,7 @@ export const mediaService = {
   },
 
   async listDocuments(ctx: TenantContext, q: { entityType?: DocumentEntityType; entityId?: string; category?: DocumentCategory; page: number; limit: number }) {
-    const filter: Record<string, unknown> = { businessId: ctx.businessId, deletedAt: null };
+    const filter: Record<string, unknown> = { businessId: ctx.businessId, deletedAt: null, ...branchFilter(ctx) };
     if (q.entityType) filter.entityType = q.entityType;
     if (q.entityId) filter.entityId = q.entityId;
     if (q.category) filter.category = q.category;
@@ -263,7 +265,7 @@ export const mediaService = {
   },
 
   async getDocument(ctx: TenantContext, id: string) {
-    const d = await Document.findOne({ businessId: ctx.businessId, _id: id, deletedAt: null }).lean<FileAssetDoc>();
+    const d = await Document.findOne({ businessId: ctx.businessId, _id: id, deletedAt: null, ...branchFilter(ctx) }).lean<FileAssetDoc>();
     if (!d) throw notFound(ERROR_CODES.DOCUMENT_NOT_FOUND, 'Document not found');
     return d;
   },
@@ -279,7 +281,7 @@ export const mediaService = {
     const set: Record<string, unknown> = { updatedBy: auth.userId };
     if (input.fileName) set.fileName = safeDisplayName(input.fileName);
     if (input.category) set.category = input.category;
-    const d = await Document.findOneAndUpdate({ businessId: auth.businessId, _id: id, deletedAt: null }, { $set: set }, { new: true }).lean<FileAssetDoc>();
+    const d = await Document.findOneAndUpdate({ businessId: auth.businessId, _id: id, deletedAt: null, ...branchFilter(auth) }, { $set: set }, { new: true }).lean<FileAssetDoc>();
     if (!d) throw notFound(ERROR_CODES.DOCUMENT_NOT_FOUND, 'Document not found');
     return withUrls(d);
   },

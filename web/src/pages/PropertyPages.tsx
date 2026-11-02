@@ -8,6 +8,7 @@ import { ownerApi, propertyApi } from '@/api/endpoints';
 import type { FileAsset, Property } from '@/api/types';
 import { MatchCard, PropertyCard, PropertyStatusBadge, locationLabel, useSizeLabel, usePropertyShareText, VerificationBadge } from '@/components/domain';
 import { ActivityPanel, DocumentsPanel, FollowUpForm, FollowUpsPanel, NotesPanel } from '@/components/domain/panels';
+import { BranchField, useBranchName, useBranches } from '@/components/branches';
 import { Badge, Button, Card, Checkbox, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column } from '@/components/ui';
 import { formatDate, formatPkr, waHref } from '@/lib/format';
 import { useDebounce, useEnumOptions, useOnError, useUrlState } from '@/lib/hooks';
@@ -41,6 +42,7 @@ export function PropertyFormDrawer({ open, onClose, property }: { open: boolean;
   const [ownerSearch, setOwnerSearch] = useState('');
   const owners = useQuery({ queryKey: ['owners', 'pick', useDebounce(ownerSearch, 250)], queryFn: () => ownerApi.list({ q: ownerSearch, limit: 30 }), enabled: open });
   const [form, setForm] = useState({
+    branchId: property?.branchId ?? '',
     propertyType: property?.propertyType ?? 'RESIDENTIAL_PLOT',
     listingPurpose: property?.listingPurpose ?? 'SALE',
     title: property?.title ?? '',
@@ -81,6 +83,7 @@ export function PropertyFormDrawer({ open, onClose, property }: { open: boolean;
   const save = useMutation({
     mutationFn: () => {
       const body: Record<string, unknown> = {
+        ...(form.branchId ? { branchId: form.branchId } : {}),
         propertyType: form.propertyType,
         listingPurpose: form.listingPurpose,
         size: num(form.size),
@@ -124,6 +127,7 @@ export function PropertyFormDrawer({ open, onClose, property }: { open: boolean;
       }
     >
       <form className="space-y-4" onSubmit={(e) => (e.preventDefault(), save.mutate())}>
+        <BranchField value={form.branchId} onChange={(v) => setForm((f) => ({ ...f, branchId: v }))} />
         <div className="grid gap-3 sm:grid-cols-2">
           <Select label={t('property.type')} options={types} value={form.propertyType} onChange={set('propertyType')} />
           <Select label={t('property.purpose')} options={purposes} value={form.listingPurpose} onChange={set('listingPurpose')} />
@@ -460,6 +464,8 @@ function Info({ label, children }: { label: string; children: React.ReactNode })
 export function PropertyDetailPage() {
   const { id = '' } = useParams();
   const { t } = useTranslation();
+  const branches = useBranches();
+  const branchName = useBranchName();
   const qc = useQueryClient();
   const navigate = useNavigate();
   const onError = useOnError();
@@ -609,6 +615,7 @@ export function PropertyDetailPage() {
                 <Info label={t('property.bathrooms')}>{p.bathrooms}</Info>
                 <Info label={t('property.floors')}>{p.floors}</Info>
                 <Info label={t('common.dateAdded')}>{formatDate(p.createdAt)}</Info>
+                {(branches.data?.length ?? 0) > 1 && <Info label={t('branch.branch')}>{branchName(p.branchId)}</Info>}
               </dl>
               {p.description && <p className="mt-4 whitespace-pre-wrap text-sm">{p.description}</p>}
             </Card>

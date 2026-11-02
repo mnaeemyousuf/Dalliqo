@@ -12,6 +12,8 @@
     "test": "jest --runInBand",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "seed": "tsx src/scripts/seed.ts",
+    "migrate": "tsx src/scripts/migrate.ts",
+    "premigrate": "cd ../shared && npm run build",
     "preseed": "cd ../shared && npm run build",
     "demo": "tsx src/scripts/demo.ts",
     "predemo": "cd ../shared && npm run build"

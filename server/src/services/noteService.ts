@@ -6,16 +6,22 @@ import { PropertyOwner } from '../models/PropertyOwner';
 import { noteRepository } from '../repositories/entityRepositories';
 import type { AuthContext, TenantContext } from '../types/context';
 import { badRequest, forbidden } from '../utils/AppError';
+import { branchFilter } from './branchScope';
 import { activityService } from './activityService';
 
 const ENTITY_MODELS = { client: Client, property: Property, owner: PropertyOwner, followUp: FollowUp } as const;
 
-/** Confirms the record exists in this business; returns a label for timelines. */
+/** Confirms the record exists in this business (and the member's branches); returns a label for timelines. */
 export async function assertEntity(ctx: TenantContext, entityType: EntityType, entityId: string): Promise<string> {
+  return (await entityInfo(ctx, entityType, entityId)).label;
+}
+
+/** Label and branch of a record notes, documents and activities can be attached to. */
+export async function entityInfo(ctx: TenantContext, entityType: EntityType, entityId: string): Promise<{ label: string; branchId?: string }> {
   const model = ENTITY_MODELS[entityType] as unknown as typeof Client;
-  const doc = await model.findOne({ businessId: ctx.businessId, _id: entityId, deletedAt: null }).lean<Record<string, unknown>>();
+  const doc = await model.findOne({ businessId: ctx.businessId, _id: entityId, deletedAt: null, ...branchFilter(ctx) }).lean<Record<string, unknown>>();
   if (!doc) throw badRequest(ERROR_CODES.ENTITY_NOT_FOUND, `${entityType} not found`);
-  return String(doc.fullName ?? doc.propertyId ?? doc.type ?? entityType);
+  return { label: String(doc.fullName ?? doc.propertyId ?? doc.type ?? entityType), branchId: doc.branchId ? String(doc.branchId) : undefined };
 }
 
 export const noteService = {
@@ -33,8 +39,8 @@ export const noteService = {
       const existing = await noteRepository.findByUuid(auth, input.uuid);
       if (existing) return existing;
     }
-    const label = await assertEntity(auth, input.entityType, input.entityId);
-    const note = await noteRepository.create(auth, input);
+    const { label, branchId } = await entityInfo(auth, input.entityType, input.entityId);
+    const note = await noteRepository.create(auth, { ...input, branchId });
     const preview = input.content.length > 80 ? `${input.content.slice(0, 77)}…` : input.content;
     await activityService.record(auth, 'NOTE_ADDED', `Note on ${label}: ${preview}`, [{ entityType: input.entityType, entityId: input.entityId, label }]);
     return note;
