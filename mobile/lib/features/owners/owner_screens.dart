@@ -121,6 +121,7 @@ class OwnerDetailScreen extends ConsumerWidget {
                 InfoRow(l.t('common.email'), o.email, ltr: true),
                 InfoRow(l.t('common.address'), o.address),
                 InfoRow(l.t('common.notes'), o.notes),
+                InfoRow(l.t('common.dateAdded'), formatDate(o.createdAt, locale: l.locale.languageCode)),
                 const SizedBox(height: 8),
                 FutureBuilder(
                   future: repo.properties(PropertyFilter(ownerId: o.serverId ?? o.id), limit: 200),

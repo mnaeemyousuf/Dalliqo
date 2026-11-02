@@ -139,6 +139,18 @@ describe('notification centre', () => {
     await request(app).post('/api/auth/logout').set({ 'X-Client-Type': 'mobile' }).send({ refreshToken: s.refreshToken }).expect(200);
     expect(await DeviceToken.countDocuments({ userId: s.userId })).toBe(0);
   });
+
+  it('remembers that a device rings follow-up reminders locally', async () => {
+    const s = await registerOwner(app);
+    const token = 'g'.repeat(152);
+    await request(app).post('/api/devices').set(bearer(s.accessToken)).send({ token, platform: 'android', localReminders: true }).expect(200);
+    const { DeviceToken } = await import('../src/models/Notification');
+    expect((await DeviceToken.findOne({ token }).lean())?.localReminders).toBe(true);
+    // Re-registering without the flag (an older app build) turns it off again.
+    await request(app).post('/api/devices').set(bearer(s.accessToken)).send({ token, platform: 'android' }).expect(200);
+    expect((await DeviceToken.findOne({ token }).lean())?.localReminders).toBe(false);
+    expect((await request(app).post('/api/devices').set(bearer(s.accessToken)).send({ token, platform: 'android', localReminders: 'yes' })).status).toBe(400);
+  });
 });
 
 describe('My Day', () => {

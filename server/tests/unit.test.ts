@@ -1,6 +1,36 @@
 import { ALL_PERMISSIONS, ROLE_PRESETS, ROLES, matchBand, resolvePermissions } from '@recrm/shared';
 import { diffFields } from '../src/utils/diff';
 import { normalizePhone } from '../src/utils/phone';
+import { dataOnlyMessage, splitDevices } from '../src/services/pushService';
+
+describe('reminder pushes to phones with local reminders', () => {
+  const devices = [
+    { token: 'a', platform: 'android', localReminders: true },
+    { token: 'b', platform: 'android', localReminders: false },
+    { token: 'c', platform: 'ios' },
+    { token: 'd', platform: 'web', localReminders: true },
+  ];
+  const reminder = { title: 'Follow-up Reminder', body: 'Call Muhammad Ali', data: { deepLink: '/followups/f1' }, followUpId: 'f1' };
+
+  it('sends follow-up reminders data-only to devices that ring them locally, normally to the rest', () => {
+    const { dataOnly, normal } = splitDevices(devices, reminder);
+    expect(dataOnly.map((d) => d.token)).toEqual(['a']);
+    expect(normal.map((d) => d.token)).toEqual(['b', 'c', 'd']);
+  });
+
+  it('never sends other notifications data-only', () => {
+    const { dataOnly, normal } = splitDevices(devices, { title: 'New match', body: '…' });
+    expect(dataOnly).toEqual([]);
+    expect(normal).toHaveLength(4);
+  });
+
+  it('carries everything the app needs to show (or skip) the reminder itself', () => {
+    const msg = dataOnlyMessage(['a'], reminder);
+    expect(msg).not.toHaveProperty('notification');
+    expect(msg.data).toEqual({ deepLink: '/followups/f1', type: 'FOLLOWUP_REMINDER', followUpId: 'f1', title: 'Follow-up Reminder', body: 'Call Muhammad Ali' });
+    expect(msg.android.priority).toBe('high');
+  });
+});
 
 describe('normalizePhone', () => {
   it.each([

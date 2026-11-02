@@ -23,6 +23,8 @@ export const notificationService = {
   async notify(ctx: TenantContext, n: NewNotification): Promise<void> {
     const userIds = Array.from(new Set(n.userIds));
     if (!userIds.length) return;
+    // Lets phones that ring follow-up reminders themselves recognise this one as a duplicate.
+    const followUpId = n.category === 'FOLLOWUP' && typeof n.data?.followUpId === 'string' ? n.data.followUpId : undefined;
     try {
       const docs = await Notification.insertMany(
         userIds.map((userId) => ({
@@ -43,13 +45,14 @@ export const notificationService = {
           entity: 'notification',
           entityId: d._id.toString(),
           targetUserId: d.userId.toString(),
-          data: { category: d.category, title: d.title, body: d.body, deepLink: d.deepLink },
+          data: { category: d.category, title: d.title, body: d.body, deepLink: d.deepLink, ...(followUpId ? { followUpId } : {}) },
         });
       }
       const delivered = await pushService.sendToUsers(userIds, {
         title: n.title,
         body: n.body,
-        data: { category: n.category, deepLink: n.deepLink ?? '' },
+        data: { category: n.category, deepLink: n.deepLink ?? '', ...(followUpId ? { followUpId } : {}) },
+        followUpId,
       });
       if (delivered > 0) {
         await Notification.updateMany({ businessId: ctx.businessId, _id: { $in: docs.map((d) => d._id) } }, { $set: { pushedAt: new Date() } });

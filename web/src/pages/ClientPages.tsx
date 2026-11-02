@@ -249,17 +249,20 @@ export function ClientsPage() {
   const cats = useCategories();
   const members = useMembers();
   const canCreate = useCan(PERMISSIONS.CLIENTS_CREATE);
-  const [filters, setFilters] = useUrlState({ q: '', categoryId: '', status: '', purpose: '', propertyType: '', assignedTo: '', area: '', minBudget: '', maxBudget: '', sort: '-updatedAt', page: '1', view: 'table' });
+  const [filters, setFilters] = useUrlState({ q: '', categoryId: '', status: '', purpose: '', propertyType: '', assignedTo: '', area: '', block: '', minBudget: '', maxBudget: '', minSize: '', maxSize: '', sizeUnit: 'SQ_YARD', sort: '-updatedAt', page: '1', view: 'table' });
   const [formOpen, setFormOpen] = useState(false);
   const [followUpFor, setFollowUpFor] = useState<string | null>(null);
   const q = useDebounce(filters.q, 300);
   const area = useDebounce(filters.area, 300);
+  const block = useDebounce(filters.block, 300);
   const page = Number(filters.page);
-  const params = { ...filters, q, area, page, limit: 20, view: undefined };
+  const hasSize = Boolean(filters.minSize || filters.maxSize);
+  const params = { ...filters, q, area, block, page, limit: 20, view: undefined, sizeUnit: hasSize ? filters.sizeUnit : undefined };
   const query = useQuery({ queryKey: ['clients', params], queryFn: () => clientApi.list(params), placeholderData: (prev) => prev });
   const statuses = useEnumOptions('clientStatus', CLIENT_STATUSES);
   const purposes = useEnumOptions('clientPurpose', CLIENT_PURPOSES);
   const types = useEnumOptions('propertyType', PROPERTY_TYPES);
+  const units = useEnumOptions('sizeUnit', SIZE_UNITS);
   const f = (k: keyof typeof filters) => (e: { target: { value: string } }) => setFilters({ [k]: e.target.value, page: '1' } as never);
 
   const columns: Column<Client>[] = [
@@ -310,6 +313,10 @@ export function ClientsPage() {
         <Select options={purposes} placeholder={`${t('client.purpose')}: ${t('common.all')}`} value={filters.purpose} onChange={f('purpose')} />
         <Select options={types} placeholder={`${t('common.type')}: ${t('common.all')}`} value={filters.propertyType} onChange={f('propertyType')} />
         <Input placeholder={t('property.area')} value={filters.area} onChange={f('area')} />
+        <Input placeholder={t('property.block')} value={filters.block} onChange={f('block')} aria-label={t('property.block')} />
+        <Input type="number" min={0} placeholder={t('client.minSize')} value={filters.minSize} onChange={f('minSize')} aria-label={t('client.minSize')} />
+        <Input type="number" min={0} placeholder={t('client.maxSize')} value={filters.maxSize} onChange={f('maxSize')} aria-label={t('client.maxSize')} />
+        <Select options={units} value={filters.sizeUnit} onChange={f('sizeUnit')} aria-label={t('property.sizeUnit')} />
         <Input type="number" placeholder={t('client.minBudget')} value={filters.minBudget} onChange={f('minBudget')} />
         <Input type="number" placeholder={t('client.maxBudget')} value={filters.maxBudget} onChange={f('maxBudget')} />
         {members.options.length > 0 && <Select options={members.options} placeholder={`${t('client.assignedTo')}: ${t('common.all')}`} value={filters.assignedTo} onChange={f('assignedTo')} />}
@@ -490,7 +497,7 @@ export function ClientDetailPage() {
               <Info label={t('client.source')}>{c.source ? t(`enums.source.${c.source}`) : ''}</Info>
               <Info label={t('client.assignedTo')}>{members.name(c.assignedTo) ?? t('client.unassigned')}</Info>
               <Info label={t('client.lastContacted')}>{c.lastContactedAt ? formatDate(c.lastContactedAt, true) : ''}</Info>
-              <Info label={t('common.createdAt')}>{formatDate(c.createdAt)}</Info>
+              <Info label={t('common.dateAdded')}>{formatDate(c.createdAt)}</Info>
               {c.notes && <Info label={t('common.notes')}>{c.notes}</Info>}
             </dl>
           </Card>

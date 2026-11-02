@@ -82,6 +82,9 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
     final repo = ref.read(onlineRepositoryProvider);
     var draft = ref.read(clientFilterProvider);
     final area = TextEditingController(text: draft.area ?? '');
+    final block = TextEditingController(text: draft.block ?? '');
+    final minSize = TextEditingController(text: draft.minSize?.toString() ?? '');
+    final maxSize = TextEditingController(text: draft.maxSize?.toString() ?? '');
     final minBudget = TextEditingController(text: draft.minBudget?.toString() ?? '');
     final maxBudget = TextEditingController(text: draft.maxBudget?.toString() ?? '');
     String? text(TextEditingController c) => c.text.trim().isEmpty ? null : c.text.trim();
@@ -100,6 +103,16 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
           AppDropdown<String>(label: l.t('common.type'), value: draft.propertyType, allowEmpty: true, items: {for (final s in propertyTypes) s: l.enumLabel('propertyType', s)}, onChanged: (v) => pick(draft.copyWith(propertyType: v))),
           const SizedBox(height: 12),
           AppTextField(label: l.t('property.area'), controller: area),
+          const SizedBox(height: 12),
+          AppTextField(label: l.t('property.block'), controller: block),
+          const SizedBox(height: 12),
+          Row(children: [
+            Expanded(child: AppTextField(label: l.t('client.minSize'), controller: minSize, keyboardType: const TextInputType.numberWithOptions(decimal: true))),
+            const SizedBox(width: 8),
+            Expanded(child: AppTextField(label: l.t('client.maxSize'), controller: maxSize, keyboardType: const TextInputType.numberWithOptions(decimal: true))),
+          ]),
+          const SizedBox(height: 12),
+          AppDropdown<String>(label: l.t('property.sizeUnit'), value: draft.sizeUnit, items: {for (final u in sqftPerUnit.keys) u: l.enumLabel('sizeUnit', u)}, onChanged: (v) => pick(draft.copyWith(sizeUnit: v))),
           const SizedBox(height: 12),
           Row(children: [
             Expanded(child: AppTextField(label: l.t('client.minBudget'), controller: minBudget, keyboardType: TextInputType.number)),
@@ -143,6 +156,9 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                   ref.read(clientFilterProvider.notifier).state = draft.copyWith(
                     search: ref.read(clientFilterProvider).search,
                     area: text(area),
+                    block: text(block),
+                    minSize: num.tryParse(minSize.text.trim()),
+                    maxSize: num.tryParse(maxSize.text.trim()),
                     minBudget: num.tryParse(minBudget.text.trim()),
                     maxBudget: num.tryParse(maxBudget.text.trim()),
                   );
@@ -289,6 +305,7 @@ class ClientDetailScreen extends ConsumerWidget {
                 InfoRow(l.t('client.budget'), formatRange(c.minBudget, c.maxBudget, urdu: l.isRtl)),
                 InfoRow(l.t('client.lastContacted'), c.lastContactedAt == null ? null : formatDate(c.lastContactedAt, time: true, locale: l.locale.languageCode)),
                 InfoRow(l.t('common.notes'), c.notes),
+                InfoRow(l.t('common.dateAdded'), formatDate(c.createdAt, locale: l.locale.languageCode)),
                 if (c.local?.syncError != null) Text(c.local!.syncError!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
               ]),
               ListView(padding: const EdgeInsets.all(16), children: [for (final r in c.requirements) _RequirementCard(r)]),

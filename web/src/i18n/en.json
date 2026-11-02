@@ -76,7 +76,8 @@
     "more": "More",
     "openInMaps": "Open in Google Maps",
     "minutes": "minutes",
-    "percent": "{{value}}%"
+    "percent": "{{value}}%",
+    "dateAdded": "Date added"
   },
   "nav": {
     "dashboard": "Dashboard",

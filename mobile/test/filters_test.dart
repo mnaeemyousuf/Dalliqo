@@ -75,5 +75,52 @@ void main() {
       expect(const ClientFilter(assignedTo: 'u2', categoryId: 'cat1').matches(client), isTrue);
       expect(const ClientFilter(assignedTo: 'u1').matches(client), isFalse);
     });
+
+    // Same cases as the API test "filters clients by block and by requirement size".
+    final plotBuyer = <String, dynamic>{
+      'preferredBlock': 'Block 13-D',
+      'requirements': [
+        {'blocks': ['Block 13-D'], 'minSize': 100, 'maxSize': 133, 'sizeUnit': 'SQ_YARD', 'minSizeSqft': 900, 'maxSizeSqft': 1197},
+      ],
+    };
+    // Created offline: no server sq ft values yet; block only on the second requirement.
+    final kanalBuyer = <String, dynamic>{
+      'requirements': [
+        {'blocks': <String>[], 'minSize': 1, 'sizeUnit': 'KANAL'},
+        {'blocks': ['Block 7'], 'minSize': 240, 'maxSize': 300, 'sizeUnit': 'SQ_YARD'},
+      ],
+    };
+    final anySize = <String, dynamic>{
+      'requirements': [
+        {'blocks': <String>[]},
+      ],
+    };
+
+    test('block matches the preferred block or any requirement block', () {
+      expect(const ClientFilter(block: '13-d').matches(plotBuyer), isTrue);
+      expect(const ClientFilter(block: 'block 7').matches(kanalBuyer), isTrue);
+      expect(const ClientFilter(block: '13-d').matches(kanalBuyer), isFalse);
+    });
+
+    test('size ranges overlap in sq ft across units; open ends overlap; no size never matches', () {
+      bool m(ClientFilter f, Map<String, dynamic> d) => f.matches(d);
+      expect(m(const ClientFilter(minSize: 120, maxSize: 120), plotBuyer), isTrue);
+      expect(m(const ClientFilter(minSize: 120, maxSize: 120), kanalBuyer), isFalse);
+      expect(m(const ClientFilter(minSize: 250, maxSize: 250), kanalBuyer), isTrue);
+      expect(m(const ClientFilter(minSize: 1, sizeUnit: 'KANAL'), kanalBuyer), isTrue);
+      expect(m(const ClientFilter(minSize: 1, sizeUnit: 'KANAL'), plotBuyer), isFalse);
+      expect(m(const ClientFilter(maxSize: 5, sizeUnit: 'MARLA'), plotBuyer), isTrue);
+      expect(m(const ClientFilter(minSize: 120), anySize), isFalse);
+      expect(m(const ClientFilter(), anySize), isTrue);
+      expect(m(const ClientFilter(block: '13-d', minSize: 250, maxSize: 250), plotBuyer), isFalse);
+    });
+
+    test('block/size count as active filters and cleared() keeps the unit', () {
+      const f = ClientFilter(block: '7', minSize: 1, sizeUnit: 'KANAL');
+      expect(f.active, isTrue);
+      expect(f.cleared().active, isFalse);
+      expect(f.cleared().sizeUnit, 'KANAL');
+      expect(f.copyWith(block: null).block, isNull);
+    });
   });
 }

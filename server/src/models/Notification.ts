@@ -46,6 +46,8 @@ export interface DeviceTokenDoc {
   sessionId?: Types.ObjectId;
   token: string;
   platform: 'android' | 'ios' | 'web';
+  /** The app schedules follow-up reminders on the phone itself; reminder pushes go out data-only so it can de-duplicate. */
+  localReminders?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -57,6 +59,7 @@ const deviceSchema = new Schema<DeviceTokenDoc>(
     sessionId: { type: Schema.Types.ObjectId, ref: 'Session' },
     token: { type: String, required: true },
     platform: { type: String, enum: ['android', 'ios', 'web'], required: true },
+    localReminders: { type: Boolean, default: false },
   },
   { timestamps: true, versionKey: false },
 );

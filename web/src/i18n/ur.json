@@ -76,7 +76,8 @@
     "more": "مزید",
     "openInMaps": "گوگل میپس میں کھولیں",
     "minutes": "منٹ",
-    "percent": "{{value}}%"
+    "percent": "{{value}}%",
+    "dateAdded": "تاریخِ اندراج"
   },
   "nav": {
     "dashboard": "ڈیش بورڈ",

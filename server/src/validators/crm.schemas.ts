@@ -98,10 +98,14 @@ export const clientListQuery = pagination.extend({
   assignedTo: objectId.optional(),
   area: optionalText(120),
   society: optionalText(120),
+  block: optionalText(60),
   propertyType: z.enum(PROPERTY_TYPES).optional(),
   purpose: z.enum(CLIENT_PURPOSES).optional(),
   minBudget: money.optional(),
   maxBudget: money.optional(),
+  minSize: size.optional(),
+  maxSize: size.optional(),
+  sizeUnit: z.enum(SIZE_UNITS).optional(),
   sort: z.enum(['-updatedAt', '-createdAt', 'fullName', '-matchCount', '-maxBudget']).optional(),
 });
 
@@ -275,7 +279,7 @@ export const followUpListQuery = pagination.extend({
 // ── Notifications & devices ──
 export const notificationListQuery = pagination.extend({ category: z.enum(NOTIFICATION_CATEGORIES).optional(), unread: bool.optional() });
 export const markAllReadSchema = z.object({ category: z.enum(NOTIFICATION_CATEGORIES).optional() }).strict();
-export const deviceSchema = z.object({ token: z.string().min(20).max(4096), platform: z.enum(['android', 'ios', 'web']) }).strict();
+export const deviceSchema = z.object({ token: z.string().min(20).max(4096), platform: z.enum(['android', 'ios', 'web']), localReminders: z.boolean().optional() }).strict();
 
 // ── Dashboard, search, export, sync ──
 export const analyticsQuery = z.object({ range: z.enum(['7d', '30d', '12m']).default('30d') });

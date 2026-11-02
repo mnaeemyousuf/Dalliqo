@@ -29,7 +29,8 @@ async function seedBulk(businessId: string, userId: string, n: number, offset = 
       businessId: bid, createdBy: uid, updatedBy: uid, uuid: new Types.UUID().toString(), version: 1, deletedAt: null,
       fullName: name, mobileNumber: mobile, whatsappNumber: mobile, status: 'ACTIVE', priority: 'MEDIUM', purchaseOrRental: 'PURCHASE',
       preferredSociety: society, minBudget: 10_000_000, maxBudget: 20_000_000 + (i % 50) * 1_000_000, matchCount: i % 7,
-      requirements: [{ isPrimary: true, active: true, purpose: 'PURCHASE', propertyTypes: [TYPES[i % TYPES.length]], areas: [], societies: [society], blocks: [], minBudget: 10_000_000, maxBudget: 30_000_000 }],
+      preferredBlock: `Block ${i % 20}`,
+      requirements: [{ isPrimary: true, active: true, purpose: 'PURCHASE', propertyTypes: [TYPES[i % TYPES.length]], areas: [], societies: [society], blocks: [`Block ${i % 20}`], minSize: 100 + (i % 300), maxSize: 150 + (i % 300), sizeUnit: 'SQ_YARD', minSizeSqft: (100 + (i % 300)) * 9, maxSizeSqft: (150 + (i % 300)) * 9, minBudget: 10_000_000, maxBudget: 30_000_000 }],
       searchText: searchBlob(name, mobile),
     };
   });
@@ -73,6 +74,8 @@ run(`volume: ${N} clients + ${N} properties`, () => {
     await timed('GET /clients?page=200', () => request(app).get('/api/clients?limit=20&page=200').set(auth), results);
     await timed('GET /clients?q=<name>', () => request(app).get('/api/clients?q=client%204321').set(auth), results);
     await timed('GET /clients?q=<mobile digits>', () => request(app).get('/api/clients?q=1004321').set(auth), results);
+    await timed('GET /clients?block=<block>', () => request(app).get('/api/clients?block=block%2013&limit=20').set(auth), results);
+    await timed('GET /clients?minSize&maxSize (sq yd)', () => request(app).get('/api/clients?minSize=200&maxSize=240&sizeUnit=SQ_YARD&limit=20').set(auth), results);
     await timed('GET /properties (page 1, 24 rows)', () => request(app).get('/api/properties?limit=24').set(auth), results);
     await timed('GET /properties?q=RE-004321', () => request(app).get('/api/properties?q=RE-004321').set(auth), results);
     await timed('GET /properties (type+status+price+society filters)', () => request(app).get('/api/properties?propertyType=HOUSE&status=AVAILABLE&minPrice=10000000&maxPrice=60000000&society=dha&limit=24').set(auth), results);

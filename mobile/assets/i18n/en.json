@@ -76,7 +76,8 @@
     "more": "More",
     "openInMaps": "Open in Google Maps",
     "minutes": "minutes",
-    "percent": "{{value}}%"
+    "percent": "{{value}}%",
+    "dateAdded": "Date added"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -800,6 +801,10 @@
       "pending": "{{count}} changes waiting to upload",
       "upToDate": "Everything is backed up",
       "done": "Backup complete"
+    },
+    "reminders": {
+      "title": "Follow-up reminder",
+      "body": "{{type}} · {{client}}"
     }
   }
 }

@@ -35,8 +35,12 @@ class ClientFilter {
     this.purpose,
     this.propertyType,
     this.area,
+    this.block,
     this.minBudget,
     this.maxBudget,
+    this.minSize,
+    this.maxSize,
+    this.sizeUnit = 'SQ_YARD',
     this.assignedTo,
     this.sort = 'updated',
   });
@@ -46,8 +50,14 @@ class ClientFilter {
   final String? purpose;
   final String? propertyType;
   final String? area;
+  final String? block;
   final num? minBudget;
   final num? maxBudget;
+
+  /// Requested size range in [sizeUnit]; compared in sq ft against each requirement's range.
+  final num? minSize;
+  final num? maxSize;
+  final String sizeUnit;
   final String? assignedTo;
   final String sort;
 
@@ -58,8 +68,12 @@ class ClientFilter {
     Object? purpose = _keep,
     Object? propertyType = _keep,
     Object? area = _keep,
+    Object? block = _keep,
     Object? minBudget = _keep,
     Object? maxBudget = _keep,
+    Object? minSize = _keep,
+    Object? maxSize = _keep,
+    String? sizeUnit,
     Object? assignedTo = _keep,
     String? sort,
   }) =>
@@ -70,16 +84,43 @@ class ClientFilter {
         purpose: identical(purpose, _keep) ? this.purpose : purpose as String?,
         propertyType: identical(propertyType, _keep) ? this.propertyType : propertyType as String?,
         area: identical(area, _keep) ? this.area : area as String?,
+        block: identical(block, _keep) ? this.block : block as String?,
         minBudget: identical(minBudget, _keep) ? this.minBudget : minBudget as num?,
         maxBudget: identical(maxBudget, _keep) ? this.maxBudget : maxBudget as num?,
+        minSize: identical(minSize, _keep) ? this.minSize : minSize as num?,
+        maxSize: identical(maxSize, _keep) ? this.maxSize : maxSize as num?,
+        sizeUnit: sizeUnit ?? this.sizeUnit,
         assignedTo: identical(assignedTo, _keep) ? this.assignedTo : assignedTo as String?,
         sort: sort ?? this.sort,
       );
 
-  /// Keeps the search text and sort order, drops every filter.
-  ClientFilter cleared() => ClientFilter(search: search, sort: sort);
+  /// Keeps the search text, sort order and size unit, drops every filter.
+  ClientFilter cleared() => ClientFilter(search: search, sort: sort, sizeUnit: sizeUnit);
 
-  bool get active => [categoryId, status, purpose, propertyType, area, minBudget, maxBudget, assignedTo].any((v) => v != null);
+  bool get active => [categoryId, status, purpose, propertyType, area, block, minBudget, maxBudget, minSize, maxSize, assignedTo].any((v) => v != null);
+
+  /// Same rule as the API: a requirement matches when its size range overlaps the requested one
+  /// (open ends overlap) and it states at least one bound. Offline-created requirements may not
+  /// have the server's sq ft values yet, so they are computed from size + unit.
+  bool _sizeMatches(Iterable<Map> reqs) {
+    if (minSize == null && maxSize == null) return true;
+    final per = sqftPerUnit[sizeUnit] ?? 1;
+    final lo = minSize == null ? null : minSize! * per;
+    final hi = maxSize == null ? null : maxSize! * per;
+    num? sqft(Map r, String k) {
+      final stored = r['${k}Sqft'] as num?;
+      if (stored != null) return stored;
+      final v = r[k] as num?;
+      return v == null ? null : v * (sqftPerUnit[r['sizeUnit']] ?? sqftPerUnit['SQ_YARD']!);
+    }
+
+    return reqs.any((r) {
+      final rMin = sqft(r, 'minSize');
+      final rMax = sqft(r, 'maxSize');
+      if (rMin == null && rMax == null) return false;
+      return (lo == null || rMax == null || rMax >= lo) && (hi == null || rMin == null || rMin <= hi);
+    });
+  }
 
   bool matches(Map<String, dynamic> d) {
     final reqs = ((d['requirements'] as List?) ?? const []).whereType<Map>();
@@ -98,6 +139,8 @@ class ClientFilter {
         // Budget ranges overlap the requested range (open-ended ranges always overlap).
         (minBudget == null || cMax == null || cMax >= minBudget!) &&
         (maxBudget == null || cMin == null || cMin <= maxBudget!) &&
+        (block == null || _contains(d['preferredBlock'], block!) || reqs.any((r) => _contains(r['blocks'], block!))) &&
+        _sizeMatches(reqs) &&
         (assignedTo == null || assigned == assignedTo);
   }
 
@@ -110,13 +153,17 @@ class ClientFilter {
       other.purpose == purpose &&
       other.propertyType == propertyType &&
       other.area == area &&
+      other.block == block &&
       other.minBudget == minBudget &&
       other.maxBudget == maxBudget &&
+      other.minSize == minSize &&
+      other.maxSize == maxSize &&
+      other.sizeUnit == sizeUnit &&
       other.assignedTo == assignedTo &&
       other.sort == sort;
 
   @override
-  int get hashCode => Object.hash(search, categoryId, status, purpose, propertyType, area, minBudget, maxBudget, assignedTo, sort);
+  int get hashCode => Object.hash(search, categoryId, status, purpose, propertyType, area, block, minBudget, maxBudget, minSize, maxSize, sizeUnit, assignedTo, sort);
 }
 
 /// Filters for the property list (local, same semantics as `GET /properties`).

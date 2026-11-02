@@ -384,6 +384,7 @@ class _Overview extends ConsumerWidget {
       InfoRow(l.t('property.bedrooms'), p.bedrooms?.toString()),
       InfoRow(l.t('property.bathrooms'), p.bathrooms?.toString()),
       InfoRow(l.t('property.floors'), p.floors?.toString()),
+      InfoRow(l.t('common.dateAdded'), formatDate(p.createdAt, locale: l.locale.languageCode)),
       if (owner != null) ...[
         SectionHeader(l.t('property.owner')),
         ListTile(

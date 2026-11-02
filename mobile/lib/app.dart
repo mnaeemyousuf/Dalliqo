@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'core/config/env.dart';
 import 'core/l10n/app_localizations.dart';
 import 'core/notifications/push_service.dart';
+import 'core/notifications/reminder_scheduler.dart';
 import 'core/providers.dart';
 import 'core/realtime/realtime_service.dart';
 import 'core/router/app_router.dart';
@@ -15,17 +16,38 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/brand_tokens.dart';
 import 'features/auth/auth_controller.dart';
 
-final pushServiceProvider = Provider<PushService>((ref) => PushService(
+final Provider<PushService> pushServiceProvider = Provider<PushService>((ref) => PushService(
       ref.watch(apiClientProvider),
       onOpen: (link) => ref.read(routerProvider).push(appRouteFor(link)),
+      shouldShowReminder: (id) => ref.read(reminderSchedulerProvider).shouldShowPush(id),
     ));
+
+/// Local follow-up reminders (work without Firebase and without internet).
+final Provider<ReminderScheduler> reminderSchedulerProvider = Provider<ReminderScheduler>((ref) {
+  final db = ref.watch(databaseProvider);
+  return ReminderScheduler(
+    db,
+    LocalNotificationsPlatform(ref.watch(pushServiceProvider).plugin),
+    userId: () => ref.read(authProvider).userId,
+    defaultMinutes: () async => ((await db.getJson('session.settings'))?['reminders']?['defaultMinutesBefore'] as num?)?.toInt() ?? 30,
+    text: () async {
+      final l = await AppLocalizations.delegate.load(ref.read(prefsProvider).locale);
+      return l.t;
+    },
+  );
+});
 
 final realtimeProvider = ChangeNotifierProvider<RealtimeService>((ref) => RealtimeService(
       ref.watch(secureStoreProvider),
       ref.watch(apiClientProvider),
       // Another device changed something: pull the delta.
       onChange: (_) => ref.read(syncEngineProvider).schedule(const Duration(milliseconds: 800)),
-      onNotification: (d) => ref.read(pushServiceProvider).show(d['title'] as String? ?? '', d['body'] as String? ?? '', deepLink: d['deepLink'] as String?),
+      onNotification: (d) async {
+        // A follow-up reminder this phone already rang by itself is not shown twice.
+        final followUpId = d['followUpId'] as String?;
+        if (followUpId != null && !await ref.read(reminderSchedulerProvider).shouldShowPush(followUpId)) return;
+        await ref.read(pushServiceProvider).show(d['title'] as String? ?? '', d['body'] as String? ?? '', deepLink: d['deepLink'] as String?);
+      },
       onSessionRevoked: () => ref.read(authProvider.notifier).signOut(callServer: false),
     ));
 
@@ -37,6 +59,24 @@ class CrmApp extends ConsumerStatefulWidget {
 
 class _CrmAppState extends ConsumerState<CrmApp> with WidgetsBindingObserver {
   DateTime? _backgroundedAt;
+  StreamSubscription<String>? _followUpChanges;
+  Timer? _reminderDebounce;
+
+  /// Re-plans local reminders after follow-up rows change (local edits and sync pulls), debounced.
+  void _watchReminders() {
+    _followUpChanges ??= ref.read(databaseProvider).changes.where((e) => e == 'followUps').listen((_) {
+      _reminderDebounce?.cancel();
+      _reminderDebounce = Timer(const Duration(milliseconds: 600), () => unawaited(ref.read(reminderSchedulerProvider).resync()));
+    });
+  }
+
+  Future<void> _startReminders() async {
+    final platform = LocalNotificationsPlatform(ref.read(pushServiceProvider).plugin);
+    await platform.init();
+    await platform.requestPermissions();
+    _watchReminders();
+    await ref.read(reminderSchedulerProvider).resync();
+  }
 
   @override
   void initState() {
@@ -49,6 +89,8 @@ class _CrmAppState extends ConsumerState<CrmApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _followUpChanges?.cancel();
+    _reminderDebounce?.cancel();
     super.dispose();
   }
 
@@ -78,8 +120,12 @@ class _CrmAppState extends ConsumerState<CrmApp> with WidgetsBindingObserver {
       if (signedInNow && !wasSignedIn) {
         unawaited(ref.read(realtimeProvider).connect());
         unawaited(ref.read(pushServiceProvider).registerDevice());
+        unawaited(_startReminders());
       }
-      if (next.status == AuthStatus.signedOut) unawaited(ref.read(realtimeProvider).disconnect());
+      if (next.status == AuthStatus.signedOut) {
+        unawaited(ref.read(realtimeProvider).disconnect());
+        unawaited(ref.read(reminderSchedulerProvider).cancelAll());
+      }
     });
     final prefs = ref.watch(prefsProvider);
     return MaterialApp.router(

@@ -608,7 +608,7 @@ export function PropertyDetailPage() {
                 <Info label={t('property.bedrooms')}>{p.bedrooms}</Info>
                 <Info label={t('property.bathrooms')}>{p.bathrooms}</Info>
                 <Info label={t('property.floors')}>{p.floors}</Info>
-                <Info label={t('common.createdAt')}>{formatDate(p.createdAt)}</Info>
+                <Info label={t('common.dateAdded')}>{formatDate(p.createdAt)}</Info>
               </dl>
               {p.description && <p className="mt-4 whitespace-pre-wrap text-sm">{p.description}</p>}
             </Card>

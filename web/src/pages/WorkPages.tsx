@@ -135,7 +135,7 @@ export function OwnerDetailPage() {
     <div className="space-y-4">
       <PageHeader
         title={o.fullName}
-        subtitle={<span className="ltr-nums">{o.mobileNumber}{o.email ? ` · ${o.email}` : ''}</span>}
+        subtitle={<><span className="ltr-nums">{o.mobileNumber}{o.email ? ` · ${o.email}` : ''}</span> · {t('common.dateAdded')}: {formatDate(o.createdAt)}</>}
         actions={
           <>
             <ContactActions phone={o.mobileNumber} whatsapp={o.whatsappNumber} />

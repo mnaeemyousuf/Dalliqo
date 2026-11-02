@@ -140,6 +140,7 @@ schema.index({ businessId: 1, status: 1, updatedAt: -1 });
 schema.index({ businessId: 1, categoryId: 1 });
 schema.index({ businessId: 1, assignedTo: 1 });
 schema.index({ businessId: 1, 'requirements.purpose': 1, 'requirements.active': 1 });
+schema.index({ businessId: 1, 'requirements.blocks': 1 });
 schema.index({ businessId: 1, searchText: 1 });
 schema.plugin(tenantGuardPlugin);
 

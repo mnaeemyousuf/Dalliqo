@@ -87,6 +87,41 @@ describe('clients', () => {
     expect(injection.status).toBe(400);
   });
 
+  it('filters clients by block and by requirement size (any unit)', async () => {
+    const owner = await registerOwner(app);
+    const auth = bearer(owner.accessToken);
+    // 100–133 sq yd (default), block 13-D
+    await createClient(app, owner, { fullName: 'Plot Buyer', mobileNumber: '03001112233', preferredBlock: 'Block 13-D' });
+    // 1 kanal and more, block in a secondary requirement only
+    await createClient(app, owner, {
+      fullName: 'Kanal Buyer', mobileNumber: '03334445566',
+      requirements: [
+        { purpose: 'PURCHASE', propertyTypes: ['HOUSE'], minSize: 1, sizeUnit: 'KANAL', isPrimary: true },
+        { purpose: 'PURCHASE', propertyTypes: ['RESIDENTIAL_PLOT'], blocks: ['Block 7'], minSize: 240, maxSize: 300, sizeUnit: 'SQ_YARD' },
+      ],
+    });
+    // no size preference at all
+    await createClient(app, owner, { fullName: 'Any Size', mobileNumber: '03451239876', minSize: undefined, maxSize: undefined, sizeUnit: undefined });
+    const names = async (qs: string) => {
+      const res = await request(app).get(`/api/clients?${qs}`).set(auth);
+      expect(res.status).toBe(200);
+      return res.body.data.map((c: { fullName: string }) => c.fullName).sort();
+    };
+    expect(await names('block=13-d')).toEqual(['Plot Buyer']);
+    expect(await names('block=block%207')).toEqual(['Kanal Buyer']);
+    // 120 sq yd overlaps 100–133 only
+    expect(await names('minSize=120&maxSize=120')).toEqual(['Plot Buyer']);
+    // 250 sq yd: inside the second requirement's 240–300 range
+    expect(await names('minSize=250&maxSize=250&sizeUnit=SQ_YARD')).toEqual(['Kanal Buyer']);
+    // ≥ 1 kanal (4500 sq ft = 500 sq yd): open-ended "1 kanal and more" overlaps
+    expect(await names('minSize=1&sizeUnit=KANAL')).toEqual(['Kanal Buyer']);
+    // up to 5 marla (1125 sq ft = 125 sq yd) overlaps 100–133 sq yd
+    expect(await names('maxSize=5&sizeUnit=MARLA')).toEqual(['Plot Buyer']);
+    // block and size must hold together
+    expect(await names('block=13-d&minSize=250&maxSize=250')).toEqual([]);
+    expect((await request(app).get('/api/clients?minSize=-1').set(auth)).status).toBe(400);
+  });
+
   it('updates with optimistic concurrency and records audit + activity', async () => {
     const owner = await registerOwner(app);
     const c = await createClient(app, owner);

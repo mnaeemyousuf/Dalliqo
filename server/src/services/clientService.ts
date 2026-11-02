@@ -82,10 +82,15 @@ export interface ClientQuery {
   assignedTo?: string;
   area?: string;
   society?: string;
+  block?: string;
   propertyType?: PropertyType;
   purpose?: ClientPurpose;
   minBudget?: number;
   maxBudget?: number;
+  /** Requested size range, compared in sq ft against each requirement's range. */
+  minSize?: number;
+  maxSize?: number;
+  sizeUnit?: SizeUnit;
   sort?: string;
   page: number;
   limit: number;
@@ -309,6 +314,24 @@ export const clientService = {
     // Budget ranges overlap the requested range.
     if (q.minBudget !== undefined) and.push({ $or: [{ maxBudget: { $gte: q.minBudget } }, { maxBudget: null }] });
     if (q.maxBudget !== undefined) and.push({ $or: [{ minBudget: { $lte: q.maxBudget } }, { minBudget: null }] });
+    if (q.block) {
+      const block = new RegExp(escapeRegex(q.block), 'i');
+      and.push({ $or: [{ preferredBlock: block }, { 'requirements.blocks': block }] });
+    }
+    if (q.minSize !== undefined || q.maxSize !== undefined) {
+      // A client matches when one of its requirements wants a size range overlapping the
+      // requested one (open-ended ranges overlap), compared in sq ft like property sizes.
+      const settings = await settingsService.get(ctx);
+      const unit = q.sizeUnit ?? 'SQ_YARD';
+      const lo = settingsService.toSqft(settings, q.minSize, unit);
+      const hi = settingsService.toSqft(settings, q.maxSize, unit);
+      const req: Record<string, unknown>[] = [];
+      if (lo !== undefined) req.push({ $or: [{ maxSizeSqft: { $gte: lo } }, { maxSizeSqft: null }] });
+      if (hi !== undefined) req.push({ $or: [{ minSizeSqft: { $lte: hi } }, { minSizeSqft: null }] });
+      // At least one bound must be known, otherwise "any size" would match every range.
+      req.push({ $or: [{ minSizeSqft: { $ne: null } }, { maxSizeSqft: { $ne: null } }] });
+      and.push({ requirements: { $elemMatch: { $and: req } } });
+    }
     if (and.length) filter.$and = and;
     return clientRepository.list(ctx, filter, { page: q.page, limit: q.limit, sort: SORTS[q.sort ?? '-updatedAt'] ?? SORTS['-updatedAt'] });
   },
