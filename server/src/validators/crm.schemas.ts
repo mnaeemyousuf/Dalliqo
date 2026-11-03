@@ -396,6 +396,12 @@ export const agreementTemplateUpdateSchema = z
   .object({ name: z.string().trim().min(1).max(120).optional(), body: z.string().trim().min(20).max(30_000).optional(), archived: z.boolean().optional() })
   .strict();
 export const agreementTemplateListQuery = z.object({ kind: z.enum(AGREEMENT_KINDS).optional(), language: z.enum(AGREEMENT_LANGUAGES).optional(), includeArchived: bool.optional() });
+export const brochureQuery = z.object({
+  format: z.enum(['pdf', 'png', 'text']).default('pdf'),
+  lang: z.enum(['en', 'ur']).default('en'),
+  hidePrice: bool.optional(),
+  agentId: objectId.optional(),
+});
 export const financeReportQuery = z.object({ groupBy: z.enum(['month', 'category']).default('month'), from: z.coerce.date().optional(), to: z.coerce.date().optional() });
 
 // ── Media & documents ──

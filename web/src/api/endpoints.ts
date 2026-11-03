@@ -83,6 +83,25 @@ export const dealApi = {
   report: (params: Params) => api<CommissionReport>({ url: '/reports/commissions', params: clean(params) }),
 };
 
+export const brochureApi = {
+  text: (id: string, params: Params) => api<{ text: string; whatsappUrl: string }>({ url: `/properties/${id}/brochure`, params: clean({ ...params, format: 'text' }) }),
+  /** Downloads the PDF / PNG through the authenticated client. */
+  async download(id: string, params: Params & { format: 'pdf' | 'png' }) {
+    try {
+      const r = await http.get<Blob>(`/properties/${id}/brochure`, { params: clean(params), responseType: 'blob', timeout: 2 * 60_000 });
+      const name = /filename="([^"]+)"/.exec(String(r.headers['content-disposition']))?.[1] ?? `brochure.${params.format}`;
+      const url = URL.createObjectURL(r.data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    } catch (e) {
+      throw toApiError(e);
+    }
+  },
+};
+
 export const agreementApi = {
   list: (params: Params) => apiPage<Agreement>('/agreements', params),
   get: (id: string) => api<Agreement>({ url: `/agreements/${id}` }),

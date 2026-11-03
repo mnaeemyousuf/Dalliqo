@@ -113,6 +113,7 @@ r.delete('/owners/:id', can(P.OWNERS_DELETE), id, h(ownerController.remove));
 r.get('/properties', can(P.PROPERTIES_READ), validate({ query: s.propertyListQuery }), h(propertyController.list));
 r.post('/properties', can(P.PROPERTIES_CREATE), validate({ body: s.propertyCreateSchema }), h(propertyController.create));
 r.get('/properties/:id', can(P.PROPERTIES_READ), id, h(propertyController.get));
+r.get('/properties/:id/brochure', can(P.PROPERTIES_READ, P.EXPORTS_CREATE), validate({ params: idParams, query: s.brochureQuery }), h(propertyController.brochure));
 r.patch('/properties/:id', can(P.PROPERTIES_UPDATE), validate({ params: idParams, body: s.propertyUpdateSchema }), h(propertyController.update));
 r.post('/properties/:id/verify', can(P.PROPERTIES_UPDATE), validate({ params: idParams, body: s.propertyVerifySchema }), h(propertyController.verify));
 r.post('/properties/:id/status', can(P.PROPERTIES_UPDATE), validate({ params: idParams, body: s.propertyStatusSchema }), h(propertyController.changeStatus));

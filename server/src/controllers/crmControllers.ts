@@ -20,6 +20,7 @@ import { settingsService } from '../services/settingsService';
 import { syncService } from '../services/syncService';
 import { transactionService } from '../services/transactionService';
 import { agreementService } from '../services/agreementService';
+import { brochureService, type BrochureOptions } from '../services/brochureService';
 import { clientRepository, propertyRepository } from '../repositories/entityRepositories';
 import { clientListQuery, dealListQuery, documentUploadFields, agreementListQuery, financeReportQuery, followUpListQuery, matchListQuery, ownerListQuery, propertyListQuery, transactionListQuery } from '../validators/crm.schemas';
 import type { ZodTypeAny } from 'zod';
@@ -265,6 +266,27 @@ export const ownerController = {
 };
 
 export const propertyController = {
+  /** Brochure: PDF, 1080×1350 PNG or share text (JSON). */
+  async brochure(req: Request, res: Response) {
+    const o = req.query as unknown as BrochureOptions;
+    if (o.format === 'text') {
+      const r = await brochureService.generate(authOf(req), req.params.id, o);
+      sendSuccess(res, { text: r.text, whatsappUrl: r.whatsappUrl });
+      return;
+    }
+    const { PassThrough } = await import('node:stream');
+    const buffer = new PassThrough();
+    const chunks: Buffer[] = [];
+    buffer.on('data', (c: Buffer) => chunks.push(c));
+    // Generated fully before headers are sent, so failures still return a proper JSON error.
+    const done = new Promise<void>((resolve) => buffer.on('end', () => resolve()));
+    const r = await brochureService.generate(authOf(req), req.params.id, o, buffer);
+    await done;
+    res.setHeader('Content-Type', r.contentType);
+    res.setHeader('Content-Disposition', `inline; filename="${r.fileName}"`);
+    res.setHeader('Cache-Control', 'no-store');
+    res.end(Buffer.concat(chunks));
+  },
   async list(req: Request, res: Response) {
     const q = query<Q>(req);
     list(res, q.page, q.limit, await propertyService.list(authOf(req), q));

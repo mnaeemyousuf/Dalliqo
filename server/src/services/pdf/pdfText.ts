@@ -53,9 +53,9 @@ export function pdfText(doc: Pdf, text: string, x: number, y: number, opts: PDFK
   doc.y = y + lineHeight;
 }
 
-type Dir = 'L' | 'R';
+export type Dir = 'L' | 'R';
 
-interface Token {
+export interface Token {
   text: string;
   /** Resolved direction: Arabic-script words are R, Latin words and numbers L, punctuation takes its neighbours'. */
   dir: Dir;
@@ -67,10 +67,10 @@ interface Token {
 
 const NEUTRAL = /^[\s()[\]{}:;,.!?'"«»·\-–—/_]+$/;
 const EDGE_PUNCT = /^([(["«]*)(.*?)([)\]"».,:;!?]*)$/s;
-const MIRROR: Record<string, string> = { '(': ')', ')': '(', '[': ']', ']': '[', '{': '}', '}': '{', '«': '»', '»': '«' };
+export const MIRROR: Record<string, string> = { '(': ')', ')': '(', '[': ']', ']': '[', '{': '}', '}': '{', '«': '»', '»': '«' };
 
 /** Splits a line into words and edge punctuation, each tagged with its script direction. */
-function tokenize(line: string, base: Dir): Omit<Token, 'width'>[] {
+export function tokenize(line: string, base: Dir): Omit<Token, 'width'>[] {
   const raw: { text: string; strong: Dir | null; space: boolean }[] = [];
   let space = false;
   for (const piece of line.split(ARABIC_PIECES)) {
@@ -104,7 +104,7 @@ function tokenize(line: string, base: Dir): Omit<Token, 'width'>[] {
 }
 
 /** Visual left-to-right order of a line's tokens. */
-function visualOrder(tokens: Token[], base: Dir): Token[] {
+export function visualOrder(tokens: Token[], base: Dir): Token[] {
   const seq = base === 'R' ? [...tokens].reverse() : [...tokens];
   const other: Dir = base === 'R' ? 'L' : 'R';
   const out: Token[] = [];
@@ -122,12 +122,36 @@ function visualOrder(tokens: Token[], base: Dir): Token[] {
 }
 
 /**
+ * Space after each visual token. A gap goes between two tokens that are neighbours in reading order when
+ * the later one had a space before it; between two direction runs it belongs to the boundary, i.e. to the
+ * later run's first token.
+ */
+export function gapsBetween(lineTokens: Token[], visual: Token[], gap: number): number[] {
+  const order = new Map(lineTokens.map((t, i) => [t, i]));
+  const runOf: number[] = [];
+  const runStart: number[] = [];
+  lineTokens.forEach((t, i) => {
+    const r = i === 0 ? 0 : runOf[i - 1] + (t.dir === lineTokens[i - 1].dir ? 0 : 1);
+    if (runStart[r] === undefined) runStart[r] = i;
+    runOf.push(r);
+  });
+  return visual.map((t, i) => {
+    const n = visual[i + 1];
+    if (!n) return 0;
+    const a = order.get(t)!;
+    const b = order.get(n)!;
+    if (runOf[a] === runOf[b]) return Math.abs(a - b) === 1 && lineTokens[Math.max(a, b)].space ? gap : 0;
+    return Math.abs(runOf[a] - runOf[b]) === 1 && lineTokens[runStart[Math.max(runOf[a], runOf[b])]].space ? gap : 0;
+  });
+}
+
+/**
  * Writes a paragraph (lines separated by \n) that wraps to `width`, adding pages when needed.
  * Each word is shaped on its own and placed by a simplified bidi algorithm: Urdu lines run right to
  * left with Latin words, numbers and amounts left to right inside them (and the reverse for English
  * lines containing Urdu names); brackets are mirrored in right-to-left text.
  */
-export function pdfParagraph(doc: Pdf, text: string, x: number, width: number, opts: { bold?: boolean; size?: number; lineGap?: number; bottom?: number; align?: 'left' | 'center' } = {}) {
+export function pdfParagraph(doc: Pdf, text: string, x: number, width: number, opts: { bold?: boolean; size?: number; lineGap?: number; bottom?: number; align?: 'left' | 'center'; rtl?: boolean } = {}) {
   const size = opts.size ?? 10.5;
   const lineGap = opts.lineGap ?? 3;
   const bottom = opts.bottom ?? doc.page.height - doc.page.margins.bottom;
@@ -141,10 +165,11 @@ export function pdfParagraph(doc: Pdf, text: string, x: number, width: number, o
     if (!URDU_FONT.regular || !ARABIC.test(line)) {
       const h = pdfFont(doc, line, opts.bold).heightOfString(line, { width, lineGap });
       if (doc.y + Math.min(h, size * 2) > bottom) doc.addPage();
-      pdfFont(doc, line, opts.bold).text(line, x, doc.y, { width, lineGap, align: opts.align ?? 'left' });
+      // In an Urdu document Latin-only lines stay right-aligned.
+      pdfFont(doc, line, opts.bold).text(line, x, doc.y, { width, lineGap, align: opts.align ?? (opts.rtl ? 'right' : 'left') });
       continue;
     }
-    const base: Dir = ARABIC.test(line.trim()[0] ?? '') ? 'R' : 'L';
+    const base: Dir = opts.rtl || ARABIC.test(line.trim()[0] ?? '') ? 'R' : 'L';
     const gap = doc.font('Helvetica').widthOfString(' ');
     const tokens: Token[] = tokenize(line, base).map((t) => {
       const shown = t.neutral && t.dir === 'R' ? [...t.text].map((c) => MIRROR[c] ?? c).join('') : t.text;
@@ -171,24 +196,8 @@ export function pdfParagraph(doc: Pdf, text: string, x: number, width: number, o
       if (doc.y + lineH > bottom) doc.addPage();
       const y = doc.y;
       // A gap goes between two tokens that are neighbours in reading order when the later one had a space before it.
-      // Between two direction runs the gap belongs to the boundary, i.e. the later run's first token.
-      const order = new Map(lineTokens.map((t, i) => [t, i]));
-      const runOf: number[] = [];
-      const runStart: number[] = [];
-      lineTokens.forEach((t, i) => {
-        const r = i === 0 ? 0 : runOf[i - 1] + (t.dir === lineTokens[i - 1].dir ? 0 : 1);
-        if (runStart[r] === undefined) runStart[r] = i;
-        runOf.push(r);
-      });
       const visual = visualOrder(lineTokens, base);
-      const gapAfter = visual.map((t, i) => {
-        const n = visual[i + 1];
-        if (!n) return 0;
-        const a = order.get(t)!;
-        const b = order.get(n)!;
-        if (runOf[a] === runOf[b]) return Math.abs(a - b) === 1 && lineTokens[Math.max(a, b)].space ? gap : 0;
-        return Math.abs(runOf[a] - runOf[b]) === 1 && lineTokens[runStart[Math.max(runOf[a], runOf[b])]].space ? gap : 0;
-      });
+      const gapAfter = gapsBetween(lineTokens, visual, gap);
       const total = visual.reduce((s, t, i) => s + t.width + gapAfter[i], 0);
       let cx = opts.align === 'center' ? x + (width - total) / 2 : base === 'R' ? x + width - total : x;
       // Urdu and Latin fonts have different ascenders: put every word on one shared baseline.

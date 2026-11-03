@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { BadgeCheck, CalendarPlus, Crosshair, MessageCircle, ExternalLink, LayoutGrid, MapPin, Pencil, Plus, RefreshCw, Rows3, Share2, Star, Trash2, Upload, Video } from 'lucide-react';
+import { BadgeCheck, BookImage, CalendarPlus, Crosshair, MessageCircle, ExternalLink, LayoutGrid, MapPin, Pencil, Plus, RefreshCw, Rows3, Share2, Star, Trash2, Upload, Video } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -10,6 +10,7 @@ import { MatchCard, PropertyCard, PropertyStatusBadge, locationLabel, useSizeLab
 import { ActivityPanel, DocumentsPanel, FollowUpForm, FollowUpsPanel, NotesPanel } from '@/components/domain/panels';
 import { BranchField, useBranchName, useBranches } from '@/components/branches';
 import { DealsPanel } from '@/pages/DealPages';
+import { BrochureDialog } from '@/components/domain/BrochureDialog';
 import { Badge, Button, Card, Checkbox, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column } from '@/components/ui';
 import { formatDate, formatPkr, waHref } from '@/lib/format';
 import { useDebounce, useEnumOptions, useOnError, useUrlState } from '@/lib/hooks';
@@ -484,6 +485,8 @@ export function PropertyDetailPage() {
   const [verifying, setVerifying] = useState(false);
   const [verifyNote, setVerifyNote] = useState('');
   const shareText = usePropertyShareText();
+  const canBrochure = useCan(PERMISSIONS.PROPERTIES_READ, PERMISSIONS.EXPORTS_CREATE);
+  const [brochureOpen, setBrochureOpen] = useState(false);
   const q = useQuery({ queryKey: ['property', id], queryFn: () => propertyApi.get(id) });
   const verify = useMutation({
     mutationFn: () => propertyApi.verify(id, verifyNote.trim() || undefined),
@@ -569,6 +572,11 @@ export function PropertyDetailPage() {
             <Button variant="secondary" icon={<Share2 className="h-4 w-4" />} onClick={() => void share()}>
               {t('common.share')}
             </Button>
+            {canBrochure && (
+              <Button variant="secondary" icon={<BookImage className="h-4 w-4" />} onClick={() => setBrochureOpen(true)}>
+                {t('brochure.button')}
+              </Button>
+            )}
             {canEdit && (
               <Button variant="secondary" icon={<Pencil className="h-4 w-4" />} onClick={() => setEditing(true)}>
                 {t('common.edit')}
@@ -678,6 +686,7 @@ export function PropertyDetailPage() {
       {tab === 'activity' && <Card><ActivityPanel entityId={id} /></Card>}
 
       {editing && <PropertyFormDrawer open property={p} onClose={() => setEditing(false)} />}
+      {brochureOpen && <BrochureDialog property={p} onClose={() => setBrochureOpen(false)} />}
       {followUp && <FollowUpForm open onClose={() => setFollowUp(false)} propertyId={id} />}
       <Modal
         open={statusOpen}

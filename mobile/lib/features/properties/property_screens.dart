@@ -23,6 +23,7 @@ import '../branches/branch_screens.dart';
 import '../deals/deal_screens.dart';
 import '../clients/client_screens.dart' show propertyTypes, sizeUnits;
 import '../common/record_panels.dart';
+import 'brochure_sheet.dart';
 
 const propertyStatuses = ['AVAILABLE', 'RESERVED', 'SOLD', 'RENTED', 'WITHDRAWN', 'INACTIVE'];
 
@@ -317,6 +318,8 @@ class PropertyDetailScreen extends ConsumerWidget {
                         if (p.hasLocation) 'https://www.google.com/maps/search/?api=1&query=${p.latitude},${p.longitude}',
                       ].join('\n'))),
                     ),
+                    if (auth.can('exports:create'))
+                      IconButton(tooltip: l.t('brochure.button'), icon: const Icon(Icons.auto_stories_outlined), onPressed: () => showBrochureSheet(context, ref, p)),
                     if (auth.can('properties:update')) IconButton(icon: const Icon(Icons.edit_outlined), onPressed: () => context.push('/properties/${p.id}/edit')),
                     if (auth.can('properties:delete'))
                       IconButton(

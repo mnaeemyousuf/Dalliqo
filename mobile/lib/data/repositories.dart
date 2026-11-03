@@ -763,6 +763,18 @@ class OnlineRepository {
 
   Future<void> renameDocument(String id, String fileName) => api.patch('/documents/$id', {'fileName': fileName});
 
+  // Brochures (made by the server; lang en/ur, never the minimum or expected price)
+  Future<File> brochure(String serverId, {required String format, required String lang, bool hidePrice = false, String? agentId}) async {
+    final r = await api.download('/properties/$serverId/brochure', query: {'format': format, 'lang': lang, 'hidePrice': '$hidePrice', 'agentId': ?agentId});
+    final dir = await getTemporaryDirectory();
+    final file = File(p.join(dir.path, r.fileName));
+    await file.writeAsBytes(r.bytes, flush: true);
+    return file;
+  }
+
+  Future<Map<String, dynamic>> brochureText(String serverId, {required String lang, bool hidePrice = false, String? agentId}) =>
+      api.get<Map<String, dynamic>>('/properties/$serverId/brochure', query: {'format': 'text', 'lang': lang, 'hidePrice': '$hidePrice', 'agentId': ?agentId});
+
   // Agreements (text generation and PDFs are made by the server)
   Future<Map<String, dynamic>> renderAgreement(String serverId) => api.post<Map<String, dynamic>>('/agreements/$serverId/render', {});
 

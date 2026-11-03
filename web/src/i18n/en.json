@@ -1012,5 +1012,21 @@
       "EXPIRED": "Mark expired",
       "CANCELLED": "Cancel agreement"
     }
+  },
+  "brochure": {
+    "button": "Brochure",
+    "title": "Brochure",
+    "hint": "A printable PDF or a 1080×1350 image for WhatsApp and social media, with your contact and a WhatsApp QR code.",
+    "agent": "Contact person",
+    "hidePrice": "Hide the price",
+    "confidential": "Only the asking price is ever shown. Minimum and expected prices are never printed.",
+    "pdf": "Download PDF",
+    "image": "Download image",
+    "copyText": "Copy share text",
+    "copied": "Share text copied",
+    "imageHint": "The image is sized for WhatsApp status and Instagram (1080×1350).",
+    "needsInternet": "Making a brochure needs an internet connection.",
+    "share": "Share",
+    "generating": "Preparing brochure…"
   }
 }
