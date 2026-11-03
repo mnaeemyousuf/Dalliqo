@@ -6,12 +6,12 @@ level**, with synthetic Karachi demo data (no real people or properties).
 
 | File | Intended audience | Access level documented | Pages | Figures |
 |---|---|---|---|---|
-| [Business_Owner_User_Manual.pdf](Business_Owner_User_Manual.pdf) | Business owner / organisation administrator | Owner — full access | 72 | 60 |
-| [Office_Manager_User_Manual.pdf](Office_Manager_User_Manual.pdf) | Office manager / team lead | Member — Manager template | 62 | 48 |
-| [Real_Estate_Agent_User_Manual.pdf](Real_Estate_Agent_User_Manual.pdf) | Field agents and salespeople (includes a note on the narrower Salesperson template) | Member — Agent template | 53 | 40 |
-| [CRM_Operator_User_Manual.pdf](CRM_Operator_User_Manual.pdf) | Office staff / CRM operators, and the family member who helps run the business | Member — Standard member template | 59 | 46 |
-| [Accountant_User_Manual.pdf](Accountant_User_Manual.pdf) | Accounts / reporting staff (commission, income & expense) | Member — Accountant template | 43 | 31 |
-| [Read_Only_User_Manual.pdf](Read_Only_User_Manual.pdf) | Receptionists, trainees, anyone who only looks things up | Member — Read-only viewer template | 38 | 26 |
+| [Business_Owner_User_Manual.pdf](Business_Owner_User_Manual.pdf) | Business owner / organisation administrator | Owner — full access | 75 | 60 |
+| [Office_Manager_User_Manual.pdf](Office_Manager_User_Manual.pdf) | Office manager / team lead | Member — Manager template | 65 | 48 |
+| [Real_Estate_Agent_User_Manual.pdf](Real_Estate_Agent_User_Manual.pdf) | Field agents and salespeople (includes a note on the narrower Salesperson template) | Member — Agent template | 55 | 40 |
+| [CRM_Operator_User_Manual.pdf](CRM_Operator_User_Manual.pdf) | Office staff / CRM operators, and the family member who helps run the business | Member — Standard member template | 63 | 46 |
+| [Accountant_User_Manual.pdf](Accountant_User_Manual.pdf) | Accounts / reporting staff (commission, income & expense) | Member — Accountant template | 45 | 31 |
+| [Read_Only_User_Manual.pdf](Read_Only_User_Manual.pdf) | Receptionists, trainees, anyone who only looks things up | Member — Read-only viewer template | 39 | 26 |
 
 Every manual contains: cover page; document control; table of contents with page numbers;
 introduction (what the system does, the reader's role, what they can and cannot do and why);

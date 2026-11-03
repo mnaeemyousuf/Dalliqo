@@ -419,6 +419,10 @@ function MatchingSettings() {
           <>
             <Input label={`${t('deal.defaultBuyerPct')} (%)`} type="number" min={0} max={20} step="0.1" value={draft.commission.defaultBuyerPct} disabled={!canManage} onChange={(e) => setDraft({ ...draft, commission: { ...draft.commission, defaultBuyerPct: Number(e.target.value) } })} />
             <Input label={`${t('deal.defaultSellerPct')} (%)`} type="number" min={0} max={20} step="0.1" value={draft.commission.defaultSellerPct} disabled={!canManage} onChange={(e) => setDraft({ ...draft, commission: { ...draft.commission, defaultSellerPct: Number(e.target.value) } })} />
+            <div className="sm:col-span-2">
+              <Checkbox label={t('finance.autoIncome')} checked={draft.commission.autoCreateIncome !== false} disabled={!canManage} onChange={(on) => setDraft({ ...draft, commission: { ...draft.commission, autoCreateIncome: on } })} />
+              <p className="ms-6 text-xs text-muted">{t('finance.autoIncomeHint')}</p>
+            </div>
           </>
         )}
       </div>

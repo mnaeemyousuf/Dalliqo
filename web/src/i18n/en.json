@@ -948,7 +948,9 @@
     "empty": "No entries yet",
     "emptyHint": "Record office expenses like rent and utilities, or other income.",
     "deleteTitle": "Delete this entry?",
-    "deleteMessage": "It will be removed from reports. Receipts attached to it stay in documents."
+    "deleteMessage": "It will be removed from reports. Receipts attached to it stay in documents.",
+    "autoIncome": "Record commission received as income automatically",
+    "autoIncomeHint": "Each commission payment on a deal adds one income entry (never twice); removing the payment removes it."
   },
   "agreement": {
     "title": "Agreements",
