@@ -1,0 +1,65 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [build-apk]
+    paths: ['mobile/**', '.github/workflows/android-apk.yml']
+  workflow_dispatch:
+    inputs:
+      api_base_url:
+        description: 'API base URL baked into the app'
+        default: 'https://dalliqo.onrender.com'
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      API_BASE_URL: ${{ github.event.inputs.api_base_url || 'https://dalliqo.onrender.com' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter --version
+      - run: flutter pub get
+
+      - name: Build release APK
+        run: flutter build apk --release --dart-define=API_BASE_URL=$API_BASE_URL
+
+      - name: Rename APK
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          mkdir -p ../dist
+          cp build/app/outputs/flutter-apk/app-release.apk "../dist/Dalliqo-${VERSION}-${GITHUB_RUN_NUMBER}.apk"
+          ls -la ../dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dalliqo-apk
+          path: dist/*.apk
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-build-${{ github.run_number }}
+          name: Dalliqo APK (build ${{ github.run_number }})
+          prerelease: true
+          body: |
+            Android APK built from `${{ github.sha }}`.
+            API: ${{ env.API_BASE_URL }}
+            Signed with a debug key (sideload only, not for Play Store).
+          files: dist/*.apk
