@@ -78,7 +78,9 @@
     "minutes": "minutes",
     "percent": "{{value}}%",
     "dateAdded": "Date added",
-    "date": "Date"
+    "date": "Date",
+    "archive": "Archive",
+    "restore": "Restore"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -140,7 +142,8 @@
     "passwordsMismatch": "Passwords do not match",
     "passwordHint": "At least 8 characters with letters and numbers",
     "backToSignIn": "Back to sign in",
-    "sessionExpired": "Your session has ended. Please sign in again."
+    "sessionExpired": "Your session has ended. Please sign in again.",
+    "mobileNumber": "Mobile number"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -893,6 +896,21 @@
     "reminders": {
       "title": "Follow-up reminder",
       "body": "{{type}} · {{client}}"
+    },
+    "admin": {
+      "custom": "Custom permissions",
+      "customHint": "Users with custom permissions keep them unless you pick a template. Fine-grained permissions are edited in the web app.",
+      "keepCustom": "No template chosen: the current permissions stay as they are.",
+      "active": "Active (can sign in)",
+      "selectedBranches": "Selected branches",
+      "someBranches": "{{count}} branch(es)",
+      "chooseBranch": "Choose at least one branch",
+      "businessSettings": "Business settings",
+      "reminders": "Reminders",
+      "reminderMinutes": "Default reminder (minutes before)",
+      "buyerPct": "Default buyer commission (%)",
+      "sellerPct": "Default seller commission (%)",
+      "autoIncome": "Record commission received as income automatically"
     }
   },
   "branch": {
@@ -1010,7 +1028,8 @@
     "empty": "No entries yet",
     "emptyHint": "Record office expenses like rent and utilities, or other income.",
     "deleteTitle": "Delete this entry?",
-    "deleteMessage": "It will be removed from reports."
+    "deleteMessage": "It will be removed from reports.",
+    "nameUr": "Urdu name"
   },
   "agreement": {
     "title": "Agreements",
@@ -1104,5 +1123,8 @@
     "needsInternet": "Making a brochure needs an internet connection.",
     "share": "Share",
     "generating": "Preparing brochure…"
+  },
+  "category": {
+    "add": "Add category"
   }
 }

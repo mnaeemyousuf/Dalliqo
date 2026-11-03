@@ -24,6 +24,17 @@ Express + MongoDB** API that holds every business rule.
 * **Works offline** on the phone (SQLite + outbox), syncs automatically, resolves conflicts, restores
   everything on a new phone; real-time updates between devices (Socket.IO).
 * Excel and PDF exports; global search; English and Urdu (RTL); light/dark/system theme.
+* **Multi-branch** offices: every record belongs to a branch, users see all or selected branches (enforced by the API, also
+  offline), branch switcher, per-branch or consolidated reports, matching within a branch or across branches.
+* **Deal pipeline and commission**: Inquiry → Site visit → Offer → Token → Agreement → Transfer → Won/Lost, buyer/seller commission
+  (percent or fixed), agent shares, payments received and agent payouts, commission report.
+* **Income & expense** with categories (English/Urdu), receipts, monthly / by-category report; commission received becomes income
+  automatically (never twice).
+* **Agreements**: sale, tenancy and token-receipt templates in English and Urdu, every version kept, Urdu-correct PDFs, signed-copy
+  upload, renewal follow-ups 30 and 7 days before a tenancy ends, lawyer-review note on every screen and page.
+* **Property brochures**: A4 PDF and a 1080×1350 share image with the agent's WhatsApp QR code, in English or Urdu; the minimum and
+  expected prices are never printed.
+* Follow-up reminders scheduled on the phone, so they ring even without internet; client search by block and size.
 
 ## Repository layout
 
@@ -32,7 +43,7 @@ real-estate-crm/
 ├── server/     Node.js + Express + TypeScript API (routes → controllers → services → repositories → MongoDB)
 ├── web/        React + Vite + TypeScript CRM (TanStack Query, Zustand, Tailwind, ECharts, i18next)
 ├── mobile/     Flutter app (Riverpod, GoRouter, Dio, sqflite, FCM, Google Maps)
-├── shared/     permissions, roles, enums, error codes, socket events (server + web)
+├── shared/     permissions, roles, enums, error codes, socket events, commission maths, agreement templates (server + web)
 ├── docs/       architecture, database, api, deployment
 ├── docker/     Dockerfiles + nginx config
 ├── docker-compose.yml
@@ -105,6 +116,8 @@ clients and properties runs with `PERF=1 npx jest tests/perf.test.ts` in `server
 |---|---|
 | [Final delivery report](docs/FINAL_DELIVERY_REPORT.md) | what was done, test results, readiness, remaining work |
 | [Requirements audit](docs/FINAL_REQUIREMENTS_AUDIT.md) | traceability matrix for every original requirement |
+| [Phase 2 delivery report](docs/PHASE2_DELIVERY_REPORT.md) · [Implementation plan](docs/IMPLEMENTATION_PLAN_PHASE2.md) | branches, deals & commission, income & expense, agreements, brochures: status, tests, risks |
+| [Parity matrix](docs/PARITY_MATRIX.md) · [Device test script](docs/DEVICE_TEST_SCRIPT.md) | every feature on web and mobile; what to check on a phone |
 | [MVP scope & acceptance criteria](docs/MVP_SCOPE_AND_ACCEPTANCE_CRITERIA.md) | mandatory MVP, enhancements, future features |
 | [Industry research](docs/REAL_ESTATE_INDUSTRY_RESEARCH.md) · [Enhancement roadmap](docs/INDUSTRY_ENHANCEMENT_ROADMAP.md) | evidence-based priorities |
 | [QA report](docs/FINAL_QA_REPORT.md) | tests executed, results, defects fixed, untested items |

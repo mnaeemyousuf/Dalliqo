@@ -19,9 +19,9 @@ cannot use. Verified by `server/tests/members.test.ts`, `tenancy.test.ts`, `e2e.
 | ↳ Accountant (reports) template | ✅ Implemented (template) | Read everything; dashboard analytics, reports and Excel/PDF exports. No data entry. |
 | ↳ Read-only viewer template | ✅ Implemented (template) | Read everything; cannot create, edit, delete, export or administer. |
 | Platform Super Admin | ❌ Not implemented | There is no cross-tenant admin console. Each business self-registers and is isolated. Platform operations (backups, suspending a tenant, support access) are done by the operator at the infrastructure/database level. See roadmap item E-07. |
-| Branch Manager | ❌ Not implemented | No branch concept yet (one business = one office). Architecture note: optional `branchId` + branch-scoped checks (docs/architecture/Architecture.md §6). |
-| Property Manager (rentals/tenancy) | ❌ Not implemented | No tenancy/rent-collection module. Rental *listings* and rental *clients* are supported. |
-| Commission Manager | ❌ Not implemented | No commission ledger. The Accountant template covers reports/exports only. |
+| Branch Manager | ✅ Implemented (Phase 2, as a configuration) | A member with the Manager template whose **branch access** is limited to selected branches (Users → Branch access). The API scopes every read, write, report, export and sync pull to those branches. |
+| Property Manager (rentals/tenancy) | ⚠️ Partly | Tenancy (rent) agreements with renewal follow-ups 30/7 days before the end date are implemented (Phase 2). Monthly rent collection is not. |
+| Commission Manager | ✅ Implemented (Phase 2, via `commissions:manage`) | The Accountant template records commission received and agent payouts on every deal and keeps income & expenses; Owner, Standard member and Manager can too. |
 | `ADMIN`, `MANAGER`, `AGENT`, `SALESPERSON`, `ACCOUNTANT`, `VIEWER` role codes | Reserved | Presets exist in code, but only `MEMBER` is assignable (`ASSIGNABLE_ROLES`). The templates above apply those presets as a MEMBER's permission set. |
 
 > Templates are a convenience in **Users → Add user / Permissions**. After applying one, the owner
@@ -67,6 +67,24 @@ Legend: ✅ allowed · ❌ blocked by the API (HTTP 403) · 👁 read-only
 | Offline sync (mobile) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | each queued change re-checked against the same write permission (`syncService` `WRITE_PERMS`) |
 | Branch access | — | — | — | — | — | — | — | not applicable (no branches) |
 | Sensitive financial data | — | — | — | — | — | — | — | asking/minimum/expected prices are visible to everyone with `properties:read`; there is no separate "financial" permission (see §4) |
+| **Phase 2** | | | | | | | | |
+| See branches; use the branch switcher | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | any member (only their branches) |
+| Create / rename / archive branches | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | `branches:manage` |
+| Set a user's branch access | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | `members:manage` |
+| View deals | ✅ all | ✅ all | ✅ all | ✅ own | ✅ own | 👁 all | 👁 all | `deals:read` (+ `deals:read_all` for all deals) |
+| Create / edit deals, move stages | ✅ | ✅ | ✅ | ✅ own | ✅ own | ❌ | ❌ | `deals:create` / `deals:update` (agents only on deals they are on) |
+| Delete deals | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | `deals:delete` |
+| Record commission payments and agent payouts | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ | `commissions:manage` |
+| Commission report | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ | `deals:read` + `reports:read` |
+| View income & expenses, finance report | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | 👁 | `finance:read` (report also `reports:read`) |
+| Add income / expense entries, receipts | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ | `finance:create` (+ `documents:upload` for receipts) |
+| Edit entries, manage finance categories | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ | `finance:update` |
+| Delete entries | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | `finance:delete` |
+| View agreements, print PDFs | ✅ | ✅ | ✅ | ✅ | ❌ | 👁 | 👁 | `agreements:read` |
+| Draft / edit agreements, regenerate, change status, attach signed copy | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | `agreements:create` / `agreements:update` |
+| Delete agreements (not signed ones) | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | `agreements:delete` |
+| Add / edit agreement templates | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | `templates:manage` |
+| Property brochures (PDF, image, share text) | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ | `properties:read` + `exports:create` |
 
 ## 3. Cross-cutting guarantees (all roles)
 
@@ -89,3 +107,17 @@ Legend: ✅ allowed · ❌ blocked by the API (HTTP 403) · 👁 read-only
 | 3 | Refresh-token rate limit (120 / 15 min per IP) would sign out an office of users sharing one internet connection. | High for multi-user offices | **Fixed** — limit per refresh token plus a 3000 / 15 min IP ceiling; test `ratelimit.test.ts`. |
 | 4 | No separate permission for commercially sensitive prices (minimum / expected final price). | Low–medium, depends on customer | **Open** — roadmap P2 item R-09 ("price confidentiality permission"). Until then, owners should only add trusted staff. |
 | 5 | No platform super-admin. | Product scope | **Open** — roadmap E-07. |
+
+
+## Phase 2 notes
+
+* **Existing users keep exactly their access.** New permissions are added to the templates, which only apply when a template is
+  chosen. Members created before Phase 2 keep their stored permission list (so they do not get the new modules until the owner
+  applies a template or ticks the boxes); every existing member got `branchAccess: ALL` from migration 001. Owners always have
+  every permission. Verified by `server/tests/branches.test.ts`.
+* Agents see only the deals they are an agent on (also in sync pulls, exports and the commission report); a deal payment made by
+  an agent's colleague still creates the income entry for the business.
+* Branch scope is enforced in the repository layer for every branched collection (list, get, update, delete, aggregate, sync
+  pull, exports, dashboard), and `X-Branch-Id` can only narrow it. Tests: `branches.test.ts`, `deals.test.ts`,
+  `finance.test.ts`, `agreements.test.ts`, `brochures.test.ts` (each has tenant + branch + permission-template cases).
+* The Agent template has no `exports:create`, so agents cannot make brochures unless the owner ticks it for them.

@@ -178,5 +178,8 @@ describe('business settings', () => {
     const res = await request(app).get('/api/meta/permissions').set(bearer(father.accessToken));
     expect(res.status).toBe(200);
     expect(res.body.data.assignableRoles).toEqual(['MEMBER']);
+    // The phone's user editor uses the same permission templates as the web.
+    expect(Object.keys(res.body.data.permissionTemplates)).toEqual(['MEMBER', 'MANAGER', 'AGENT', 'SALESPERSON', 'ACCOUNTANT', 'VIEWER']);
+    expect(res.body.data.permissionTemplates.AGENT).toEqual([...ROLE_PRESETS.AGENT]);
   });
 });

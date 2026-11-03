@@ -179,15 +179,23 @@ single place to add it.
 The access token lives **in memory only**; on reload the app calls `POST /api/auth/refresh`, which
 uses the httpOnly, `SameSite=Strict`, `Path=/api/auth` cookie. No token is ever in `localStorage`.
 
-## 6. Extension points for future features
+## 6. Phase 2 modules (implemented) and remaining extension points
 
-These are **not** implemented; the architecture reserves room for them:
+Implemented in Phase 2 (November 2026) — see [PHASE2_DELIVERY_REPORT.md](../PHASE2_DELIVERY_REPORT.md):
+
+| Module | How it is built |
+|---|---|
+| Multi-branch | `branches` collection; required `branchId` on branched collections; the tenant repository adds the member's branch scope to every query (and validates moves); `X-Branch-Id` narrows it; `businessId` stays the isolation boundary. Migration 001 back-filled existing data. |
+| Deals & commission | `deals` with embedded payments/payouts (uuid ids, so they edit offline); commission maths in `shared/src/commission.ts` (mirrored in Dart). `dealHooks.onPaymentsChanged` lets finance react without a circular import. |
+| Income & expense | `transactions` + `transactionCategories`; commission income keyed by payment (unique `sourceKey`). |
+| Agreements | `agreementTemplates` + `agreements` (versions, locked statuses); PDFs via pdfkit with `services/pdf/pdfText.ts` (per-word bidi layout for Urdu); renewal follow-ups through the normal follow-up service. |
+| Brochures | Generated on request (no stored files): pdfkit for the PDF; sharp composes the 1080×1350 image from an SVG whose text is fontkit-shaped paths (`services/pdf/svgText.ts`), so no system fonts are needed. |
+| Migrations | `server/src/migrations/*`, idempotent, run at start-up and via `npm run migrate`. |
+
+Still open extension points:
 
 | Future feature | Where it plugs in |
 |---|---|
-| Commission management, income & expense | New `deals`, `commissions`, `transactions` tenant collections referencing `propertyId`/`clientId`; new permissions group `finance:*`; ACCOUNTANT role preset already exists. |
-| Agreements / contracts | `documents` already support categories `AGREEMENT`; a `contracts` collection adds lifecycle (draft → signed). |
 | Multiple staff, more roles | Roles are permission presets (`shared/src/roles.ts`); enabling a role = adding it to `ASSIGNABLE_ROLES`. |
-| Multi-branch | Optional `branchId` on tenant docs + a branch-scoped permission check in repositories; `businessId` stays the isolation boundary. |
-| WhatsApp property sharing | A `share` service producing a public, expiring, signed brochure URL + `wa.me` deep link. |
-| Brochure generation | A `brochures` job type: render HTML template → PDF (headless Chromium) → store in cloud storage → `documents` record. Kept out of the property module on purpose. |
+| Public brochure links | A `share` service producing a public, expiring, signed brochure URL (today brochures are downloaded/shared as files). |
+| Rent collection | Monthly rent schedule on rent agreements, posting income entries. |

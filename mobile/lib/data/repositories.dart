@@ -763,6 +763,24 @@ class OnlineRepository {
 
   Future<void> renameDocument(String id, String fileName) => api.patch('/documents/$id', {'fileName': fileName});
 
+  // Administration (shared configuration: needs a connection)
+  Future<Map<String, List<String>>> permissionTemplates() async {
+    final r = await api.get<Map<String, dynamic>>('/meta/permissions');
+    final t = Map<String, dynamic>.from((r['permissionTemplates'] as Map?) ?? const {});
+    return {for (final e in t.entries) e.key: (e.value as List).cast<String>()};
+  }
+
+  Future<void> createMember(Map<String, dynamic> body) => api.post('/members', body);
+  Future<void> updateMember(String id, Map<String, dynamic> body) => api.patch('/members/$id', body);
+
+  Future<List<Map<String, dynamic>>> clientCategories({bool includeArchived = false}) async =>
+      (await api.get<List<dynamic>>('/client-categories', query: {if (includeArchived) 'includeArchived': 'true'})).cast<Map<String, dynamic>>();
+  Future<void> createClientCategory(Map<String, dynamic> body) => api.post('/client-categories', body);
+  Future<void> updateClientCategory(String id, Map<String, dynamic> body) => api.patch('/client-categories/$id', body);
+
+  Future<Map<String, dynamic>> settings() => api.get<Map<String, dynamic>>('/settings');
+  Future<void> updateSettings(Map<String, dynamic> body) => api.patch('/settings', body);
+
   // Brochures (made by the server; lang en/ur, never the minimum or expected price)
   Future<File> brochure(String serverId, {required String format, required String lang, bool hidePrice = false, String? agentId}) async {
     final r = await api.download('/properties/$serverId/brochure', query: {'format': format, 'lang': lang, 'hidePrice': '$hidePrice', 'agentId': ?agentId});

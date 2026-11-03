@@ -13,6 +13,7 @@ import '../../core/widgets/brand.dart';
 import '../../data/repositories.dart';
 import '../auth/auth_controller.dart';
 import '../auth/auth_screens.dart';
+import 'admin_screens.dart';
 
 /// Profile · Business · Users · Language · Theme · Notifications · Security ·
 /// Backup & sync · Export · About · Logout.
@@ -42,7 +43,11 @@ class SettingsScreen extends ConsumerWidget {
           subtitle: Text(auth.business?['name'] as String? ?? ''),
         ),
         if (auth.can('members:read'))
-          ListTile(leading: const Icon(Icons.group_outlined), title: Text(l.t('nav.users')), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const _MembersScreen()))),
+          ListTile(leading: const Icon(Icons.group_outlined), title: Text(l.t('nav.users')), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const MembersAdminScreen()))),
+        if (auth.can('settings:manage')) ...[
+          ListTile(leading: const Icon(Icons.label_outline), title: Text(l.t('settings.categories')), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const ClientCategoriesScreen()))),
+          ListTile(leading: const Icon(Icons.tune), title: Text(l.t('mobile.admin.businessSettings')), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const BusinessSettingsScreen()))),
+        ],
         SectionHeader(l.t('settings.appearance')),
         ListTile(
           leading: const Icon(Icons.translate),
@@ -289,34 +294,6 @@ class _LockSettingsState extends ConsumerState<_LockSettings> {
           },
         ),
     ]);
-  }
-}
-
-class _MembersScreen extends ConsumerWidget {
-  const _MembersScreen();
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = context.l10n;
-    return Scaffold(
-      appBar: AppBar(title: Text(l.t('nav.users'))),
-      body: FutureBuilder(
-        future: ref.read(onlineRepositoryProvider).members(),
-        builder: (context, snap) {
-          if (snap.hasError) return AppErrorState(error: snap.error!);
-          if (!snap.hasData) return const AppLoader();
-          return ListView(children: [
-            for (final m in snap.data!)
-              ListTile(
-                leading: CircleAvatar(child: Text(((m['user'] as Map)['fullName'] as String).characters.first)),
-                title: Text((m['user'] as Map)['fullName'] as String),
-                subtitle: Text('${l.enumLabel('role', m['role'] as String?)} · ${l.enumLabel('memberStatus', m['status'] as String?)}'),
-                trailing: Text('${(m['permissions'] as List).length}', style: Theme.of(context).textTheme.bodySmall),
-              ),
-            Padding(padding: const EdgeInsets.all(16), child: Text(l.t('user.permissions'), style: Theme.of(context).textTheme.bodySmall)),
-          ]);
-        },
-      ),
-    );
   }
 }
 

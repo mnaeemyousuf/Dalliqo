@@ -215,3 +215,37 @@ Priorities: **P0** security/data integrity/release blocker · **P1** MVP-critica
 Defects found **and fixed** during this audit: CLI-03 (data loss on partial edit), AUTH-08 (shared-IP
 sign-outs), USR-05 (timeline authorization), SRCH-03 (slow ID lookup), L10N-03 (plurals), plus UI
 issues (header overflow, demo label overlap, unfriendly 500 message) — see FINAL_QA_REPORT.md.
+
+---
+
+## Phase 2 addendum (3 November 2026)
+
+Gaps found against the original requirements PDF and the "future features" (§61) built in Phase 2. Same status definitions.
+New verification sources:
+
+| Code | What was executed | Result |
+|---|---|---|
+| V-API2 | Server Jest suite after Phase 2: 21 files (adds `branches`, `deals`, `finance`, `agreements`, `brochures`; extends `crm`, `sync`, `members`, `e2e`) | **207 passed**, 1 skipped (opt-in benchmark) — 3 Nov 2026 |
+| V-WEB2 | Web Vitest: 11 files (adds `clientFilters`, `branches`, `deals`, `finance`, `agreements`, `brochure`) + `tsc --noEmit` | **38 passed**, typecheck clean |
+| V-MOB2 | `flutter analyze` + `flutter test` (adds `reminders`, `branches`, `deals`, `finance`, `agreements`, `brochure`, `admin`) | **0 issues**, **76 passed** |
+| V-PERF2 | `PERF=1 npx jest tests/perf.test.ts` with 5,000 each of clients, properties, deals, transactions, agreements | Every request ≤ 0.38 s median (sync pull of 500 records: 0.38 s) |
+| V-UI2 | Agreement and brochure PDFs/PNGs rendered and inspected (English and Urdu: shaping, right-to-left order, spacing, mirrored brackets, baselines); web pages checked against the demo API | Inspected; three layout defects found and fixed (word spacing, bracket mirroring, mixed-script baselines) |
+
+| ID | Requirement | Module | Implementation | Verification | Final status |
+|---|---|---|---|---|---|
+| GAP-A1 | Client search by block and size | API/web/mobile | `clientListQuery.block/minSize/maxSize/sizeUnit`, requirement-block index, filter UIs | V-API2 `crm.test.ts`; V-WEB2 `clientFilters`; V-MOB2 `filters_test`; V-PERF2 | **PASS** |
+| GAP-A2 | "Date added" on property, client, owner details | web/mobile | `common.dateAdded` row on all three detail screens | V-CODE (display only), `flutter analyze` | **PASS** (web visual) / **BLOCKED** (mobile visual, device) |
+| GAP-A3 | Reminders that ring without internet | mobile/API | `ReminderScheduler` (`zonedSchedule`, UTC), reschedule on change, boot restore, exact-alarm permission, FCM de-duplication by follow-up id, deep link | V-MOB2 `reminders_test` (11 tests); V-API2 push split | **PASS** (logic) / **BLOCKED** (real alarms/notifications need a device — DEVICE_TEST_SCRIPT §1) |
+| FUT-B4 | Multi-branch | all | Branch model, repository-level branch scope, `X-Branch-Id`, member branch access, idempotent migration 001 (existing access unchanged), same-branch matching + `crossBranch` setting, per-branch/consolidated reports, mobile switcher with branch-limited offline data | V-API2 `branches.test.ts` (9); V-WEB2; V-MOB2 | **PASS** |
+| FUT-B1 | Commission management + deal pipeline | all | Deals (stages, history, agents/shares, buyer/seller commission), payments/payouts, commission report, exports, tiles; shared maths mirrored in Dart | V-API2 `deals.test.ts` (10); V-WEB2 `deals`; V-MOB2 `deals_test` (same cases) | **PASS** |
+| FUT-B2 | Income & expense, receipts, auto income from commission (no duplicates) | all | Transactions + categories (EN/UR), unique `sourceKey`, migration 002, finance report, receipts as documents | V-API2 `finance.test.ts` (6); V-WEB2 `finance`; V-MOB2 `finance_test` | **PASS** |
+| FUT-B3 | Agreements: sale/rent/token templates EN/UR, PDFs, statuses, versions, signed copy, renewal follow-ups 30/7 days, lawyer note | all | Templates (migration 003), versions, locked statuses, `pdfParagraph` RTL layout, renewal planning | V-API2 `agreements.test.ts` (7); V-WEB2 `agreements` (3); V-MOB2 `agreements_test` (4); V-UI2 | **PASS** |
+| FUT-B5 | Brochures: PDF + 1080×1350 image with QR, EN/UR, price confidentiality, WhatsApp | all | `brochureService` (pdfkit, sharp, fontkit paths, qrcode) | V-API2 `brochures.test.ts` (4: never minimum/expected price; hide price; sizes; permissions); V-WEB2; V-MOB2; V-UI2 | **PASS** (share to WhatsApp on a phone: **BLOCKED**, device) |
+| PAR-C1 | Parity web ↔ mobile | all | `docs/PARITY_MATRIX.md`; mobile gained users/templates/branch access, client categories, business settings, realtime for new entities | V-API2 `members.test.ts`; V-MOB2 `admin_test` | **PASS** |
+| PAR-C2 | Offline sync without duplicates for new modules | API/mobile | push/pull for deals, transactions, agreements (idempotent mutation ids, uuid replays), protected fields | V-API2 deals/finance/agreements sync cases; V-MOB2 | **PASS** |
+| MOB-02b | Android APK | mobile | — | No Android SDK/JDK on the build machine (`flutter doctor`, 3 Nov 2026) | **BLOCKED** (Android SDK) |
+
+Phase 2 defects found and fixed: tenant `aggregate()` did not cast ids, so aggregations matched nothing (client-category counts were
+always 0); a follow-up e2e test failed when run after 22:30 PKT (date boundary); Urdu PDF tables split multi-word runs (regex typo);
+agreement PDF opened in a blocked popup; web realtime ignored deal and branch events (B1/B4 gap); mobile realtime ignored all
+new entities.

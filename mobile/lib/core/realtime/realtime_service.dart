@@ -29,6 +29,10 @@ class RealtimeService extends ChangeNotifier {
     'match.created',
     'followup.created', 'followup.updated', 'followup.completed',
     'member.created', 'member.updated', 'business.updated',
+    'branch.created', 'branch.updated',
+    'deal.created', 'deal.updated', 'deal.deleted',
+    'transaction.created', 'transaction.updated', 'transaction.deleted',
+    'agreement.created', 'agreement.updated', 'agreement.deleted',
   ];
 
   Future<void> connect() async {

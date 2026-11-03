@@ -181,3 +181,67 @@ TTL 30 days.
 ### settings ✅
 One document per business: matching weights & thresholds, notification preferences, reminder
 defaults, size-unit conversions (marla = 225 sq ft by default; configurable because it varies by city).
+Phase 2 adds `matching.crossBranch` (false), `reminders.defaultMinutesBefore`, and `commission { defaultBuyerPct: 1,
+defaultSellerPct: 1, autoCreateIncome: true }`.
+
+## Phase 2 collections and changes
+
+### Branch scoping (B4)
+`branches` ✅ (sync base): `name`, `nameUr`, `code`, `address`, `phone`, `isDefault`, `archivedAt`. One default "Main Branch"
+per business. Index `{businessId, isDefault}`.
+
+`branchId` (required, ref branches) is on **clients, propertyOwners, properties, followUps, notes, deals, transactions, agreements**,
+plus `propertyMedia/propertyDocuments.branchId`, `activities.branchId` and `matches.branchIds[]` (both sides' branches).
+Each branched collection has `{businessId, branchId, deletedAt, updatedAt}`. `businessMembers` gained `branchAccess`
+(`ALL` | `SELECTED`) and `branchIds[]`.
+
+Migration `001-branches` (idempotent, `timestamps: false` so records don't look edited): default branch per business, back-fills
+every record without a branch, gives every existing member `branchAccess: ALL` (nobody's access changes). Migrations run at API
+start and with `npm run migrate -w @recrm/server`; runs are recorded in `migrations`.
+
+### clients (A1)
+New index on `requirements.blocks`; size search uses `requirements.minSizeSqft/maxSizeSqft` (already stored).
+
+### deviceTokens (A3)
+`localReminders: boolean` — the device schedules follow-up reminders itself (data-only push for de-duplication).
+
+### deals ✅ (sync base, B1)
+`dealNo` (DL-000001, unique per business), `title`, `clientId`, `propertyId`, `stage`
+(INQUIRY…TRANSFER, CLOSED_WON, CLOSED_LOST), `lostReason`, `stageHistory[{stage, at, by, note}]`, `agreedPrice`, `finalPrice`,
+`expectedCloseDate`, `closedAt`, `agents[{userId, sharePct}]` (total 100), `commission {buyer, seller: {mode PERCENT|FIXED, value}}`,
+`payments[{_id uuid, side, amount, date, method, reference, notes, transactionId}]`, `payouts[{_id uuid, userId, amount, date,
+status PENDING|PAID}]`, denormalised `expectedTotal`, `receivedTotal`, `outstanding`, `commissionStatus`, `searchText`, `branchId`.
+Indexes: `{businessId, dealNo}` unique, `{businessId, stage, updatedAt}`, `{businessId, 'agents.userId'}`, `{businessId, clientId}`,
+`{businessId, propertyId}`, `{businessId, commissionStatus}`.
+
+### transactions ✅ (sync base, B2)
+`type` INCOME|EXPENSE, `categoryId`, `amount` (whole rupees), `date`, `method` (CASH, BANK_TRANSFER, CHEQUE, JAZZCASH, EASYPAISA,
+OTHER), `dealId`, `propertyId`, `clientId`, `description`, `reference`, `source` MANUAL|COMMISSION, `sourceKey`, `searchText`, `branchId`.
+Indexes: `{businessId, deletedAt, date}`, `{businessId, type, date}`, `{businessId, categoryId, date}`, `{businessId, dealId}`, and
+**`{businessId, sourceKey}` unique (partial, strings only)** — one income entry per commission payment. A removed commission entry's
+key gets a `:removed:<id>` suffix so the same payment re-added later gets its entry back.
+
+### transactionCategories ✅ (sync base, B2)
+`key` (built-ins), `name`, `nameUr`, `type`, `isSystem`, `sortOrder`, `archivedAt`. 11 built-ins with Urdu names (commission, rent
+collection fee, consultancy, other income; office rent, salaries, utilities, marketing, fuel & travel, agent payouts, other).
+Index `{businessId, key}` unique (partial). Seeded at registration and by migration `002-finance-categories`.
+
+### agreementTemplates ✅ (sync base, B3)
+`key` (built-ins), `name`, `kind` SALE|RENT|TOKEN_RECEIPT|OTHER, `language` en|ur, `body` (with `{{placeholders}}`), `builtIn`,
+`archivedAt`. Six built-ins (sale, rent, token × English, Urdu). Seeded at registration and by migration `003-agreement-templates`.
+
+### agreements ✅ (sync base, B3)
+`agreementNo` (AG-000001, unique per business), `templateId`, `kind`, `language`, `title`, `status`
+(DRAFT, SENT, SIGNED, EXPIRED, CANCELLED), `statusHistory[]`, `dealId`, `clientId`, `ownerId`, `propertyId`, `amount`, `tokenAmount`,
+`monthlyRent`, `securityDeposit`, `startDate`, `endDate`, `clientCnic`, `ownerCnic`, `witness1`, `witness2`, `notes`,
+`versions[{no, body, source RENDER|EDIT, createdAt, createdBy}]`, `signedDocumentId`, `signedAt`, `renewalFollowUpIds[]`, `searchText`,
+`branchId`. Indexes: `{businessId, agreementNo}` unique, `{businessId, deletedAt, status, updatedAt}`, `{businessId, kind, endDate}`,
+`{businessId, clientId}`, `{businessId, propertyId}`, `{businessId, dealId}`.
+
+### Documents
+`DOCUMENT_ENTITY_TYPES` now includes `deal`, `transaction` (receipts) and `agreement` (signed copies).
+
+### Sync feed
+`SYNC_ENTITIES` adds `branches`, `deals`, `transactions`, `transactionCategories`, `agreements`, `agreementTemplates`.
+Push accepts `deals`, `transactions`, `agreements`. Protected fields (conflict instead of silent overwrite): deal `stage`,
+`payments`, `payouts`, `commission`; transaction `amount`, `type`; agreement `status`, `amount`, `monthlyRent`, `endDate`.

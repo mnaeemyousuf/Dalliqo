@@ -168,10 +168,12 @@ export function FinancePage() {
   const canCreate = useCan(PERMISSIONS.FINANCE_CREATE);
   const canUpdate = useCan(PERMISSIONS.FINANCE_UPDATE);
   const canDelete = useCan(PERMISSIONS.FINANCE_DELETE);
+  // The report needs reports:read (like every report); without it only the entries are shown.
+  const canReports = useCan(PERMISSIONS.REPORTS_READ);
   const [filters, setFilters] = useUrlState({ tab: 'entries', q: '', type: '', categoryId: '', method: '', from: '', to: '', page: '1' });
   const q = useDebounce(filters.q, 300);
   const params = { q, type: filters.type, categoryId: filters.categoryId, method: filters.method, from: filters.from, to: filters.to ? `${filters.to}T23:59:59` : '', page: Number(filters.page), limit: 20 };
-  const list = useQuery({ queryKey: ['transactions', params], queryFn: () => transactionApi.list(params), placeholderData: (p) => p, enabled: filters.tab === 'entries' });
+  const list = useQuery({ queryKey: ['transactions', params], queryFn: () => transactionApi.list(params), placeholderData: (p) => p, enabled: filters.tab === 'entries' || !canReports });
   const cats = useTransactionCategories();
   const [editing, setEditing] = useState<Transaction | 'new' | null>(null);
   const [receipts, setReceipts] = useState<Transaction | null>(null);
@@ -235,9 +237,9 @@ export function FinancePage() {
         }
       />
       <div className="mb-4">
-        <Tabs value={filters.tab} onChange={(v) => setFilters({ tab: v })} tabs={[{ value: 'entries', label: t('finance.entries') }, { value: 'report', label: t('finance.report') }]} />
+        <Tabs value={canReports ? filters.tab : 'entries'} onChange={(v) => setFilters({ tab: v })} tabs={[{ value: 'entries', label: t('finance.entries') }, ...(canReports ? [{ value: 'report', label: t('finance.report') }] : [])]} />
       </div>
-      {filters.tab === 'report' ? (
+      {filters.tab === 'report' && canReports ? (
         <FinanceReport />
       ) : (
         <>
@@ -289,6 +291,7 @@ export function FinanceReport() {
   const [to, setTo] = useState('');
   const params = { groupBy, from: from || undefined, to: to ? `${to}T23:59:59` : undefined };
   const q = useQuery({ queryKey: ['reports', 'finance', params], queryFn: () => transactionApi.report(params) });
+  const canExport = useCan(PERMISSIONS.EXPORTS_CREATE);
   const [busy, setBusy] = useState<string | null>(null);
   const download = async (resource: 'finance' | 'transactions', format: 'xlsx' | 'pdf') => {
     setBusy(`${resource}-${format}`);
@@ -307,9 +310,13 @@ export function FinanceReport() {
         <Select label={t('deal.groupBy')} options={[{ value: 'month', label: t('deal.byMonth') }, { value: 'category', label: t('finance.byCategory') }]} value={groupBy} onChange={(e) => setGroupBy(e.target.value as 'month' | 'category')} />
         <Input label={t('common.from')} type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
         <Input label={t('common.to')} type="date" value={to} onChange={(e) => setTo(e.target.value)} />
-        <Button variant="secondary" icon={<Download className="h-4 w-4" />} loading={busy === 'finance-xlsx'} onClick={() => void download('finance', 'xlsx')}>{t('report.excel')}</Button>
-        <Button variant="secondary" icon={<Download className="h-4 w-4" />} loading={busy === 'finance-pdf'} onClick={() => void download('finance', 'pdf')}>{t('report.pdf')}</Button>
-        <Button variant="ghost" icon={<Download className="h-4 w-4" />} loading={busy === 'transactions-xlsx'} onClick={() => void download('transactions', 'xlsx')}>{t('finance.allEntries')}</Button>
+        {canExport && (
+          <>
+            <Button variant="secondary" icon={<Download className="h-4 w-4" />} loading={busy === 'finance-xlsx'} onClick={() => void download('finance', 'xlsx')}>{t('report.excel')}</Button>
+            <Button variant="secondary" icon={<Download className="h-4 w-4" />} loading={busy === 'finance-pdf'} onClick={() => void download('finance', 'pdf')}>{t('report.pdf')}</Button>
+            <Button variant="ghost" icon={<Download className="h-4 w-4" />} loading={busy === 'transactions-xlsx'} onClick={() => void download('transactions', 'xlsx')}>{t('finance.allEntries')}</Button>
+          </>
+        )}
       </div>
       {q.isError && <ErrorState onRetry={() => q.refetch()} />}
       {q.data && (

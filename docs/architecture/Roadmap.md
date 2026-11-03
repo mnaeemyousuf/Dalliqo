@@ -24,5 +24,5 @@ permission-checked, has loading/empty/error states, and its tests pass.
   [mobile/README.md](../../mobile/README.md).
 * **Multi-instance scale-out** needs the Socket.IO Redis adapter and a shared rate-limit store;
   scheduled jobs are already safe across instances (MongoDB lease lock).
-* Future modules (commission, income/expense, contracts, multi-branch, brochure generation) are designed
-  in [Architecture.md §6](Architecture.md) and intentionally not implemented.
+* Phase 2 (November 2026) implemented multi-branch, deals & commission, income & expense, agreements and brochures — see
+  [PHASE2_DELIVERY_REPORT.md](../PHASE2_DELIVERY_REPORT.md). Remaining extension points are in [Architecture.md §6](Architecture.md).

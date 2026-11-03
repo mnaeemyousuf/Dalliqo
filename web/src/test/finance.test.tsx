@@ -45,6 +45,19 @@ describe('income & expense', () => {
     expect(within(commission).getByRole('link', { name: 'DL-000001' })).toHaveAttribute('href', '/deals/d1');
   });
 
+  it('hides the report tab without reports:read (viewers see entries only)', async () => {
+    useAuth.setState({ status: 'authenticated', membership: { _id: 'm', role: 'MEMBER', permissions: ['finance:read'] } as never });
+    vi.spyOn(transactionApi, 'categories').mockResolvedValue(cats);
+    const list = vi.spyOn(transactionApi, 'list').mockResolvedValue(page([entry({ description: 'October rent' })]));
+    const report = vi.spyOn(transactionApi, 'report');
+    wrap(<FinancePage />, '/finance?tab=report');
+    expect(await screen.findByText('October rent')).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'Report' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add entry' })).toBeNull();
+    expect(list).toHaveBeenCalled();
+    expect(report).not.toHaveBeenCalled();
+  });
+
   it('only offers categories of the chosen type and sends whole-rupee amounts', async () => {
     useAuth.setState({ status: 'authenticated', membership: { _id: 'm', role: 'OWNER', permissions: [] } as never });
     vi.spyOn(transactionApi, 'categories').mockResolvedValue(cats);

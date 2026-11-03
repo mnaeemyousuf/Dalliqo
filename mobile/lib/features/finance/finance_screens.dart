@@ -58,7 +58,7 @@ class FinanceScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l.t('finance.title')),
-        actions: [IconButton(icon: const Icon(Icons.bar_chart), tooltip: l.t('finance.report'), onPressed: () => context.push('/finance/report'))],
+        actions: [if (auth.can('reports:read')) IconButton(icon: const Icon(Icons.bar_chart), tooltip: l.t('finance.report'), onPressed: () => context.push('/finance/report'))],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(104),
           child: Padding(

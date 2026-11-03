@@ -355,6 +355,71 @@ async function admin(page, role) {
   }
 }
 
+/** Phase 2 modules: deals, income & expense, agreements, brochures, branches. */
+async function phase2(page, role, can) {
+  if (can.deals) {
+    await step(role, 'deals', async () => {
+      await go(page, '/deals');
+      await shot(page, role, 'deals');
+    });
+    await step(role, 'deal-detail', async () => {
+      await go(page, '/deals?view=table');
+      await page.locator('main table tbody tr').first().click();
+      await page.waitForURL(/\/deals\/[a-f0-9]{24}$/, { timeout: 15_000 });
+      await settle(page, 900);
+      await shot(page, role, 'deal-detail');
+    });
+  }
+  if (can.finance) {
+    await step(role, 'finance', async () => {
+      await go(page, '/finance');
+      await shot(page, role, 'finance');
+    });
+    if (can.reports) await step(role, 'finance-report', async () => {
+      await go(page, '/finance?tab=report');
+      await shot(page, role, 'finance-report');
+    });
+  }
+  if (can.agreements) {
+    await step(role, 'agreements', async () => {
+      await go(page, '/agreements');
+      await shot(page, role, 'agreements');
+    });
+    await step(role, 'agreement-detail', async () => {
+      await go(page, '/agreements?kind=RENT');
+      await page.locator('main table tbody tr').first().click();
+      await page.waitForURL(/\/agreements\/[a-f0-9]{24}$/, { timeout: 15_000 });
+      await settle(page, 900);
+      await shot(page, role, 'agreement-detail');
+    });
+    if (can.templates) {
+      await step(role, 'agreement-templates', async () => {
+        await go(page, '/agreements');
+        await page.getByRole('button', { name: 'Templates' }).click();
+        await settle(page, 600);
+        await shot(page, role, 'agreement-templates');
+        await closeOverlays(page);
+      });
+    }
+  }
+  if (can.brochure) {
+    await step(role, 'brochure', async () => {
+      await openFirstProperty(page, '?status=AVAILABLE&sort=-matchCount');
+      await page.getByRole('button', { name: 'Brochure' }).click();
+      await settle(page, 500);
+      await shot(page, role, 'brochure');
+      await closeOverlays(page);
+    });
+  }
+  if (can.branches) {
+    await step(role, 'branches', async () => {
+      await go(page, '/settings');
+      await tab(page, 'Branches');
+      await shot(page, role, 'branches');
+    });
+  }
+}
+
 async function reports(page, role) {
   await step(role, 'reports', async () => {
     await go(page, '/reports');
@@ -397,12 +462,12 @@ async function looks(browser, role, email) {
 // ───────────────────────── run ─────────────────────────
 
 const CAN = {
-  owner: { reports: true, createClients: true, createFollowUps: true, notes: true, createProperties: true, updateProperties: true, uploadDocuments: true },
-  member: { reports: true, createClients: true, createFollowUps: true, notes: true, createProperties: true, updateProperties: true, uploadDocuments: true },
-  manager: { reports: true, createClients: true, createFollowUps: true, notes: true, createProperties: true, updateProperties: true, uploadDocuments: true },
-  agent: { reports: false, createClients: true, createFollowUps: true, notes: true, createProperties: true, updateProperties: true, uploadDocuments: true },
-  accountant: { reports: true },
-  viewer: { reports: false },
+  owner: { reports: true, createClients: true, createFollowUps: true, notes: true, createProperties: true, updateProperties: true, uploadDocuments: true, deals: true, finance: true, agreements: true, templates: true, brochure: true, branches: true },
+  member: { reports: true, createClients: true, createFollowUps: true, notes: true, createProperties: true, updateProperties: true, uploadDocuments: true, deals: true, finance: true, agreements: true, brochure: true },
+  manager: { reports: true, createClients: true, createFollowUps: true, notes: true, createProperties: true, updateProperties: true, uploadDocuments: true, deals: true, finance: true, agreements: true, templates: true, brochure: true },
+  agent: { reports: false, createClients: true, createFollowUps: true, notes: true, createProperties: true, updateProperties: true, uploadDocuments: true, deals: true, agreements: true },
+  accountant: { reports: true, deals: true, finance: true, agreements: true, brochure: true },
+  viewer: { reports: false, deals: true, finance: true, agreements: true },
 };
 
 // Realistic (synthetic) names for the buyer each role adds during capture.
@@ -418,6 +483,7 @@ try {
     const { context, page } = await signIn(browser, email);
     await everyday(page, role, CAN[role]);
     await workflows(page, role, CAN[role], NEW_CLIENT[role]);
+    await phase2(page, role, CAN[role]);
     if (role === 'owner') await admin(page, role);
     if (CAN[role].reports) await reports(page, role);
     if (role === 'owner' || role === 'manager') await audit(page, role);

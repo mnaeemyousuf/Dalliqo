@@ -4,10 +4,10 @@
 export const PRODUCT = 'Dalliqo';
 export const TAGLINE = 'Every Property. Every Lead. One Platform.';
 export const VERSION = '1.0';
-export const REVISION = 'Rev. B';
+export const REVISION = 'Rev. C';
 
 // What each documented access level may do (mirrors shared/src/roles.ts templates).
-const ALL = { reports: true, exports: true, createClients: true, editClients: true, deleteClients: true, createProperties: true, editProperties: true, deleteProperties: true, createOwners: true, deleteOwners: true, manageMatches: true, createFollowUps: true, deleteFollowUps: true, notes: true, manageAllNotes: true, uploadDocuments: true, deleteDocuments: true, members: true, manageMembers: true, settings: true, audit: true };
+const ALL = { deals: true, dealsAll: true, deleteDeals: true, commissions: true, finance: true, editFinance: true, deleteFinance: true, agreements: true, editAgreements: true, deleteAgreements: true, templates: true, branches: true, reports: true, exports: true, createClients: true, editClients: true, deleteClients: true, createProperties: true, editProperties: true, deleteProperties: true, createOwners: true, deleteOwners: true, manageMatches: true, createFollowUps: true, deleteFollowUps: true, notes: true, manageAllNotes: true, uploadDocuments: true, deleteDocuments: true, members: true, manageMembers: true, settings: true, audit: true };
 const NONE = Object.fromEntries(Object.keys(ALL).map((k) => [k, false]));
 
 export const MANUALS = [
@@ -19,14 +19,14 @@ export const MANUALS = [
   },
   {
     key: 'manager', file: 'Office_Manager_User_Manual.pdf', title: 'Office Manager User Manual', role: 'Office Manager (Manager template)',
-    access: 'Member — Manager template', demoUser: 'manager@demo.recrm.test', can: { ...ALL, members: true, manageMembers: false, settings: false },
+    access: 'Member — Manager template', demoUser: 'manager@demo.recrm.test', can: { ...ALL, members: true, manageMembers: false, settings: false, branches: false },
     summary: 'You run the day-to-day office. You can do everything an agent can, plus delete records, manage everyone’s notes, see reports and the audit log. Adding users and changing business settings stays with the owner.',
     duties: ['Keep the client and property database clean (including removing duplicates)', 'Supervise follow-ups and team performance', 'Check listings that need availability verification', 'Prepare reports and exports for the owner', 'Review the audit log when something looks wrong'],
   },
   {
     key: 'agent', file: 'Real_Estate_Agent_User_Manual.pdf', title: 'Real Estate Agent User Manual', role: 'Real Estate Agent / Salesperson (Agent template)',
     access: 'Member — Agent template', demoUser: 'agent@demo.recrm.test',
-    can: { ...NONE, createClients: true, editClients: true, createProperties: true, editProperties: true, createOwners: true, manageMatches: true, createFollowUps: true, deleteFollowUps: true, notes: true, uploadDocuments: true },
+    can: { ...NONE, createClients: true, editClients: true, createProperties: true, editProperties: true, createOwners: true, manageMatches: true, createFollowUps: true, deleteFollowUps: true, notes: true, uploadDocuments: true, deals: true, agreements: true, editAgreements: true },
     summary: 'You work with buyers, tenants and owners every day: you record inquiries, find matching properties, contact clients, schedule visits and follow-ups, and keep listings up to date.',
     duties: ['Record every inquiry as a client with clear requirements', 'Use matches to propose suitable properties and share them on WhatsApp', 'Schedule, reschedule and complete follow-ups and visits', 'Keep property status, price and availability up to date', 'Write notes after every important conversation'],
     salesperson: true,
@@ -34,19 +34,19 @@ export const MANUALS = [
   {
     key: 'member', file: 'CRM_Operator_User_Manual.pdf', title: 'CRM Operator User Manual', role: 'CRM Operator / General Staff (Standard member template)',
     access: 'Member — Standard member template', demoUser: 'son@demo.recrm.test',
-    can: { ...ALL, deleteClients: false, deleteProperties: false, deleteOwners: false, manageAllNotes: false, deleteDocuments: false, manageMembers: false, settings: false, audit: false },
+    can: { ...ALL, deleteClients: false, deleteProperties: false, deleteOwners: false, manageAllNotes: false, deleteDocuments: false, manageMembers: false, settings: false, audit: false, deleteDeals: false, deleteFinance: false, deleteAgreements: false, templates: false, branches: false },
     summary: 'You keep the office running: you enter and update clients, properties, owners and documents, schedule follow-ups for the team, and prepare reports. This is also the default access for a family member who helps run the business.',
     duties: ['Enter new clients, properties and owners accurately and without duplicates', 'Upload and organise documents and photos', 'Schedule follow-ups and make sure nothing is overdue', 'Confirm listing availability with owners', 'Download reports when the owner asks'],
   },
   {
     key: 'accountant', file: 'Accountant_User_Manual.pdf', title: 'Accountant User Manual', role: 'Accountant / Reports (Accountant template)',
-    access: 'Member — Accountant (reports) template', demoUser: 'accounts@demo.recrm.test', can: { ...NONE, reports: true, exports: true },
-    summary: 'You review the business’s figures. You can see all records and the dashboard analytics and download Excel and PDF reports, but you cannot change data.',
-    duties: ['Review dashboard figures and analytics', 'Download Excel and PDF reports for accounts and management', 'Check deal status (sold, rented, reserved) on properties', 'Report data problems to the owner or manager'],
+    access: 'Member — Accountant (reports) template', demoUser: 'accounts@demo.recrm.test', can: { ...NONE, reports: true, exports: true, deals: true, dealsAll: true, commissions: true, finance: true, editFinance: true, deleteFinance: true, agreements: true },
+    summary: 'You look after the business’s money. You record commission received and agent payouts, keep income and expenses with receipts, and download Excel and PDF reports. You can see all clients, properties and agreements but not change them.',
+    duties: ['Record commission received on deals and agent payouts', 'Keep office income and expenses up to date, with receipts', 'Review dashboard figures, the commission report and the income & expense report', 'Download Excel and PDF reports for accounts and management', 'Report data problems to the owner or manager'],
   },
   {
     key: 'viewer', file: 'Read_Only_User_Manual.pdf', title: 'Read-only User Manual', role: 'Read-only User / Viewer (Read-only viewer template)',
-    access: 'Member — Read-only viewer template', demoUser: 'viewer@demo.recrm.test', can: { ...NONE },
+    access: 'Member — Read-only viewer template', demoUser: 'viewer@demo.recrm.test', can: { ...NONE, deals: true, dealsAll: true, finance: true, agreements: true },
     summary: 'You can look up clients, properties, owners, matches, follow-ups and documents, for example to answer a caller’s question, but you cannot add, change, delete or export anything.',
     duties: ['Look up clients and properties when asked', 'Check what is available and at what price', 'Read notes and history before speaking to a client', 'Tell a colleague with edit access when something needs to change'],
   },
@@ -106,6 +106,13 @@ export function chapters(m, fig, has) {
     c.manageMembers && 'Add team members, set their permissions, suspend or remove them',
     c.settings && 'Change business settings, client categories and matching rules',
     c.audit && 'Read the audit log',
+    c.deals && (c.dealsAll ? 'See every deal in the pipeline and its commission' : 'Work on the deals you are an agent on (pipeline stages, details)'),
+    c.commissions && 'Record commission received and agent payouts',
+    c.finance && (c.editFinance ? 'Record office income and expenses with receipts' : 'See income, expenses and the finance report'),
+    c.agreements && (c.editAgreements ? 'Draft sale, rent and token agreements in English or Urdu, print them and attach the signed copy' : 'Read agreements and print their PDF'),
+    c.templates && 'Add and edit agreement templates',
+    c.exports && 'Make property brochures (PDF and share image with your WhatsApp QR)',
+    c.branches && 'Create branches and decide which branches each user can see',
   ].filter(Boolean);
   const cannot = [
     !c.createClients && ['Add or edit clients', 'Your access is read-only for clients.'],
@@ -120,6 +127,11 @@ export function chapters(m, fig, has) {
     !c.manageMembers && ['Add or manage users', 'Only the business owner manages the team.'],
     !c.settings && ['Change business settings or matching rules', 'Only the business owner changes settings.'],
     !c.audit && ['Read the audit log', 'The audit log is for the owner and managers.'],
+    c.deals && !c.dealsAll && ['See other agents’ deals', 'Agents see the deals they are on; the owner and managers see all of them.'],
+    c.deals && !c.commissions && ['Record commission payments or payouts', 'Money on deals is recorded by the owner, a manager or accounts.'],
+    !c.finance && ['See income and expenses', 'Office finances are for the owner, managers and accounts.'],
+    c.agreements && !c.editAgreements && ['Draft or change agreements', 'Your access to agreements is read-only.'],
+    !c.exports && ['Make property brochures', 'A brochure is an export of business data, so it needs export access.'],
   ].filter(Boolean);
   out.push({
     title: 'Introduction',
@@ -266,7 +278,7 @@ export function chapters(m, fig, has) {
     where: `${ui('Reports')} in the left menu.`,
     steps: ['Choose the data: clients, properties, owners, follow-ups or matches.', 'Choose Excel (.xlsx) or PDF report.', 'Optionally set filters (for example type, status, society, price range).', `Click ${ui('Download')}.`],
     after: 'The file downloads to your computer. Exports are limited to 10,000 rows — use filters for larger data.',
-    limits: 'Urdu text appears correctly in Excel files; in PDF reports Urdu characters are not yet rendered, so use Excel for Urdu data.',
+    limits: 'Urdu text appears correctly in both Excel files and PDF reports. Commission, income & expense and agreement lists can be exported too (when you can see them).',
   }) + fig('reports', 'Reports and exports') + warn('Exported files contain client phone numbers and prices. Store them securely and delete copies you no longer need.') });
   out.push({ title: 'Documents and data export', sections: docSections });
 
@@ -288,8 +300,40 @@ export function chapters(m, fig, has) {
     out.push({ title: c.manageMembers ? 'Managing your team and business' : 'Oversight', sections: adm });
   }
 
+  // 11b. Deals, money, agreements, brochures, branches (Phase 2)
+  const biz = [];
+  if (c.deals) biz.push({ title: 'Deals and commission', html: p(`${ui('Deals')} shows the sales pipeline: Inquiry → Site visit → Offer → Token → Agreement → Transfer → Won (or Lost). Each deal links a client and (usually) a property, the agreed and final price, the agents with their share, and the commission expected from the buyer and the seller (a percentage of the final price, or a fixed amount).`) + fig('deals', 'The deal pipeline board') + feature({
+    purpose: 'Track a deal from first inquiry to transfer and know what commission is due and received.',
+    where: `${ui('Deals')} → ${ui('New deal')}, or the Deals tab on a client or property.`,
+    steps: ['Choose the client and property and enter the agreed price.', 'Check the commission (defaults come from Settings: 1% buyer and 1% seller unless your owner changed them). The form shows the expected amount.', 'Add the agents on the deal and their share — the shares must add up to 100%.', `Click ${ui('Save')}, then move the deal through the stages with the stage buttons as it progresses. A lost deal needs a reason.`],
+    required: [['Client', ''], ['Agents and shares', 'Total 100%']],
+    optional: [['Property, agreed price, final price, expected close date, notes', ''], ['Commission', 'Percent or fixed amount, buyer and seller side']],
+    after: 'The deal appears in its stage column. Every stage change is kept in the deal’s history and timeline.',
+    limits: c.dealsAll ? '' : 'You see and edit only the deals you are an agent on.',
+  }) + fig('deal-detail', 'A deal with its commission summary') + (c.commissions ? p(`On the deal’s ${ui('Commission')} tab click ${ui('Record payment')} for each amount received (side, amount, date, method, reference). The status changes from Pending to Partly received to Received. ${ui('Record payout')} records what each agent was paid; each agent’s share, received amount, paid-out amount and balance are worked out for you.`) + note('If “record commission as income” is switched on in Settings (it is by default), every commission payment also appears once under Income & expense — removing the payment removes that income entry.') : '') });
+  if (c.finance) biz.push({ title: 'Income and expenses', html: p(`${ui('Income & expense')} keeps the office’s money in one place: commission income (added automatically from deals), other income, and expenses such as office rent, salaries, utilities, marketing and fuel. Each entry has a category, amount, date, payment method (cash, bank transfer, cheque, JazzCash, Easypaisa) and can have receipts attached.`) + fig('finance', 'Income and expense entries') + (c.editFinance ? feature({
+    purpose: 'Record an expense or income with its receipt.',
+    where: `${ui('Income & expense')} → ${ui('Add entry')}.`,
+    steps: ['Choose Income or Expense, then the category.', 'Enter the amount in rupees and the date; choose the method and add a reference if there is one.', `Click ${ui('Save')}. To attach a receipt, click the paperclip on the entry and upload a photo or PDF.`],
+    required: [['Type, category, amount, date', '']],
+    optional: [['Method, reference, description', '']],
+    mistakes: 'Editing commission income here — it is changed on the deal’s payment instead (the entry shows “From deal”).',
+  }) : '') + (c.reports ? p(`The ${ui('Report')} tab shows income, expense and net by month or by category for any date range${c.exports ? ', with Excel and PDF download' : ''}. The dashboard shows this month’s income, expenses and net.`) + fig('finance-report', 'The income & expense report') : p('The dashboard shows this month’s income, expenses and net. The monthly report is for staff with report access.')) });
+  if (c.agreements) biz.push({ title: 'Agreements', html: warn('Agreement templates are examples, not legal advice. Always have a qualified lawyer review an agreement before anyone signs it, and use the stamp paper required in your province. This note appears on every agreement screen and in every printed agreement.') + p(`${ui('Agreements')} lists sale agreements, tenancy (rent) agreements and token (bayana) receipts. Each one is filled in from the client, owner, property and deal details, in English or Urdu.`) + fig('agreements', 'The agreements list') + (c.editAgreements ? feature({
+    purpose: 'Prepare an agreement from a template, print it and keep the signed copy.',
+    where: `${ui('Agreements')} → ${ui('New agreement')}, or the Agreements tab on a deal (details are filled in from the deal).`,
+    steps: ['Choose the type (sale, rent, token receipt), the language and, if you have more than one, the template.', 'Choose the client (buyer or tenant), the property and the owner; enter CNIC numbers and witnesses if you have them.', 'Enter the price and token amount — or for rent, the monthly rent, security deposit, start and end dates.', `Click ${ui('Save')}. The agreement text is generated as version 1.`, `Use ${ui('PDF')} to print it. If something changes, edit the details and ${ui('Regenerate from template')}, or ${ui('Edit text')} for a clause your lawyer asked for — every change is kept as a new version.`, `When it is signed, upload the scan on the ${ui('Signed copy')} tab and click ${ui('Mark signed')}.`],
+    required: [['Type, client', '']],
+    optional: [['Property, owner, amounts, dates, CNICs, witnesses, notes', 'Anything left empty prints as a blank line to fill by hand']],
+    after: 'For a rent agreement with an end date, renewal follow-ups are added 30 and 7 days before it ends (they move if the date changes and are cancelled if the agreement is cancelled).',
+    limits: 'A signed agreement is locked: it can no longer be edited, only marked expired or cancelled.' + (c.deleteAgreements ? '' : ' Deleting agreements is for the owner and managers.'),
+  }) : p('You can open any agreement, read every version and download its PDF.')) + fig('agreement-detail', 'An agreement with its versions and status buttons') + (c.templates ? p(`${ui('Templates')} on the Agreements page lists the built-in English and Urdu templates. Built-in templates cannot be changed: click ${ui('Copy')} and edit the copy. Placeholders — names such as clientName, propertyAddress or monthlyRent written between double curly brackets — are filled in automatically; the template editor lists all of them.`) + fig('agreement-templates', 'Agreement templates') : '') });
+  if (c.exports) biz.push({ title: 'Property brochures', html: p(`On a property page click ${ui('Brochure')}. Choose English or Urdu, the contact person and whether to hide the price, then download a printable PDF or a 1080×1350 image for WhatsApp status and social media. Both show the main photo, details and a QR code that opens a WhatsApp chat with the contact person. ${ui('Copy share text')} and ${ui('WhatsApp')} send a short text description instead.`) + fig('brochure', 'Making a brochure') + note('Only the asking price is ever printed. The minimum and expected prices are confidential and never appear on a brochure.') });
+  if (c.branches) biz.push({ title: 'Branches', html: p(`If the business has more than one office, add each one under ${ui('Settings → Branches')}. Every client, property, owner, follow-up, deal, income entry and agreement belongs to a branch. On the ${ui('Users')} page choose whether a person sees all branches or only selected ones — the server enforces this everywhere, including exports and the mobile app. The branch switcher at the top lets anyone with more than one branch work on one branch at a time; reports can be per branch or for the whole business.`) + fig('branches', 'Branches in Settings') + note('Matching normally stays inside a branch. Switch on “Match clients with properties of other branches” in the Matching settings to match across branches.') });
+  if (biz.length) out.push({ title: 'Deals, money, agreements and brochures', sections: biz });
+
   // 12. Mobile app
-  out.push({ title: 'The mobile app', sections: [{ title: 'Using Dalliqo on your phone', html: p('The Android/iOS app has the same clients, properties, owners, matches, follow-ups, notes and documents, with the same permissions. It is designed for field work:') + ul(['<b>Works offline.</b> Add or edit clients, properties, owners, follow-ups and notes without internet. Changes wait in a queue and send automatically when you are back online. The sync chip shows “All data synced” or how many changes are waiting.', '<b>Conflicts.</b> If a colleague changed the same price or status while you were offline, the app shows both versions and lets you choose “Keep mine” or “Keep latest”.', '<b>PIN and fingerprint/face lock.</b> Set a 4-digit PIN (and biometrics, if your phone supports it) in Settings → Security so nobody can open the app on your unlocked phone.', '<b>Backup and new phone.</b> Everything is stored in the business’s cloud account. On a new phone, install the app and sign in — your business data is restored automatically. Settings → Backup & restore shows whether all changes are uploaded.', '<b>One-tap + button.</b> Add a client, property, follow-up, note or document in one or two taps.']) + note('This manual’s screenshots are from the web application. The mobile app had not yet been installed on a test phone when this manual was prepared, so mobile screenshots are not included; screens follow the same layout and wording.') }] });
+  out.push({ title: 'The mobile app', sections: [{ title: 'Using Dalliqo on your phone', html: p('The Android/iOS app has the same clients, properties, owners, matches, follow-ups, notes and documents, with the same permissions. It is designed for field work:') + ul(['<b>Works offline.</b> Add or edit clients, properties, owners, follow-ups and notes without internet. Changes wait in a queue and send automatically when you are back online. The sync chip shows “All data synced” or how many changes are waiting.', '<b>Conflicts.</b> If a colleague changed the same price or status while you were offline, the app shows both versions and lets you choose “Keep mine” or “Keep latest”.', '<b>PIN and fingerprint/face lock.</b> Set a 4-digit PIN (and biometrics, if your phone supports it) in Settings → Security so nobody can open the app on your unlocked phone.', '<b>Backup and new phone.</b> Everything is stored in the business’s cloud account. On a new phone, install the app and sign in — your business data is restored automatically. Settings → Backup & restore shows whether all changes are uploaded.', '<b>One-tap + button.</b> Add a client, property, follow-up, note or document in one or two taps.', '<b>Deals, income & expense and agreements.</b> The same modules are in the app’s More menu (when your access allows): deals and payments, income and expense entries and agreement drafts work offline; generating agreement text, PDFs and brochures needs internet.', '<b>Reminders without internet.</b> Follow-up reminders are scheduled on the phone, so they ring on time even offline (and only once, even if a push notification also arrives).']) + note('This manual’s screenshots are from the web application. The mobile app had not yet been installed on a test phone when this manual was prepared, so mobile screenshots are not included; screens follow the same layout and wording.') }] });
 
   // 13. Language & appearance
   out.push({ title: 'Language, Urdu and appearance', sections: [{ title: 'English and Urdu', html: p('Click the language button (اردو / English) at the top of any page. In Urdu the whole layout switches to right-to-left: the menu moves to the right and text aligns right. Phone numbers and property IDs stay left-to-right so they remain readable. Your choice is saved on your account and used on the mobile app too.') + (has('urdu-dashboard') ? fig('urdu-dashboard', 'The dashboard in Urdu (right-to-left)') + fig('urdu-clients', 'The client list in Urdu') : '') + p('The sun/moon button switches between light and dark theme; the layout also adapts to tablets.') + (has('dark-mode') ? fig('dark-mode', 'Dark theme') + fig('tablet', 'Tablet layout (My Day)') : '') }] });

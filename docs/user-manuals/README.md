@@ -1,4 +1,4 @@
-# Dalliqo user manuals
+| 38 | 26 || 43 | 31 || 59 | 46 || 53 | 40 || 62 | 48 || 72 | 60 |# Dalliqo user manuals
 
 Role-specific PDF manuals for **Dalliqo** (*Every Property. Every Lead. One Platform.*) customer staff. Each one is written for one access level and uses
 screenshots taken from the running application **signed in as the demo user for that access
@@ -6,12 +6,12 @@ level**, with synthetic Karachi demo data (no real people or properties).
 
 | File | Intended audience | Access level documented | Pages | Figures |
 |---|---|---|---|---|
-| [Business_Owner_User_Manual.pdf](Business_Owner_User_Manual.pdf) | Business owner / organisation administrator | Owner — full access | 62 | 51 |
-| [Office_Manager_User_Manual.pdf](Office_Manager_User_Manual.pdf) | Office manager / team lead | Member — Manager template | 53 | 40 |
-| [Real_Estate_Agent_User_Manual.pdf](Real_Estate_Agent_User_Manual.pdf) | Field agents and salespeople (includes a note on the narrower Salesperson template) | Member — Agent template | 49 | 36 |
-| [CRM_Operator_User_Manual.pdf](CRM_Operator_User_Manual.pdf) | Office staff / CRM operators, and the family member who helps run the business | Member — Standard member template | 52 | 39 |
-| [Accountant_User_Manual.pdf](Accountant_User_Manual.pdf) | Accounts / reporting staff | Member — Accountant (reports) template | 37 | 24 |
-| [Read_Only_User_Manual.pdf](Read_Only_User_Manual.pdf) | Receptionists, trainees, anyone who only looks things up | Member — Read-only viewer template | 34 | 21 |
+| [Business_Owner_User_Manual.pdf](Business_Owner_User_Manual.pdf) | Business owner / organisation administrator | Owner — full access | 72 | 60 |
+| [Office_Manager_User_Manual.pdf](Office_Manager_User_Manual.pdf) | Office manager / team lead | Member — Manager template | 62 | 48 |
+| [Real_Estate_Agent_User_Manual.pdf](Real_Estate_Agent_User_Manual.pdf) | Field agents and salespeople (includes a note on the narrower Salesperson template) | Member — Agent template | 53 | 40 |
+| [CRM_Operator_User_Manual.pdf](CRM_Operator_User_Manual.pdf) | Office staff / CRM operators, and the family member who helps run the business | Member — Standard member template | 59 | 46 |
+| [Accountant_User_Manual.pdf](Accountant_User_Manual.pdf) | Accounts / reporting staff (commission, income & expense) | Member — Accountant template | 43 | 31 |
+| [Read_Only_User_Manual.pdf](Read_Only_User_Manual.pdf) | Receptionists, trainees, anyone who only looks things up | Member — Read-only viewer template | 38 | 26 |
 
 Every manual contains: cover page; document control; table of contents with page numbers;
 introduction (what the system does, the reader's role, what they can and cannot do and why);
@@ -27,7 +27,7 @@ history. Sections for actions a role cannot perform are left out of that role's 
 | Role from the brief | Status | Reason |
 |---|---|---|
 | Platform Super Admin | Not implemented | There is no cross-tenant admin console; platform operations are done by the operator at the infrastructure level (roadmap E-07). |
-| Branch Manager | Not implemented | The product has no branches yet (roadmap E-01). |
+| Branch Manager | Covered by the Manager manual | Branches exist (Phase 2): a Branch Manager is a member with the Manager template whose branch access is limited to their branch(es) in Users. Everything in the Office Manager manual applies, limited to those branches. |
 | Property Manager | Not implemented | No rentals/tenancy module (roadmap R-11). |
 | Salesperson | Covered | Documented as a note in the Real Estate Agent manual (same screens, fewer permissions). |
 
