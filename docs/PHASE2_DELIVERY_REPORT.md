@@ -22,7 +22,7 @@ Legend: ✅ done and tested · ⚠️ done, part needs a dependency · — not a
 | B3 Agreements (EN/UR templates, PDFs, statuses, versions, signed copy, renewals, lawyer note) | ✅ | ✅ | ✅ | ✅ drafts / edits / status; text and PDF online | ✅ 7 server + 3 web + 4 Flutter; PDFs inspected | **DONE** |
 | B5 Brochures (PDF + 1080×1350 image, QR, EN/UR, price confidentiality, WhatsApp) | ✅ | ✅ | ✅ | — online (says so) | ✅ 4 server + 1 web + 2 Flutter; images inspected | **DONE + dependency** (WhatsApp / share sheet on a phone; Cloudinary cover photos need keys) |
 | C Parity (matrix, mobile users / permissions / categories / settings / analytics / audit / documents / templates, realtime, Urdu, pagination, benchmark) | ✅ | ✅ | ✅ | ✅ | ✅ | **DONE** — [PARITY_MATRIX.md](PARITY_MATRIX.md) |
-| Android APK | — | — | ✅ built by GitHub Actions (`.github/workflows/android-apk.yml`, run 41659056656, release `apk-build-2`, 70 MB) | — | — | **DONE + dependency** (not yet installed on a phone; debug-signed, sideload only) |
+| Android APK | — | — | ✅ built by GitHub Actions (`.github/workflows/android-apk.yml`, run 41661337077, release `apk-build-3`, 70 MB) | — | — | **DONE + dependency** (not yet installed on a phone; debug-signed, sideload only) |
 | Device checks (two phones: father and son) | — | — | ⚠️ | — | — | **BLOCKED** (needs two Android phones) — [DEVICE_TEST_SCRIPT.md](DEVICE_TEST_SCRIPT.md) |
 
 ## Commits (local, not pushed)
@@ -41,7 +41,7 @@ Legend: ✅ done and tested · ⚠️ done, part needs a dependency · — not a
 Pushed to GitHub on 3 Nov 2026 (`main` at the final commit; the remote's `.env.example` change and the `build-apk` workflow branch were
 merged in, no conflicts). Render redeployed automatically (deploy `dep-dbkvd8llmcpc73dovngg`, live): `/api/health` is OK and the new
 endpoints answer 401 (they exist and require sign-in). The same code was pushed to `build-apk`, and GitHub Actions built the release
-APK (run 41659056656, success). The lockfile's hand-added Linux entries were checked after adding `qrcode`: nothing was lost.
+APK (run 41661337077, success). The lockfile's hand-added Linux entries were checked after adding `qrcode`: nothing was lost.
 
 ## Test counts
 
@@ -106,7 +106,7 @@ each demo user — see [user-manuals/README.md](user-manuals/README.md)).
 
 | Risk | Impact | Mitigation / next step |
 |---|---|---|
-| APK built in CI but not yet installed on a phone (no Android SDK on this machine) | Local alarms, reboot restore, exact-alarm permission, share sheet, QR scanning and on-screen Urdu are unverified on a device | Install `apk-build-2` from GitHub Releases on two phones and run [DEVICE_TEST_SCRIPT.md](DEVICE_TEST_SCRIPT.md); the APK is debug-signed (Play Store needs a release keystore) |
+| APK built in CI but not yet installed on a phone (no Android SDK on this machine) | Local alarms, reboot restore, exact-alarm permission, share sheet, QR scanning and on-screen Urdu are unverified on a device | Install `apk-build-3` from GitHub Releases on two phones and run [DEVICE_TEST_SCRIPT.md](DEVICE_TEST_SCRIPT.md); the APK is debug-signed (Play Store needs a release keystore) |
 | Firebase, Cloudinary and Maps credentials not available | Push de-duplication against real FCM and brochure cover images from Cloudinary are untested (local storage path is tested) | Configure keys in staging and run device script §1.7 and §6 |
 | Existing members do not automatically get the new modules | By design (their access must not change); an owner must apply a template or tick the new permissions | Mention in release notes; the Users screen shows "Custom" for older members |
 | Agents cannot make brochures (no `exports:create` in the Agent template, as planned) | Field agents may expect it | Owner can tick "exports" for an agent; revisit the template with the customer |

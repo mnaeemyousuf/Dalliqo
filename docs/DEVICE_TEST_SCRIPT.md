@@ -1,7 +1,7 @@
 # Device test script (Android, Phase 2 — two phones: father and son)
 
 The release APK is built by GitHub Actions (`.github/workflows/android-apk.yml`): the Phase 2 build is
-[release `apk-build-2`](https://github.com/mnaeemyousuf/Dalliqo/releases/tag/apk-build-2) (`Dalliqo-1.0.0+1-2.apk`, run 41659056656,
+[release `apk-build-3`](https://github.com/mnaeemyousuf/Dalliqo/releases/tag/apk-build-3) (`Dalliqo-1.0.0+1-3.apk`, run 41661337077,
 pointing at `https://dalliqo.onrender.com`). It has **not yet been installed on a phone** — the development machine has no Android
 SDK and no phone — so none of the steps below has been executed. The logic behind them is covered by automated tests (named in
 each section); this script checks what only real phones can show: notifications and alarms, reboot, the share sheet, WhatsApp,
@@ -14,7 +14,7 @@ the camera, PDF viewers, right-to-left Urdu on screen, and two people working on
 | Account | `owner@demo.recrm.test` (Owner, full access) | `son@demo.recrm.test` (Standard member template) |
 | Role in the tests | Admin actions, approvals, owner-only screens | Day-to-day entry, offline work, permission limits |
 
-1. On each phone: open the release page above, download `Dalliqo-1.0.0+1-2.apk`, allow "install unknown apps" for the browser,
+1. On each phone: open the release page above, download `Dalliqo-1.0.0+1-3.apk`, allow "install unknown apps" for the browser,
    install. (The APK is debug-signed, for sideloading only; Play Store needs a release keystore.) To build your own instead:
    on a machine with Android Studio (SDK 34+, JDK 17) run `cd mobile && flutter build apk --release --dart-define=API_BASE_URL=https://dalliqo.onrender.com`,
    or push to the `build-apk` branch / run the workflow manually (it can take another API URL).
@@ -120,4 +120,4 @@ the camera, PDF viewers, right-to-left Urdu on screen, and two people working on
 
 | Section | Phone / Android | Build | Tester | Date | Pass / fail / notes |
 |---|---|---|---|---|---|
-| 0b, 1–8 | | apk-build-2 | | | Not run yet (needs two Android phones) |
+| 0b, 1–8 | | apk-build-3 | | | Not run yet (needs two Android phones) |
