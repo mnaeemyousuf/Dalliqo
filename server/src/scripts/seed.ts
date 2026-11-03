@@ -29,6 +29,7 @@ import { Property } from '../models/Property';
 import { mediaService } from '../services/mediaService';
 import { branchService } from '../services/branchService';
 import { dealService } from '../services/dealService';
+import { transactionService } from '../services/transactionService';
 import { demoDocumentPdf, demoPropertyImage } from './demoImages';
 import type { AuthContext } from '../types/context';
 import { normalizePhone } from '../utils/phone';
@@ -324,6 +325,19 @@ export async function seed(opts: { reset?: boolean } = {}): Promise<Record<strin
     if (s.stage === 'CLOSED_WON') await dealService.addPayout(father, deal._id.toString(), { userId: son.userId, amount: Math.round((price * 0.8) / 100), status: 'PAID', date: day(20) });
   }
 
+  // Office expenses for the last three months (commission income above was created from the deal payments).
+  const cats = new Map((await transactionService.categories(father)).map((c) => [c.key, String(c._id)]));
+  const expenses: [string, number, number, string][] = [
+    ['OFFICE_RENT', 85_000, 62, 'Office rent'], ['OFFICE_RENT', 85_000, 32, 'Office rent'], ['OFFICE_RENT', 85_000, 2, 'Office rent'],
+    ['UTILITIES', 18_400, 55, 'K-Electric bill'], ['UTILITIES', 21_250, 25, 'K-Electric bill'],
+    ['MARKETING', 35_000, 40, 'Zameen.com featured listings'], ['MARKETING', 12_000, 10, 'Facebook ads'],
+    ['FUEL_TRAVEL', 9_500, 15, 'Site visits fuel'], ['SALARIES', 60_000, 30, 'Office assistant salary'],
+  ];
+  for (const [key, amount, daysAgo, description] of expenses) {
+    await transactionService.create(father, { type: 'EXPENSE', categoryId: cats.get(key)!, amount, date: day(daysAgo), method: key === 'SALARIES' ? 'BANK_TRANSFER' : 'CASH', description });
+  }
+  await transactionService.create(father, { type: 'INCOME', categoryId: cats.get('CONSULTANCY')!, amount: 25_000, date: day(18), method: 'CASH', description: 'Valuation advice, DHA Phase 6 plot' });
+
   return {
     users: 1 + team.length,
     owners: owners.length,
@@ -331,6 +345,7 @@ export async function seed(opts: { reset?: boolean } = {}): Promise<Record<strin
     clients: clients.length,
     followUps: 20,
     deals: 6,
+    transactions: expenses.length + 1,
     matches: await Match.countDocuments({ businessId: father.businessId }),
   };
 }

@@ -19,8 +19,9 @@ import { propertyService, type PropertyQuery } from './propertyService';
 import { auditService } from './auditService';
 import { MAX_EXPORT_ROWS as MAX_ROWS } from '../constants';
 import { dealService, type DealQuery } from './dealService';
+import { transactionService, type TransactionQuery } from './transactionService';
 
-export type ExportResource = 'clients' | 'properties' | 'owners' | 'followups' | 'matches' | 'deals' | 'commissions';
+export type ExportResource = 'clients' | 'properties' | 'owners' | 'followups' | 'matches' | 'deals' | 'commissions' | 'transactions' | 'finance';
 export type ExportFormat = 'xlsx' | 'pdf';
 
 
@@ -62,7 +63,46 @@ async function build(auth: AuthContext, resource: ExportResource, filters: Recor
   const memberIds = await memberRepository.activeUserIds(auth);
   const userNames = new Map((await User.find({ _id: { $in: memberIds } }).select('fullName').lean()).map((u) => [u._id.toString(), u.fullName]));
   if ((resource === 'deals' || resource === 'commissions') && !auth.permissions.includes(PERMISSIONS.DEALS_READ)) throw forbidden();
+  if ((resource === 'transactions' || resource === 'finance') && !auth.permissions.includes(PERMISSIONS.FINANCE_READ)) throw forbidden();
   switch (resource) {
+    case 'transactions': {
+      const items = await fetchAll((page, limit) => transactionService.list(auth, { ...(filters as Partial<TransactionQuery>), page, limit }));
+      return {
+        title: 'Income & expenses',
+        columns: [
+          { header: 'Date', key: 'date', width: 12, pdf: 1.1 },
+          { header: 'Type', key: 'type', width: 10, pdf: 1 },
+          { header: 'Category', key: 'category', width: 20, pdf: 1.8 },
+          { header: 'Amount', key: 'amount', width: 16, pdf: 1.4, money: true },
+          { header: 'Method', key: 'method', width: 15, pdf: 1.2 },
+          { header: 'Deal', key: 'deal', width: 12, pdf: 1 },
+          { header: 'Client', key: 'client', width: 20, pdf: 1.6 },
+          { header: 'Description', key: 'description', width: 32, pdf: 2.6 },
+          { header: 'Reference', key: 'reference', width: 16, pdf: 1.2 },
+          { header: 'Source', key: 'source', width: 12 },
+        ],
+        rows: items.map((t) => ({
+          date: date(t.date), type: label(t.type), category: (t.categoryId as unknown as { name?: string })?.name, amount: t.amount, method: label(t.method),
+          deal: (t.dealId as unknown as { dealNo?: string } | null)?.dealNo, client: (t.clientId as unknown as { fullName?: string } | null)?.fullName,
+          description: t.description, reference: t.reference, source: label(t.source),
+        })),
+      };
+    }
+    case 'finance': {
+      const groupBy = filters.groupBy === 'category' ? 'category' : 'month';
+      const r = await transactionService.report(auth, { groupBy, from: filters.from ? new Date(String(filters.from)) : undefined, to: filters.to ? new Date(String(filters.to)) : undefined });
+      return {
+        title: groupBy === 'month' ? 'Income & expense by month' : 'Income & expense by category',
+        columns: [
+          { header: groupBy === 'month' ? 'Month' : 'Category', key: 'label', width: 24, pdf: 2.4 },
+          { header: 'Income', key: 'income', width: 18, pdf: 1.6, money: true },
+          { header: 'Expense', key: 'expense', width: 18, pdf: 1.6, money: true },
+          { header: 'Net', key: 'net', width: 18, pdf: 1.6, money: true },
+          { header: 'Entries', key: 'count', width: 10, pdf: 0.8 },
+        ],
+        rows: [...r.rows.map((x) => ({ label: x.label, income: x.income, expense: x.expense, net: x.net, count: x.count })), { label: 'Total', ...r.totals, count: r.rows.reduce((s, x) => s + x.count, 0) }],
+      };
+    }
     case 'deals': {
       const items = await fetchAll((page, limit) => dealService.list(auth, { ...(filters as Partial<DealQuery>), page, limit }));
       return {

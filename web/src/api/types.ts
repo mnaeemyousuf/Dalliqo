@@ -21,6 +21,7 @@ import type {
   DealSide,
   DealStage,
   PaymentMethod,
+  TransactionType,
 } from '@recrm/shared';
 
 export interface ApiSuccess<T> {
@@ -334,6 +335,44 @@ export interface Deal {
   summary?: CommissionSummary;
 }
 
+export interface TransactionCategory {
+  _id: string;
+  uuid: string;
+  key?: string;
+  name: string;
+  nameUr?: string;
+  type: TransactionType;
+  isSystem: boolean;
+  sortOrder: number;
+  archivedAt?: string | null;
+}
+
+export interface Transaction {
+  _id: string;
+  uuid: string;
+  version: number;
+  branchId?: string;
+  type: TransactionType;
+  categoryId: string | Pick<TransactionCategory, '_id' | 'name' | 'nameUr' | 'type' | 'key'>;
+  amount: number;
+  date: string;
+  method: PaymentMethod;
+  dealId?: string | { _id: string; dealNo: string; title?: string } | null;
+  propertyId?: string | { _id: string; propertyId: string } | null;
+  clientId?: string | { _id: string; fullName: string } | null;
+  description?: string;
+  reference?: string;
+  source: 'MANUAL' | 'COMMISSION';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FinanceReport {
+  groupBy: 'month' | 'category';
+  rows: { key: string; label: string; labelUr?: string; income: number; expense: number; net: number; count: number }[];
+  totals: { income: number; expense: number; net: number };
+}
+
 export interface CommissionReport {
   groupBy: 'month' | 'agent';
   rows: { key: string; label: string; received: number; payments: number }[];
@@ -347,6 +386,7 @@ export interface DashboardSummary {
   followUps: { today: number; overdue: number };
   today: { newClients: number; newProperties: number; newMatches: number };
   deals?: { open: number; wonThisMonth: number; receivedThisMonth: number; outstanding: number };
+  finance?: { incomeThisMonth: number; expenseThisMonth: number; netThisMonth: number };
   generatedAt: string;
 }
 

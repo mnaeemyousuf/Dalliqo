@@ -115,12 +115,19 @@ describe('Scenario C — matching', () => {
   });
 });
 
+/** Up to 90 minutes from now, but still today in Karachi (My Day is per business day; runs near midnight were flaky). */
+function laterToday(): string {
+  const pk = new Date(Date.now() + 5 * 3_600_000);
+  const minutesLeft = 24 * 60 - (pk.getUTCHours() * 60 + pk.getUTCMinutes());
+  return inMinutes(Math.max(1, Math.min(90, minutesLeft - 2)));
+}
+
 describe('Scenario D — follow-up', () => {
   it('schedules, shows in the right view, completes, and records history', async () => {
     const s = await registerOwner(app);
     const auth = bearer(s.accessToken);
     const c = await request(app).post('/api/clients').set(auth).send(buyer).expect(201);
-    const f = await request(app).post('/api/followups').set(auth).send({ clientId: c.body.data._id, type: 'PROPERTY_VISIT', dueAt: inMinutes(90), notes: 'Show Phase 6 house' });
+    const f = await request(app).post('/api/followups').set(auth).send({ clientId: c.body.data._id, type: 'PROPERTY_VISIT', dueAt: laterToday(), notes: 'Show Phase 6 house' });
     expect(f.status).toBe(201);
 
     const day = await request(app).get('/api/my-day').set(auth);

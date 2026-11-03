@@ -29,6 +29,24 @@ bool _contains(Object? haystack, String needle) {
 
 /// Filters for the client list (all evaluated against the local database,
 /// with the same semantics as the API's `GET /clients`).
+class FinanceRow {
+  FinanceRow(this.key, this.category);
+  final String key;
+  final MoneyCategory? category;
+  int income = 0;
+  int expense = 0;
+  int count = 0;
+  int get net => income - expense;
+}
+
+class FinanceSummary {
+  FinanceSummary(this.rows);
+  final List<FinanceRow> rows;
+  int get income => rows.fold(0, (s, r) => s + r.income);
+  int get expense => rows.fold(0, (s, r) => s + r.expense);
+  int get net => income - expense;
+}
+
 class ClientFilter {
   const ClientFilter({
     this.search = '',
@@ -438,6 +456,68 @@ class CrmRepository {
 
   /// Moving the due time works offline; the server recalculates the reminder and status on sync.
   Future<void> rescheduleFollowUp(String id, DateTime dueAt) => store.update(Entities.followUps, id, {'dueAt': dueAt.toUtc().toIso8601String()});
+
+  // Income & expense (entries are recorded offline; categories are synced from the server)
+  Future<List<MoneyCategory>> moneyCategories({String? type, bool includeArchived = false}) async {
+    final rows = await db.list(Entities.transactionCategories, where: (d) => (includeArchived || d['archivedAt'] == null) && (type == null || d['type'] == type));
+    final items = rows.map((r) => MoneyCategory(r.data, local: r)).toList();
+    items.sort((a, b) => a.type != b.type ? a.type.compareTo(b.type) : ((a.json['sortOrder'] as num?) ?? 100).compareTo((b.json['sortOrder'] as num?) ?? 100));
+    return items;
+  }
+
+  Future<List<MoneyEntry>> moneyEntries({String search = '', String? type, String? categoryId, String? dealId, DateTime? from, DateTime? to}) async {
+    final q = search.trim().toLowerCase();
+    final rows = await db.list(Entities.transactions, where: (d) {
+      final x = MoneyEntry(d);
+      return _inBranch(d) &&
+          (type == null || x.type == type) &&
+          (categoryId == null || x.categoryId == categoryId) &&
+          (dealId == null || x.dealId == dealId) &&
+          (from == null || !x.date.isBefore(from)) &&
+          (to == null || !x.date.isAfter(to)) &&
+          (q.isEmpty || '${x.description ?? ''} ${x.reference ?? ''}'.toLowerCase().contains(q));
+    });
+    return rows.map((r) => MoneyEntry(r.data, local: r)).toList()..sort((a, b) => b.date.compareTo(a.date));
+  }
+
+  Future<MoneyEntry?> moneyEntry(String id) async {
+    final r = await db.get(Entities.transactions, id);
+    return r == null || r.deleted ? null : MoneyEntry(r.data, local: r);
+  }
+
+  Future<MoneyEntry> saveMoneyEntry(Map<String, dynamic> fields, {String? id}) async {
+    if (id != null && (await moneyEntry(id))?.fromCommission == true) throw StateError('Commission income is changed on its deal');
+    if (id == null) fields = {'method': 'CASH', ...fields};
+    final r = id == null ? await store.create(Entities.transactions, _withBranch(fields)) : await store.update(Entities.transactions, id, fields);
+    return MoneyEntry(r.data, local: r);
+  }
+
+  Future<void> deleteMoneyEntry(String id) async {
+    if ((await moneyEntry(id))?.fromCommission == true) throw StateError('Commission income is removed with its payment on the deal');
+    await store.delete(Entities.transactions, id);
+  }
+
+  /// Income, expense and net by month (yyyy-MM) or category, from the entries on this phone
+  /// (same figures as GET /reports/finance once everything is synced).
+  Future<FinanceSummary> financeSummary({String groupBy = 'month', DateTime? from, DateTime? to}) async {
+    final entries = await moneyEntries(from: from, to: to);
+    final cats = {for (final c in await moneyCategories(includeArchived: true)) c.id: c};
+    final rows = <String, FinanceRow>{};
+    for (final e in entries) {
+      final local = e.date.toUtc().add(const Duration(hours: 5)); // Asia/Karachi, like the server
+      final key = groupBy == 'month' ? '${local.year}-${local.month.toString().padLeft(2, '0')}' : (e.categoryId ?? '');
+      final row = rows.putIfAbsent(key, () => FinanceRow(key, cats[key]));
+      if (e.isIncome) {
+        row.income += e.amount;
+      } else {
+        row.expense += e.amount;
+      }
+      row.count++;
+    }
+    final list = rows.values.toList()
+      ..sort((a, b) => groupBy == 'month' ? a.key.compareTo(b.key) : (b.income + b.expense).compareTo(a.income + a.expense));
+    return FinanceSummary(list);
+  }
 
   // Deals (edited offline; payments and payouts travel inside the deal, each with its own id)
   Future<List<Deal>> deals({String search = '', String? stage, bool? open, String? clientId, String? propertyId, String? agentId}) async {

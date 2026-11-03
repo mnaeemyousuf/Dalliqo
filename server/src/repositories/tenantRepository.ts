@@ -1,4 +1,4 @@
-import type { ClientSession, Model, PipelineStage, SortOrder } from 'mongoose';
+import { Types, type ClientSession, type Model, type PipelineStage, type SortOrder } from 'mongoose';
 import { ERROR_CODES, type ErrorCode } from '@recrm/shared';
 import { branchFilter, hasBranchPath, resolveBranchForWrite } from '../services/branchScope';
 import type { TenantContext } from '../types/context';
@@ -109,7 +109,11 @@ export function createTenantRepository<T extends { _id: unknown }>(model: Model<
     },
 
     aggregate<R>(ctx: TenantContext, match: Filter, stages: PipelineStage[]) {
-      return model.aggregate<R>([{ $match: scope(ctx, match) }, ...stages]);
+      // Aggregation does not cast like find(): ids in the tenant scope must be real ObjectIds.
+      const m = scope(ctx, match);
+      m.businessId = new Types.ObjectId(String(ctx.businessId));
+      if (typeof m.branchId === 'string') m.branchId = new Types.ObjectId(m.branchId);
+      return model.aggregate<R>([{ $match: m }, ...stages]);
     },
 
     /**

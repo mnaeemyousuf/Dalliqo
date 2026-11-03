@@ -13,6 +13,9 @@ import type {
   DashboardSummary,
   Deal,
   DeviceSession,
+  FinanceReport,
+  Transaction,
+  TransactionCategory,
   FileAsset,
   FollowUp,
   Match,
@@ -76,6 +79,18 @@ export const dealApi = {
   updatePayout: (id: string, payoutId: string, body: Body) => api<Deal>({ method: 'PATCH', url: `/deals/${id}/payouts/${payoutId}`, data: body }),
   remove: (id: string) => api<null>({ method: 'DELETE', url: `/deals/${id}` }),
   report: (params: Params) => api<CommissionReport>({ url: '/reports/commissions', params: clean(params) }),
+};
+
+export const transactionApi = {
+  list: (params: Params) => apiPage<Transaction>('/transactions', params),
+  get: (id: string) => api<Transaction>({ url: `/transactions/${id}` }),
+  create: (body: Body) => api<Transaction>({ method: 'POST', url: '/transactions', data: body }),
+  update: (id: string, body: Body) => api<Transaction>({ method: 'PATCH', url: `/transactions/${id}`, data: body }),
+  remove: (id: string) => api<null>({ method: 'DELETE', url: `/transactions/${id}` }),
+  categories: (includeArchived = false) => api<TransactionCategory[]>({ url: '/transaction-categories', params: includeArchived ? { includeArchived: true } : undefined }),
+  createCategory: (body: Body) => api<TransactionCategory>({ method: 'POST', url: '/transaction-categories', data: body }),
+  updateCategory: (id: string, body: Body) => api<TransactionCategory>({ method: 'PATCH', url: `/transaction-categories/${id}`, data: body }),
+  report: (params: Params) => api<FinanceReport>({ url: '/reports/finance', params: clean(params) }),
 };
 
 export const categoryApi = {

@@ -77,7 +77,8 @@
     "openInMaps": "Open in Google Maps",
     "minutes": "minutes",
     "percent": "{{value}}%",
-    "dateAdded": "Date added"
+    "dateAdded": "Date added",
+    "date": "Date"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -95,7 +96,8 @@
     "logout": "Sign out",
     "profile": "Profile",
     "myDay": "My Day",
-    "deals": "Deals"
+    "deals": "Deals",
+    "finance": "Income & expense"
   },
   "topbar": {
     "searchPlaceholder": "Search clients, properties, owners…",
@@ -185,7 +187,10 @@
     "openDeals": "Open deals",
     "dealsWonThisMonth": "Deals won this month",
     "commissionThisMonth": "Commission this month",
-    "commissionOutstanding": "Commission outstanding"
+    "commissionOutstanding": "Commission outstanding",
+    "incomeThisMonth": "Income this month",
+    "expenseThisMonth": "Expenses this month",
+    "netThisMonth": "Net this month"
   },
   "myDay": {
     "title": "My Day",
@@ -666,7 +671,9 @@
       "followups": "Follow-ups",
       "matches": "Matches",
       "deals": "Deals",
-      "commissions": "Commission received"
+      "commissions": "Commission received",
+      "transactions": "Income & expense entries",
+      "finance": "Income & expense summary"
     },
     "matchReason": {
       "TYPE_MATCH": "Property type",
@@ -759,6 +766,10 @@
     "payoutStatus": {
       "PENDING": "Pending",
       "PAID": "Paid"
+    },
+    "transactionType": {
+      "INCOME": "Income",
+      "EXPENSE": "Expense"
     }
   },
   "errors": {
@@ -954,5 +965,32 @@
     "outstandingDeals": "Deals with commission still due",
     "defaultBuyerPct": "Default buyer-side commission",
     "defaultSellerPct": "Default seller-side commission"
+  },
+  "finance": {
+    "title": "Income & expense",
+    "add": "Add entry",
+    "edit": "Edit entry",
+    "saved": "Entry saved (syncs when online)",
+    "updated": "Entry updated",
+    "deleted": "Entry deleted",
+    "category": "Category",
+    "amount": "Amount (PKR)",
+    "description": "Description",
+    "report": "Report",
+    "reportTitle": "Income & expense summary",
+    "byCategory": "By category",
+    "income": "Income",
+    "expense": "Expense",
+    "net": "Net",
+    "receipts": "Receipts",
+    "fromCommission": "From deal",
+    "openDeal": "Open deal",
+    "commissionNote": "This income was created from a commission payment. Change or remove it on the deal.",
+    "noCategories": "Categories arrive with the first sync. Connect to the internet once.",
+    "searchPlaceholder": "Search description or reference",
+    "empty": "No entries yet",
+    "emptyHint": "Record office expenses like rent and utilities, or other income.",
+    "deleteTitle": "Delete this entry?",
+    "deleteMessage": "It will be removed from reports."
   }
 }

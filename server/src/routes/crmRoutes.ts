@@ -8,6 +8,7 @@ import {
   categoryController,
   clientController,
   dealController,
+  transactionController,
   dashboardController,
   documentController,
   exportController,
@@ -74,6 +75,16 @@ r.delete('/deals/:id/payments/:subId', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), 
 r.post('/deals/:id/payouts', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), validate({ params: idParams, body: s.dealPayoutSchema }), h(dealController.addPayout));
 r.patch('/deals/:id/payouts/:subId', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), validate({ params: s.subIdParams, body: s.dealPayoutUpdateSchema }), h(dealController.updatePayout));
 r.delete('/deals/:id', can(P.DEALS_DELETE), id, h(dealController.remove));
+// Income & expense (receipts are documents with entityType 'transaction')
+r.get('/transactions', can(P.FINANCE_READ), validate({ query: s.transactionListQuery }), h(transactionController.list));
+r.post('/transactions', can(P.FINANCE_CREATE), validate({ body: s.transactionCreateSchema }), h(transactionController.create));
+r.get('/transactions/:id', can(P.FINANCE_READ), id, h(transactionController.get));
+r.patch('/transactions/:id', can(P.FINANCE_UPDATE), validate({ params: idParams, body: s.transactionUpdateSchema }), h(transactionController.update));
+r.delete('/transactions/:id', can(P.FINANCE_DELETE), id, h(transactionController.remove));
+r.get('/transaction-categories', can(P.FINANCE_READ), validate({ query: s.transactionCategoryListQuery }), h(transactionController.categories));
+r.post('/transaction-categories', can(P.FINANCE_UPDATE), validate({ body: s.transactionCategoryCreateSchema }), h(transactionController.createCategory));
+r.patch('/transaction-categories/:id', can(P.FINANCE_UPDATE), validate({ params: idParams, body: s.transactionCategoryUpdateSchema }), h(transactionController.updateCategory));
+r.get('/reports/finance', can(P.FINANCE_READ, P.REPORTS_READ), validate({ query: s.financeReportQuery }), h(transactionController.report));
 r.get('/reports/commissions', can(P.DEALS_READ, P.REPORTS_READ), validate({ query: s.commissionReportQuery }), h(dealController.report));
 
 // Owners

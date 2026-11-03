@@ -38,7 +38,7 @@ api.get('/meta/permissions', ...secured, metaController.permissions);
 const CRM_PREFIXES = [
   '/dashboard', '/my-day', '/search', '/branches', '/client-categories', '/clients', '/owners', '/properties', '/media',
   '/documents', '/uploads', '/notes', '/activities', '/matches', '/settings', '/followups', '/notifications',
-  '/devices', '/exports', '/sync', '/deals', '/reports',
+  '/devices', '/exports', '/sync', '/deals', '/reports', '/transactions', '/transaction-categories',
 ];
 api.use(CRM_PREFIXES, ...secured);
 api.use(crmRoutes);

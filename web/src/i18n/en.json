@@ -77,7 +77,10 @@
     "openInMaps": "Open in Google Maps",
     "minutes": "minutes",
     "percent": "{{value}}%",
-    "dateAdded": "Date added"
+    "dateAdded": "Date added",
+    "date": "Date",
+    "archive": "Archive",
+    "restore": "Restore"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -95,7 +98,8 @@
     "logout": "Sign out",
     "profile": "Profile",
     "myDay": "My Day",
-    "deals": "Deals"
+    "deals": "Deals",
+    "finance": "Income & expense"
   },
   "topbar": {
     "searchPlaceholder": "Search clients, properties, owners…",
@@ -185,7 +189,10 @@
     "openDeals": "Open deals",
     "dealsWonThisMonth": "Deals won this month",
     "commissionThisMonth": "Commission this month",
-    "commissionOutstanding": "Commission outstanding"
+    "commissionOutstanding": "Commission outstanding",
+    "incomeThisMonth": "Income this month",
+    "expenseThisMonth": "Expenses this month",
+    "netThisMonth": "Net this month"
   },
   "myDay": {
     "title": "My Day",
@@ -657,7 +664,8 @@
       "property": "Property",
       "owner": "Owner",
       "followUp": "Follow-up",
-      "deal": "Deal"
+      "deal": "Deal",
+      "transaction": "Income / expense"
     },
     "exportResource": {
       "clients": "Clients",
@@ -666,7 +674,9 @@
       "followups": "Follow-ups",
       "matches": "Matches",
       "deals": "Deals",
-      "commissions": "Commission received"
+      "commissions": "Commission received",
+      "transactions": "Income & expense entries",
+      "finance": "Income & expense summary"
     },
     "matchReason": {
       "TYPE_MATCH": "Property type",
@@ -759,6 +769,10 @@
     "payoutStatus": {
       "PENDING": "Pending",
       "PAID": "Paid"
+    },
+    "transactionType": {
+      "INCOME": "Income",
+      "EXPENSE": "Expense"
     }
   },
   "errors": {
@@ -873,5 +887,37 @@
     "outstandingDeals": "Deals with commission still due",
     "defaultBuyerPct": "Default buyer-side commission",
     "defaultSellerPct": "Default seller-side commission"
+  },
+  "finance": {
+    "title": "Income & expense",
+    "subtitle": "Office income, expenses and receipts. Commission received on deals is added automatically.",
+    "add": "Add entry",
+    "edit": "Edit entry",
+    "saved": "Entry recorded",
+    "updated": "Entry updated",
+    "deleted": "Entry deleted",
+    "type": "Type",
+    "category": "Category",
+    "categories": "Categories",
+    "amount": "Amount (PKR)",
+    "description": "Description",
+    "linkedTo": "Linked to",
+    "entries": "Entries",
+    "report": "Report",
+    "reportTitle": "Income & expense summary",
+    "byCategory": "By category",
+    "allEntries": "All entries (Excel)",
+    "income": "Income",
+    "expense": "Expense",
+    "net": "Net",
+    "receipts": "Receipts",
+    "fromCommission": "From deal",
+    "builtIn": "Built-in",
+    "nameUr": "Urdu name",
+    "searchPlaceholder": "Search description or reference",
+    "empty": "No entries yet",
+    "emptyHint": "Record office expenses like rent and utilities, or other income.",
+    "deleteTitle": "Delete this entry?",
+    "deleteMessage": "It will be removed from reports. Receipts attached to it stay in documents."
   }
 }

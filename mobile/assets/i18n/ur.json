@@ -77,7 +77,8 @@
     "openInMaps": "گوگل میپس میں کھولیں",
     "minutes": "منٹ",
     "percent": "{{value}}%",
-    "dateAdded": "تاریخِ اندراج"
+    "dateAdded": "تاریخِ اندراج",
+    "date": "تاریخ"
   },
   "nav": {
     "dashboard": "ڈیش بورڈ",
@@ -95,7 +96,8 @@
     "logout": "سائن آؤٹ",
     "profile": "پروفائل",
     "myDay": "میرا دن",
-    "deals": "ڈیلز"
+    "deals": "ڈیلز",
+    "finance": "آمدنی و اخراجات"
   },
   "topbar": {
     "searchPlaceholder": "کلائنٹس، پراپرٹیز، مالکان تلاش کریں…",
@@ -185,7 +187,10 @@
     "openDeals": "جاری ڈیلز",
     "dealsWonThisMonth": "اس ماہ مکمل ڈیلز",
     "commissionThisMonth": "اس ماہ کا کمیشن",
-    "commissionOutstanding": "باقی کمیشن"
+    "commissionOutstanding": "باقی کمیشن",
+    "incomeThisMonth": "اس ماہ آمدنی",
+    "expenseThisMonth": "اس ماہ اخراجات",
+    "netThisMonth": "اس ماہ خالص"
   },
   "myDay": {
     "title": "میرا دن",
@@ -666,7 +671,9 @@
       "followups": "فالو اپس",
       "matches": "میچز",
       "deals": "ڈیلز",
-      "commissions": "وصول شدہ کمیشن"
+      "commissions": "وصول شدہ کمیشن",
+      "transactions": "آمدنی و اخراجات کے اندراجات",
+      "finance": "آمدنی و اخراجات کا خلاصہ"
     },
     "matchReason": {
       "TYPE_MATCH": "پراپرٹی کی قسم",
@@ -759,6 +766,10 @@
     "payoutStatus": {
       "PENDING": "زیرِ التوا",
       "PAID": "ادا شدہ"
+    },
+    "transactionType": {
+      "INCOME": "آمدنی",
+      "EXPENSE": "خرچ"
     }
   },
   "errors": {
@@ -954,5 +965,32 @@
     "outstandingDeals": "جن ڈیلز کا کمیشن باقی ہے",
     "defaultBuyerPct": "خریدار کی جانب سے ڈیفالٹ کمیشن",
     "defaultSellerPct": "فروخت کنندہ کی جانب سے ڈیفالٹ کمیشن"
+  },
+  "finance": {
+    "title": "آمدنی و اخراجات",
+    "add": "اندراج شامل کریں",
+    "edit": "اندراج میں ترمیم",
+    "saved": "اندراج محفوظ (آن لائن ہونے پر سنک ہوگا)",
+    "updated": "اندراج اپ ڈیٹ ہو گیا",
+    "deleted": "اندراج حذف ہو گیا",
+    "category": "زمرہ",
+    "amount": "رقم (روپے)",
+    "description": "تفصیل",
+    "report": "رپورٹ",
+    "reportTitle": "آمدنی و اخراجات کا خلاصہ",
+    "byCategory": "زمرے کے لحاظ سے",
+    "income": "آمدنی",
+    "expense": "خرچ",
+    "net": "خالص",
+    "receipts": "رسیدیں",
+    "fromCommission": "سودے سے",
+    "openDeal": "سودا کھولیں",
+    "commissionNote": "یہ آمدنی کمیشن کی ادائیگی سے بنی ہے۔ اسے سودے پر تبدیل یا ختم کریں۔",
+    "noCategories": "زمرے پہلی سنک کے ساتھ آتے ہیں۔ ایک بار انٹرنیٹ سے جڑیں۔",
+    "searchPlaceholder": "تفصیل یا حوالہ تلاش کریں",
+    "empty": "ابھی کوئی اندراج نہیں",
+    "emptyHint": "دفتر کے اخراجات جیسے کرایہ اور بل، یا دیگر آمدنی درج کریں۔",
+    "deleteTitle": "یہ اندراج حذف کریں؟",
+    "deleteMessage": "یہ رپورٹس سے ہٹ جائے گا۔"
   }
 }

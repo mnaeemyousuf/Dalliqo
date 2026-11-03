@@ -22,6 +22,7 @@ import {
   PROPERTY_STATUSES,
   PROPERTY_TYPES,
   SIZE_UNITS,
+  TRANSACTION_TYPES,
 } from '@recrm/shared';
 import { email, objectId, pagination, personName, phone } from './common';
 
@@ -299,6 +300,45 @@ export const dealListQuery = pagination.extend({
 export const commissionReportQuery = z.object({ groupBy: z.enum(['month', 'agent']).default('month'), from: z.coerce.date().optional(), to: z.coerce.date().optional() });
 export const subIdParams = z.object({ id: objectId, subId: z.string().uuid() });
 
+// ── Income & expense ──
+const transactionFields = {
+  branchId: branchRef,
+  type: z.enum(TRANSACTION_TYPES),
+  categoryId: objectId,
+  amount: money.pipe(z.number().min(1)),
+  date: z.coerce.date(),
+  method: z.enum(PAYMENT_METHODS).optional(),
+  dealId: objectId.nullable().optional(),
+  propertyId: objectId.nullable().optional(),
+  clientId: objectId.nullable().optional(),
+  description: optionalText(500),
+  reference: optionalText(100),
+};
+export const transactionCreateSchema = z.object({ uuid: uuid.optional(), ...transactionFields }).strict();
+export const transactionUpdateSchema = z
+  .object(transactionFields)
+  .partial()
+  .extend({ baseVersion: z.number().int().positive().optional() })
+  .strict();
+export const transactionListQuery = pagination.extend({
+  q: optionalText(100),
+  type: z.enum(TRANSACTION_TYPES).optional(),
+  categoryId: objectId.optional(),
+  method: z.enum(PAYMENT_METHODS).optional(),
+  dealId: objectId.optional(),
+  branchId: objectId.optional(),
+  from: z.coerce.date().optional(),
+  to: z.coerce.date().optional(),
+});
+export const transactionCategoryCreateSchema = z
+  .object({ uuid: uuid.optional(), name: z.string().trim().min(1).max(80), nameUr: optionalText(80), type: z.enum(TRANSACTION_TYPES) })
+  .strict();
+export const transactionCategoryUpdateSchema = z
+  .object({ name: z.string().trim().min(1).max(80).optional(), nameUr: optionalText(80), archived: z.boolean().optional() })
+  .strict();
+export const transactionCategoryListQuery = z.object({ includeArchived: bool.optional() });
+export const financeReportQuery = z.object({ groupBy: z.enum(['month', 'category']).default('month'), from: z.coerce.date().optional(), to: z.coerce.date().optional() });
+
 // ── Media & documents ──
 export const mediaUpdateSchema = z.object({ sortOrder: z.number().int().min(0).optional(), setCover: z.boolean().optional() }).strict();
 export const documentUploadFields = z.object({
@@ -395,7 +435,7 @@ export const searchQuery = z.object({
   types: list(z.enum(['clients', 'properties', 'owners', 'matches'])).default(['clients', 'properties', 'owners', 'matches']),
   limit: z.coerce.number().int().min(1).max(20).default(5),
 });
-export const exportParams = z.object({ resource: z.enum(['clients', 'properties', 'owners', 'followups', 'matches', 'deals', 'commissions']) });
+export const exportParams = z.object({ resource: z.enum(['clients', 'properties', 'owners', 'followups', 'matches', 'deals', 'commissions', 'transactions', 'finance']) });
 export const exportQuery = z
   .object({ format: z.enum(['xlsx', 'pdf']).default('xlsx') })
   .passthrough();
@@ -403,7 +443,7 @@ export const exportQuery = z
 const mutation = z
   .object({
     mutationId: uuid,
-    entity: z.enum(['clients', 'owners', 'properties', 'followUps', 'notes', 'deals']),
+    entity: z.enum(['clients', 'owners', 'properties', 'followUps', 'notes', 'deals', 'transactions']),
     op: z.enum(['create', 'update', 'delete']),
     uuid,
     baseVersion: z.number().int().positive().optional(),

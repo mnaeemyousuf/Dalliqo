@@ -1,6 +1,7 @@
 import { Schema, model } from 'mongoose';
 import { logger } from '../config/logger';
 import { migrateBranches } from './001-branches';
+import { migrateFinanceCategories } from './002-finance-categories';
 
 /** One row per migration run (history; every migration is also idempotent on its own). */
 const MigrationRun = model(
@@ -9,7 +10,10 @@ const MigrationRun = model(
   'migrations',
 );
 
-const MIGRATIONS: { name: string; run: () => Promise<unknown> }[] = [{ name: '001-branches', run: migrateBranches }];
+const MIGRATIONS: { name: string; run: () => Promise<unknown> }[] = [
+  { name: '001-branches', run: migrateBranches },
+  { name: '002-finance-categories', run: migrateFinanceCategories },
+];
 
 /**
  * Runs every migration. Called at API start-up (after the database connects) and by

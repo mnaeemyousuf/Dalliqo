@@ -119,6 +119,13 @@ export function DashboardPage() {
             <Stat label={t('dashboard.commissionOutstanding')} value={<span className="ltr-nums">{formatPkr(s.deals.outstanding)}</span>} icon={<AlarmClock className={i} />} tone="amber" to="/deals?view=table&commissionStatus=PARTIALLY_RECEIVED" />
           </>
         )}
+        {s.finance && (
+          <>
+            <Stat label={t('dashboard.incomeThisMonth')} value={<span className="ltr-nums">{formatPkr(s.finance.incomeThisMonth)}</span>} icon={<CheckCircle2 className={i} />} tone="green" to="/finance?type=INCOME" />
+            <Stat label={t('dashboard.expenseThisMonth')} value={<span className="ltr-nums">{formatPkr(s.finance.expenseThisMonth)}</span>} icon={<AlarmClock className={i} />} tone="red" to="/finance?type=EXPENSE" />
+            <Stat label={t('dashboard.netThisMonth')} value={<span className="ltr-nums">{formatPkr(s.finance.netThisMonth)}</span>} icon={<Handshake className={i} />} tone={s.finance.netThisMonth < 0 ? 'red' : 'blue'} to="/finance?tab=report" />
+          </>
+        )}
       </div>
 
       {canReports && (

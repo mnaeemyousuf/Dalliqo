@@ -19,6 +19,7 @@ import { withTransaction } from '../utils/transaction';
 import { auditService } from './auditService';
 import { branchService } from './branchService';
 import { categoryService } from './categoryService';
+import { transactionService } from './transactionService';
 import { settingsService } from './settingsService';
 import { mailService } from './mailService';
 import { passwordService } from './passwordService';
@@ -121,6 +122,7 @@ export const authService = {
         );
         const member = await memberRepository.create(ctx, { userId, role: ROLES.OWNER, permissions: [] }, session);
         await categoryService.seedDefaults(ctx, session);
+        await transactionService.seedCategories(ctx, session);
         await settingsService.createDefaults(ctx, session);
         await branchService.createDefault(ctx, session);
         await auditService.record(

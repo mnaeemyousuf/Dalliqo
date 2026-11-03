@@ -188,6 +188,37 @@ class Deal extends JsonModel {
   bool hasAgent(String? userId) => agents.any((a) => JsonModel.refId(a['userId']) == userId);
 }
 
+/// Income / expense category (built-ins have a key and an Urdu name).
+class MoneyCategory extends JsonModel {
+  MoneyCategory(super.json, {super.local});
+  String? get key => os('key');
+  String get name => s('name');
+  String? get nameUr => os('nameUr');
+  String get type => (json['type'] as String?) ?? 'EXPENSE';
+  bool get isSystem => json['isSystem'] == true;
+  bool get archived => json['archivedAt'] != null;
+  String label(bool urdu) => urdu && (nameUr ?? '').isNotEmpty ? nameUr! : name;
+}
+
+/// Income or expense entry. Entries with source COMMISSION come from deal payments (read-only here).
+class MoneyEntry extends JsonModel {
+  MoneyEntry(super.json, {super.local});
+  String get type => (json['type'] as String?) ?? 'EXPENSE';
+  bool get isIncome => type == 'INCOME';
+  String? get categoryId => JsonModel.refId(json['categoryId']);
+  Map<String, dynamic>? get category => JsonModel.refObj(json['categoryId']);
+  int get amount => (n('amount') ?? 0).round();
+  DateTime get date => parseDate(json['date']) ?? DateTime.now();
+  String get method => (json['method'] as String?) ?? 'CASH';
+  String? get dealId => JsonModel.refId(json['dealId']);
+  Map<String, dynamic>? get deal => JsonModel.refObj(json['dealId']);
+  String? get clientId => JsonModel.refId(json['clientId']);
+  String? get description => os('description');
+  String? get reference => os('reference');
+  String get source => (json['source'] as String?) ?? 'MANUAL';
+  bool get fromCommission => source == 'COMMISSION';
+}
+
 class Note extends JsonModel {
   Note(super.json, {super.local});
   String get content => s('content');

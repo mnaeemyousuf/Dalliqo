@@ -134,7 +134,16 @@ describe('sync pull & bootstrap (restore on a new phone)', () => {
     expect(res.body.data.hasMore).toBe(true);
     const next = await request(app).get(`/api/sync/pull?limit=5&cursor=${res.body.data.cursor}`).set(bearer(s.accessToken));
     expect(next.body.data.changes.clientCategories).toHaveLength(4);
-    expect(next.body.data.hasMore).toBe(false);
+    // The built-in finance categories (11) page the same way until nothing is left.
+    expect(next.body.data.changes.transactionCategories).toHaveLength(5);
+    let cursor = next.body.data.cursor;
+    let more = next.body.data.hasMore;
+    for (let pages = 0; more && pages < 5; pages++) {
+      const page = await request(app).get(`/api/sync/pull?limit=5&cursor=${cursor}`).set(bearer(s.accessToken));
+      cursor = page.body.data.cursor;
+      more = page.body.data.hasMore;
+    }
+    expect(more).toBe(false);
   });
 
   it('bootstrap restores the whole business after logging in on a new device', async () => {

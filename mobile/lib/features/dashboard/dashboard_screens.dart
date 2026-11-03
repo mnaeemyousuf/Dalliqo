@@ -161,6 +161,11 @@ class DashboardScreen extends ConsumerWidget {
                 ('dashboard.commissionThisMonth', formatPkr((d['deals'] as Map)['receivedThisMonth'] as num?, urdu: context.l10n.isRtl), Icons.payments_outlined, Colors.green, '/reports/commissions'),
                 ('dashboard.commissionOutstanding', formatPkr((d['deals'] as Map)['outstanding'] as num?, urdu: context.l10n.isRtl), Icons.pending_actions_outlined, Colors.amber, '/reports/commissions'),
               ],
+              if (d['finance'] is Map) ...[
+                ('dashboard.incomeThisMonth', formatPkr((d['finance'] as Map)['incomeThisMonth'] as num?, urdu: context.l10n.isRtl), Icons.south_west, Colors.green, '/finance'),
+                ('dashboard.expenseThisMonth', formatPkr((d['finance'] as Map)['expenseThisMonth'] as num?, urdu: context.l10n.isRtl), Icons.north_east, Colors.red, '/finance'),
+                ('dashboard.netThisMonth', formatPkr((d['finance'] as Map)['netThisMonth'] as num?, urdu: context.l10n.isRtl), Icons.account_balance_wallet_outlined, Colors.blue, '/finance/report'),
+              ],
             ];
             return ListView(padding: const EdgeInsets.all(16), children: [
               if (r.cachedAt != null) _CachedBanner(r.cachedAt!),

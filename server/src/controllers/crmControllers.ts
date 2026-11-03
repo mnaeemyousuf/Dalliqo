@@ -18,8 +18,9 @@ import { pushService } from '../services/pushService';
 import { searchService } from '../services/searchService';
 import { settingsService } from '../services/settingsService';
 import { syncService } from '../services/syncService';
+import { transactionService } from '../services/transactionService';
 import { clientRepository, propertyRepository } from '../repositories/entityRepositories';
-import { clientListQuery, dealListQuery, documentUploadFields, followUpListQuery, matchListQuery, ownerListQuery, propertyListQuery } from '../validators/crm.schemas';
+import { clientListQuery, dealListQuery, documentUploadFields, financeReportQuery, followUpListQuery, matchListQuery, ownerListQuery, propertyListQuery, transactionListQuery } from '../validators/crm.schemas';
 import type { ZodTypeAny } from 'zod';
 
 const EXPORT_FILTERS: Record<ExportResource, ZodTypeAny> = {
@@ -30,6 +31,8 @@ const EXPORT_FILTERS: Record<ExportResource, ZodTypeAny> = {
   matches: matchListQuery,
   deals: dealListQuery,
   commissions: dealListQuery,
+  transactions: transactionListQuery,
+  finance: financeReportQuery,
 };
 import { forbidden } from '../utils/AppError';
 import { pageMeta, sendSuccess } from '../utils/http';
@@ -63,6 +66,40 @@ export const branchController = {
   async update(req: Request, res: Response) {
     const { body, baseVersion } = versioned(req);
     sendSuccess(res, await branchService.update(authOf(req), req.params.id, body, { baseVersion, meta: requestMeta(req) }), { message: 'Branch updated' });
+  },
+};
+
+export const transactionController = {
+  async list(req: Request, res: Response) {
+    const q = query<Q>(req);
+    list(res, q.page, q.limit, await transactionService.list(authOf(req), q));
+  },
+  async get(req: Request, res: Response) {
+    sendSuccess(res, await transactionService.get(authOf(req), req.params.id));
+  },
+  async create(req: Request, res: Response) {
+    sendSuccess(res, await transactionService.create(authOf(req), req.body, requestMeta(req)), { status: 201, message: 'Entry recorded' });
+  },
+  async update(req: Request, res: Response) {
+    const { body, baseVersion } = versioned(req);
+    sendSuccess(res, await transactionService.update(authOf(req), req.params.id, body, { baseVersion, meta: requestMeta(req) }), { message: 'Entry updated' });
+  },
+  async remove(req: Request, res: Response) {
+    const { baseVersion } = versioned(req);
+    await transactionService.remove(authOf(req), req.params.id, { baseVersion, meta: requestMeta(req) });
+    sendSuccess(res, null, { message: 'Entry deleted' });
+  },
+  async categories(req: Request, res: Response) {
+    sendSuccess(res, await transactionService.categories(authOf(req), Boolean(query<{ includeArchived?: boolean }>(req).includeArchived)));
+  },
+  async createCategory(req: Request, res: Response) {
+    sendSuccess(res, await transactionService.createCategory(authOf(req), req.body), { status: 201, message: 'Category added' });
+  },
+  async updateCategory(req: Request, res: Response) {
+    sendSuccess(res, await transactionService.updateCategory(authOf(req), req.params.id, req.body), { message: 'Category updated' });
+  },
+  async report(req: Request, res: Response) {
+    sendSuccess(res, await transactionService.report(authOf(req), req.query as never));
   },
 };
 
@@ -375,11 +412,12 @@ export const dashboardController = {
   async summary(req: Request, res: Response) {
     const auth = authOf(req);
     // Deal figures depend on who asks (agents only count their own deals), so they are not cached with the rest.
-    const [summary, deals] = await Promise.all([
+    const [summary, deals, finance] = await Promise.all([
       dashboardService.summary(auth),
       auth.permissions.includes('deals:read') ? dealService.stats(auth) : Promise.resolve(undefined),
+      auth.permissions.includes('finance:read') ? transactionService.stats(auth) : Promise.resolve(undefined),
     ]);
-    sendSuccess(res, deals ? { ...summary, deals } : summary);
+    sendSuccess(res, { ...summary, ...(deals ? { deals } : {}), ...(finance ? { finance } : {}) });
   },
   async analytics(req: Request, res: Response) {
     sendSuccess(res, await dashboardService.analytics(authOf(req), (req.query as { range: '7d' | '30d' | '12m' }).range));

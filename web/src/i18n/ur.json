@@ -77,7 +77,10 @@
     "openInMaps": "گوگل میپس میں کھولیں",
     "minutes": "منٹ",
     "percent": "{{value}}%",
-    "dateAdded": "تاریخِ اندراج"
+    "dateAdded": "تاریخِ اندراج",
+    "date": "تاریخ",
+    "archive": "محفوظ کریں",
+    "restore": "بحال کریں"
   },
   "nav": {
     "dashboard": "ڈیش بورڈ",
@@ -95,7 +98,8 @@
     "logout": "سائن آؤٹ",
     "profile": "پروفائل",
     "myDay": "میرا دن",
-    "deals": "ڈیلز"
+    "deals": "ڈیلز",
+    "finance": "آمدنی و اخراجات"
   },
   "topbar": {
     "searchPlaceholder": "کلائنٹس، پراپرٹیز، مالکان تلاش کریں…",
@@ -185,7 +189,10 @@
     "openDeals": "جاری ڈیلز",
     "dealsWonThisMonth": "اس ماہ مکمل ڈیلز",
     "commissionThisMonth": "اس ماہ کا کمیشن",
-    "commissionOutstanding": "باقی کمیشن"
+    "commissionOutstanding": "باقی کمیشن",
+    "incomeThisMonth": "اس ماہ آمدنی",
+    "expenseThisMonth": "اس ماہ اخراجات",
+    "netThisMonth": "اس ماہ خالص"
   },
   "myDay": {
     "title": "میرا دن",
@@ -657,7 +664,8 @@
       "property": "پراپرٹی",
       "owner": "مالک",
       "followUp": "فالو اپ",
-      "deal": "ڈیل"
+      "deal": "ڈیل",
+      "transaction": "آمدنی / خرچ"
     },
     "exportResource": {
       "clients": "کلائنٹس",
@@ -666,7 +674,9 @@
       "followups": "فالو اپس",
       "matches": "میچز",
       "deals": "ڈیلز",
-      "commissions": "وصول شدہ کمیشن"
+      "commissions": "وصول شدہ کمیشن",
+      "transactions": "آمدنی و اخراجات کے اندراجات",
+      "finance": "آمدنی و اخراجات کا خلاصہ"
     },
     "matchReason": {
       "TYPE_MATCH": "پراپرٹی کی قسم",
@@ -759,6 +769,10 @@
     "payoutStatus": {
       "PENDING": "زیرِ التوا",
       "PAID": "ادا شدہ"
+    },
+    "transactionType": {
+      "INCOME": "آمدنی",
+      "EXPENSE": "خرچ"
     }
   },
   "errors": {
@@ -873,5 +887,37 @@
     "outstandingDeals": "جن ڈیلز کا کمیشن باقی ہے",
     "defaultBuyerPct": "خریدار کی جانب سے ڈیفالٹ کمیشن",
     "defaultSellerPct": "فروخت کنندہ کی جانب سے ڈیفالٹ کمیشن"
+  },
+  "finance": {
+    "title": "آمدنی و اخراجات",
+    "subtitle": "دفتر کی آمدنی، اخراجات اور رسیدیں۔ سودوں پر وصول کمیشن خود بخود شامل ہوتا ہے۔",
+    "add": "اندراج شامل کریں",
+    "edit": "اندراج میں ترمیم",
+    "saved": "اندراج محفوظ ہو گیا",
+    "updated": "اندراج اپ ڈیٹ ہو گیا",
+    "deleted": "اندراج حذف ہو گیا",
+    "type": "قسم",
+    "category": "زمرہ",
+    "categories": "زمرے",
+    "amount": "رقم (روپے)",
+    "description": "تفصیل",
+    "linkedTo": "منسلک",
+    "entries": "اندراجات",
+    "report": "رپورٹ",
+    "reportTitle": "آمدنی و اخراجات کا خلاصہ",
+    "byCategory": "زمرے کے لحاظ سے",
+    "allEntries": "تمام اندراجات (ایکسل)",
+    "income": "آمدنی",
+    "expense": "خرچ",
+    "net": "خالص",
+    "receipts": "رسیدیں",
+    "fromCommission": "سودے سے",
+    "builtIn": "پہلے سے موجود",
+    "nameUr": "اردو نام",
+    "searchPlaceholder": "تفصیل یا حوالہ تلاش کریں",
+    "empty": "ابھی کوئی اندراج نہیں",
+    "emptyHint": "دفتر کے اخراجات جیسے کرایہ اور بل، یا دیگر آمدنی درج کریں۔",
+    "deleteTitle": "یہ اندراج حذف کریں؟",
+    "deleteMessage": "یہ رپورٹس سے ہٹ جائے گا۔ منسلک رسیدیں دستاویزات میں رہیں گی۔"
   }
 }

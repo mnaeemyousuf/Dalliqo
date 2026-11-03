@@ -25,6 +25,7 @@ import {
   X,
   Sparkles,
   HandCoins,
+  Wallet,
 } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -63,6 +64,7 @@ function useNav(): NavItem[][] {
       { to: '/matches', label: t('nav.matches'), icon: <Handshake className={i} />, perm: PERMISSIONS.MATCHES_READ },
       { to: '/followups', label: t('nav.followups'), icon: <CalendarCheck className={i} />, perm: PERMISSIONS.FOLLOWUPS_READ },
       { to: '/deals', label: t('nav.deals'), icon: <HandCoins className={i} />, perm: PERMISSIONS.DEALS_READ },
+      { to: '/finance', label: t('nav.finance'), icon: <Wallet className={i} />, perm: PERMISSIONS.FINANCE_READ },
       { to: '/documents', label: t('nav.documents'), icon: <FolderOpen className={i} />, perm: PERMISSIONS.DOCUMENTS_READ },
       { to: '/reports', label: t('nav.reports'), icon: <FileText className={i} />, perm: PERMISSIONS.EXPORTS_CREATE },
     ],

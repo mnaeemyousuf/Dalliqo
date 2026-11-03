@@ -150,7 +150,7 @@ export function RenameDocumentModal({ doc, onClose, onSaved }: { doc: { _id: str
   );
 }
 
-export function DocumentsPanel({ entityType, entityId }: { entityType: 'client' | 'property' | 'owner' | 'deal'; entityId: string }) {
+export function DocumentsPanel({ entityType, entityId }: { entityType: 'client' | 'property' | 'owner' | 'deal' | 'transaction'; entityId: string }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const onError = useOnError();

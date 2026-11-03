@@ -17,6 +17,7 @@ import { auditService } from './auditService';
 import { authService } from './authService';
 import { branchRepository } from './branchService';
 import { dealRepository, dealService, ownDealsFilter } from './dealService';
+import { transactionCategoryRepository, transactionRepository, transactionService } from './transactionService';
 import { clientService } from './clientService';
 import { followUpService } from './followUpService';
 import { memberService } from './memberService';
@@ -37,6 +38,8 @@ import {
   propertyUpdateSchema,
   dealCreateSchema,
   dealUpdateSchema,
+  transactionCreateSchema,
+  transactionUpdateSchema,
 } from '../validators/crm.schemas';
 import type { ZodTypeAny } from 'zod';
 
@@ -48,9 +51,10 @@ const SCHEMAS: Record<PushEntity, { create: ZodTypeAny; update: ZodTypeAny }> = 
   followUps: { create: followUpCreateSchema, update: followUpUpdateSchema },
   notes: { create: noteCreateSchema, update: noteUpdateSchema },
   deals: { create: dealCreateSchema, update: dealUpdateSchema },
+  transactions: { create: transactionCreateSchema, update: transactionUpdateSchema },
 };
 
-export type PushEntity = 'clients' | 'owners' | 'properties' | 'followUps' | 'notes' | 'deals';
+export type PushEntity = 'clients' | 'owners' | 'properties' | 'followUps' | 'notes' | 'deals' | 'transactions';
 
 export interface Mutation {
   mutationId: string;
@@ -82,6 +86,7 @@ const PROTECTED_FIELDS: Partial<Record<PushEntity, string[]>> = {
   followUps: ['status'],
   // Money and stage: a silent last-write-wins could lose a recorded payment.
   deals: ['stage', 'payments', 'payouts', 'commission'],
+  transactions: ['amount', 'type'],
 };
 
 const REPOS = {
@@ -91,6 +96,7 @@ const REPOS = {
   followUps: followUpRepository,
   notes: noteRepository,
   deals: dealRepository,
+  transactions: transactionRepository,
 } as const;
 
 const WRITE_PERMS: Record<PushEntity, Record<Mutation['op'], Permission>> = {
@@ -100,6 +106,7 @@ const WRITE_PERMS: Record<PushEntity, Record<Mutation['op'], Permission>> = {
   followUps: { create: PERMISSIONS.FOLLOWUPS_CREATE, update: PERMISSIONS.FOLLOWUPS_UPDATE, delete: PERMISSIONS.FOLLOWUPS_DELETE },
   notes: { create: PERMISSIONS.NOTES_CREATE, update: PERMISSIONS.NOTES_CREATE, delete: PERMISSIONS.NOTES_CREATE },
   deals: { create: PERMISSIONS.DEALS_CREATE, update: PERMISSIONS.DEALS_UPDATE, delete: PERMISSIONS.DEALS_DELETE },
+  transactions: { create: PERMISSIONS.FINANCE_CREATE, update: PERMISSIONS.FINANCE_UPDATE, delete: PERMISSIONS.FINANCE_DELETE },
 };
 
 const isObjectId = (v: unknown): v is string => typeof v === 'string' && /^[a-f\d]{24}$/i.test(v);
@@ -116,6 +123,7 @@ async function resolveRefs(auth: AuthContext, data: Record<string, unknown>): Pr
     ['propertyId', propertyRepository],
     ['ownerId', ownerRepository],
     ['categoryId', categoryRepository],
+    ['dealId', dealRepository],
   ];
   for (const [field, repo] of refs) {
     const v = out[field];
@@ -126,7 +134,7 @@ async function resolveRefs(auth: AuthContext, data: Record<string, unknown>): Pr
     }
   }
   if (typeof out.entityId === 'string' && !isObjectId(out.entityId)) {
-    const repo = { client: clientRepository, property: propertyRepository, owner: ownerRepository, followUp: followUpRepository, deal: dealRepository }[String(out.entityType)];
+    const repo = { client: clientRepository, property: propertyRepository, owner: ownerRepository, followUp: followUpRepository, deal: dealRepository, transaction: transactionRepository }[String(out.entityType)];
     const found = repo ? await repo.findByUuid(auth, out.entityId) : null;
     if (!found) throw new AppError(400, ERROR_CODES.ENTITY_NOT_FOUND, `entity ${out.entityId} not found`);
     out.entityId = String(found._id);
@@ -148,6 +156,7 @@ async function create(auth: AuthContext, entity: PushEntity, uuid: string, data:
     case 'followUps': return followUpService.create(auth, input);
     case 'notes': return noteService.create(auth, input);
     case 'deals': return dealService.create(auth, input);
+    case 'transactions': return transactionService.create(auth, input);
   }
 }
 
@@ -160,6 +169,7 @@ async function update(auth: AuthContext, entity: PushEntity, id: string, data: R
     case 'followUps': return followUpService.update(auth, id, input, baseVersion);
     case 'notes': return noteService.update(auth, id, String(data.content ?? ''), baseVersion);
     case 'deals': return dealService.update(auth, id, input, { baseVersion });
+    case 'transactions': return transactionService.update(auth, id, input, { baseVersion });
   }
 }
 
@@ -171,6 +181,7 @@ async function remove(auth: AuthContext, entity: PushEntity, id: string) {
     case 'followUps': return followUpService.remove(auth, id);
     case 'notes': return noteService.remove(auth, id);
     case 'deals': return dealService.remove(auth, id);
+    case 'transactions': return transactionService.remove(auth, id);
   }
 }
 
@@ -259,6 +270,8 @@ const PULL_REPOS = {
   followUps: followUpRepository,
   notes: noteRepository,
   deals: dealRepository,
+  transactionCategories: transactionCategoryRepository,
+  transactions: transactionRepository,
 } as const;
 type PullEntity = keyof typeof PULL_REPOS;
 
@@ -271,6 +284,8 @@ const READ_PERMS: Record<PullEntity, Permission | null> = {
   followUps: PERMISSIONS.FOLLOWUPS_READ,
   notes: null,
   deals: PERMISSIONS.DEALS_READ,
+  transactionCategories: PERMISSIONS.FINANCE_READ,
+  transactions: PERMISSIONS.FINANCE_READ,
 };
 
 export const syncService = {

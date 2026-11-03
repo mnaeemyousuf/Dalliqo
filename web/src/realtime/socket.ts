@@ -27,6 +27,14 @@ const INVALIDATES: Record<string, string[][]> = {
   [SOCKET_EVENTS.MEMBER_CREATED]: [['members']],
   [SOCKET_EVENTS.MEMBER_UPDATED]: [['members']],
   [SOCKET_EVENTS.BUSINESS_UPDATED]: [['business']],
+  [SOCKET_EVENTS.BRANCH_CREATED]: [['branches']],
+  [SOCKET_EVENTS.BRANCH_UPDATED]: [['branches']],
+  [SOCKET_EVENTS.DEAL_CREATED]: [['deals'], ['dashboard'], ['activities']],
+  [SOCKET_EVENTS.DEAL_UPDATED]: [['deals'], ['deal'], ['dashboard'], ['reports'], ['activities']],
+  [SOCKET_EVENTS.DEAL_DELETED]: [['deals'], ['dashboard'], ['reports']],
+  [SOCKET_EVENTS.TRANSACTION_CREATED]: [['transactions'], ['dashboard'], ['reports']],
+  [SOCKET_EVENTS.TRANSACTION_UPDATED]: [['transactions'], ['transactionCategories'], ['dashboard'], ['reports']],
+  [SOCKET_EVENTS.TRANSACTION_DELETED]: [['transactions'], ['dashboard'], ['reports']],
 };
 
 let socket: Socket | null = null;

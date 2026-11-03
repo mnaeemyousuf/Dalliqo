@@ -44,6 +44,13 @@ export const PERMISSIONS = {
   /** Record commission payments received and agent payouts. */
   COMMISSIONS_MANAGE: 'commissions:manage',
 
+  /** Income & expense entries and the finance report. */
+  FINANCE_READ: 'finance:read',
+  FINANCE_CREATE: 'finance:create',
+  /** Edit entries and manage the categories. */
+  FINANCE_UPDATE: 'finance:update',
+  FINANCE_DELETE: 'finance:delete',
+
   REPORTS_READ: 'reports:read',
   EXPORTS_CREATE: 'exports:create',
 
@@ -93,6 +100,7 @@ export const PERMISSION_GROUPS: Record<string, readonly Permission[]> = {
     PERMISSIONS.DEALS_DELETE,
     PERMISSIONS.COMMISSIONS_MANAGE,
   ],
+  finance: [PERMISSIONS.FINANCE_READ, PERMISSIONS.FINANCE_CREATE, PERMISSIONS.FINANCE_UPDATE, PERMISSIONS.FINANCE_DELETE],
   reports: [PERMISSIONS.REPORTS_READ, PERMISSIONS.EXPORTS_CREATE],
   administration: [
     PERMISSIONS.MEMBERS_READ,

@@ -1,6 +1,7 @@
 import { ERROR_CODES, PERMISSIONS, type EntityType } from '@recrm/shared';
 import { Client } from '../models/Client';
 import { Deal } from '../models/Deal';
+import { Transaction } from '../models/Transaction';
 import { FollowUp } from '../models/FollowUp';
 import { Property } from '../models/Property';
 import { PropertyOwner } from '../models/PropertyOwner';
@@ -10,7 +11,7 @@ import { badRequest, forbidden } from '../utils/AppError';
 import { branchFilter } from './branchScope';
 import { activityService } from './activityService';
 
-const ENTITY_MODELS = { client: Client, property: Property, owner: PropertyOwner, followUp: FollowUp, deal: Deal } as const;
+const ENTITY_MODELS = { client: Client, property: Property, owner: PropertyOwner, followUp: FollowUp, deal: Deal, transaction: Transaction } as const;
 
 /** Confirms the record exists in this business (and the member's branches); returns a label for timelines. */
 export async function assertEntity(ctx: TenantContext, entityType: EntityType, entityId: string): Promise<string> {
@@ -22,7 +23,7 @@ export async function entityInfo(ctx: TenantContext, entityType: EntityType, ent
   const model = ENTITY_MODELS[entityType] as unknown as typeof Client;
   const doc = await model.findOne({ businessId: ctx.businessId, _id: entityId, deletedAt: null, ...branchFilter(ctx) }).lean<Record<string, unknown>>();
   if (!doc) throw badRequest(ERROR_CODES.ENTITY_NOT_FOUND, `${entityType} not found`);
-  return { label: String(doc.fullName ?? doc.propertyId ?? doc.type ?? entityType), branchId: doc.branchId ? String(doc.branchId) : undefined };
+  return { label: String(doc.fullName ?? doc.propertyId ?? doc.dealNo ?? (doc.amount != null ? `${doc.type} ${doc.amount}` : entityType)), branchId: doc.branchId ? String(doc.branchId) : undefined };
 }
 
 export const noteService = {

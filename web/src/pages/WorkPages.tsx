@@ -10,6 +10,7 @@ import { ContactActions, MatchCard, PropertyStatusBadge, locationLabel, useSizeL
 import { ActivityPanel, DocumentsPanel, FollowUpForm, FollowUpItem, NotesPanel, RenameDocumentModal } from '@/components/domain/panels';
 import { BranchField } from '@/components/branches';
 import { CommissionReport, DealsPanel } from '@/pages/DealPages';
+import { FinanceReport } from '@/pages/FinancePages';
 import { Badge, Button, Card, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column } from '@/components/ui';
 import { formatBytes, formatDate, formatPkr } from '@/lib/format';
 import { useDebounce, useEnumOptions, useErrorText, useMembers, useOnError, useUrlState } from '@/lib/hooks';
@@ -404,7 +405,8 @@ export function ReportsPage() {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const canDeals = useCan(PERMISSIONS.DEALS_READ);
-  const resources = useEnumOptions('exportResource', ['clients', 'properties', 'owners', 'followups', 'matches', ...(canDeals ? ['deals', 'commissions'] : [])]);
+  const canFinance = useCan(PERMISSIONS.FINANCE_READ);
+  const resources = useEnumOptions('exportResource', ['clients', 'properties', 'owners', 'followups', 'matches', ...(canDeals ? ['deals', 'commissions'] : []), ...(canFinance ? ['transactions', 'finance'] : [])]);
   const f = (k: string) => (e: { target: { value: string } }) => setFilters((x) => ({ ...x, [k]: e.target.value }));
   const filterFields: Record<string, React.ReactNode> = {
     properties: (
@@ -447,6 +449,7 @@ export function ReportsPage() {
     <div className="max-w-3xl space-y-4">
       <PageHeader title={t('report.title')} subtitle={t('report.subtitle')} />
       {canDeals && <CommissionReport />}
+      {canFinance && <FinanceReport />}
       <Card>
         <div className="grid gap-4 sm:grid-cols-2">
           <Select label={t('report.resource')} options={resources} value={resource} onChange={(e) => (setResource(e.target.value), setFilters({}))} />
