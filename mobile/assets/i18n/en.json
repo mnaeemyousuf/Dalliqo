@@ -478,7 +478,9 @@
       "documents": "Documents",
       "reports": "Reports & exports",
       "administration": "Administration",
-      "deals": "Deals & commission"
+      "deals": "Deals & commission",
+      "finance": "Income & expense",
+      "agreements": "Agreements"
     },
     "template": "Start from a template",
     "access": "Access",
@@ -739,7 +741,16 @@
       "deals:create": "Create deals",
       "deals:update": "Edit deals",
       "deals:delete": "Delete deals",
-      "commissions:manage": "Record commission payments and payouts"
+      "commissions:manage": "Record commission payments and payouts",
+      "finance:read": "View income & expenses",
+      "finance:create": "Add income & expense entries",
+      "finance:update": "Edit entries and categories",
+      "finance:delete": "Delete entries",
+      "agreements:read": "View agreements",
+      "agreements:create": "Draft agreements",
+      "agreements:update": "Edit agreements, change status",
+      "agreements:delete": "Delete agreements",
+      "templates:manage": "Manage agreement templates"
     },
     "dealStage": {
       "INQUIRY": "Inquiry",
@@ -911,6 +922,22 @@
       "buyerPct": "Default buyer commission (%)",
       "sellerPct": "Default seller commission (%)",
       "autoIncome": "Record commission received as income automatically"
+    },
+    "parity": {
+      "analytics": "Analytics",
+      "audit": "Audit log",
+      "documents": "Documents library",
+      "permissions": "Permissions",
+      "editPermissions": "Edit permissions",
+      "templates": "Agreement templates",
+      "financeCategories": "Income & expense categories",
+      "copy": "Copy",
+      "builtIn": "Built-in",
+      "newTemplate": "New template",
+      "templateBody": "Template text (placeholders between double curly brackets)",
+      "allTypes": "All types",
+      "open": "Open",
+      "online": "Needs an internet connection."
     }
   },
   "branch": {

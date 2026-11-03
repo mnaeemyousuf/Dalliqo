@@ -14,6 +14,7 @@ import '../../data/repositories.dart';
 import '../auth/auth_controller.dart';
 import '../auth/auth_screens.dart';
 import 'admin_screens.dart';
+import 'parity_screens.dart';
 
 /// Profile · Business · Users · Language · Theme · Notifications · Security ·
 /// Backup & sync · Export · About · Logout.
@@ -44,6 +45,16 @@ class SettingsScreen extends ConsumerWidget {
         ),
         if (auth.can('members:read'))
           ListTile(leading: const Icon(Icons.group_outlined), title: Text(l.t('nav.users')), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const MembersAdminScreen()))),
+        if (auth.can('reports:read'))
+          ListTile(leading: const Icon(Icons.insights_outlined), title: Text(l.t('mobile.parity.analytics')), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AnalyticsScreen()))),
+        if (auth.can('documents:read'))
+          ListTile(leading: const Icon(Icons.folder_outlined), title: Text(l.t('mobile.parity.documents')), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const DocumentsLibraryScreen()))),
+        if (auth.can('audit:read'))
+          ListTile(leading: const Icon(Icons.policy_outlined), title: Text(l.t('mobile.parity.audit')), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AuditScreen()))),
+        if (auth.can('templates:manage'))
+          ListTile(leading: const Icon(Icons.description_outlined), title: Text(l.t('mobile.parity.templates')), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AgreementTemplatesScreen()))),
+        if (auth.can('finance:update'))
+          ListTile(leading: const Icon(Icons.category_outlined), title: Text(l.t('mobile.parity.financeCategories')), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const FinanceCategoriesScreen()))),
         if (auth.can('settings:manage')) ...[
           ListTile(leading: const Icon(Icons.label_outline), title: Text(l.t('settings.categories')), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const ClientCategoriesScreen()))),
           ListTile(leading: const Icon(Icons.tune), title: Text(l.t('mobile.admin.businessSettings')), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const BusinessSettingsScreen()))),

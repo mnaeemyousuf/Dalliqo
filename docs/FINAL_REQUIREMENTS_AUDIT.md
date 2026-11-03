@@ -227,7 +227,7 @@ New verification sources:
 |---|---|---|
 | V-API2 | Server Jest suite after Phase 2: 21 files (adds `branches`, `deals`, `finance`, `agreements`, `brochures`; extends `crm`, `sync`, `members`, `e2e`) | **207 passed**, 1 skipped (opt-in benchmark) — 3 Nov 2026 |
 | V-WEB2 | Web Vitest: 11 files (adds `clientFilters`, `branches`, `deals`, `finance`, `agreements`, `brochure`) + `tsc --noEmit` | **38 passed**, typecheck clean |
-| V-MOB2 | `flutter analyze` + `flutter test` (adds `reminders`, `branches`, `deals`, `finance`, `agreements`, `brochure`, `admin`) | **0 issues**, **76 passed** |
+| V-MOB2 | `flutter analyze` + `flutter test` (adds `reminders`, `branches`, `deals`, `finance`, `agreements`, `brochure`, `admin`, `parity`) | **0 issues**, **78 passed** |
 | V-PERF2 | `PERF=1 npx jest tests/perf.test.ts` with 5,000 each of clients, properties, deals, transactions, agreements | Every request ≤ 0.38 s median (sync pull of 500 records: 0.38 s) |
 | V-UI2 | Agreement and brochure PDFs/PNGs rendered and inspected (English and Urdu: shaping, right-to-left order, spacing, mirrored brackets, baselines); web pages checked against the demo API | Inspected; three layout defects found and fixed (word spacing, bracket mirroring, mixed-script baselines) |
 
@@ -241,9 +241,9 @@ New verification sources:
 | FUT-B2 | Income & expense, receipts, auto income from commission (no duplicates) | all | Transactions + categories (EN/UR), unique `sourceKey`, migration 002, finance report, receipts as documents | V-API2 `finance.test.ts` (6); V-WEB2 `finance`; V-MOB2 `finance_test` | **PASS** |
 | FUT-B3 | Agreements: sale/rent/token templates EN/UR, PDFs, statuses, versions, signed copy, renewal follow-ups 30/7 days, lawyer note | all | Templates (migration 003), versions, locked statuses, `pdfParagraph` RTL layout, renewal planning | V-API2 `agreements.test.ts` (7); V-WEB2 `agreements` (3); V-MOB2 `agreements_test` (4); V-UI2 | **PASS** |
 | FUT-B5 | Brochures: PDF + 1080×1350 image with QR, EN/UR, price confidentiality, WhatsApp | all | `brochureService` (pdfkit, sharp, fontkit paths, qrcode) | V-API2 `brochures.test.ts` (4: never minimum/expected price; hide price; sizes; permissions); V-WEB2; V-MOB2; V-UI2 | **PASS** (share to WhatsApp on a phone: **BLOCKED**, device) |
-| PAR-C1 | Parity web ↔ mobile | all | `docs/PARITY_MATRIX.md`; mobile gained users/templates/branch access, client categories, business settings, realtime for new entities | V-API2 `members.test.ts`; V-MOB2 `admin_test` | **PASS** |
+| PAR-C1 | Parity web ↔ mobile | all | `docs/PARITY_MATRIX.md`; mobile gained users (templates, individual permissions, branch access), client and finance categories, agreement templates, business settings, analytics, audit log, documents library, realtime for new entities | V-API2 `members.test.ts`; V-MOB2 `admin_test`, `parity_test` | **PASS** |
 | PAR-C2 | Offline sync without duplicates for new modules | API/mobile | push/pull for deals, transactions, agreements (idempotent mutation ids, uuid replays), protected fields | V-API2 deals/finance/agreements sync cases; V-MOB2 | **PASS** |
-| MOB-02b | Android APK | mobile | — | No Android SDK/JDK on the build machine (`flutter doctor`, 3 Nov 2026) | **BLOCKED** (Android SDK) |
+| MOB-02b | Android APK | mobile | GitHub Actions workflow `android-apk.yml` (Java 17 + Flutter stable, `flutter build apk --release`) | Run 41659056656 on the Phase 2 code: success; release `apk-build-2` (70 MB). Not yet installed on a phone | **PASS** (build) / **BLOCKED** (device run) |
 
 Phase 2 defects found and fixed: tenant `aggregate()` did not cast ids, so aggregations matched nothing (client-category counts were
 always 0); a follow-up e2e test failed when run after 22:30 PKT (date boundary); Urdu PDF tables split multi-word runs (regex typo);

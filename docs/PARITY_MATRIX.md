@@ -28,7 +28,10 @@ Test files: server `server/tests/*.test.ts` (Jest), web `web/src/test/*.test.tsx
 | Notifications | Bell, Notifications | Notifications | `/notifications` | Cached | ✅ | followups |
 | Reports & exports (Excel/PDF) | Reports | Settings → Export & share | `/exports/:resource` | Online | — | enhancements, finance, agreements |
 | Language EN/UR, RTL | Top bar | Settings | user preferences | ✅ | — | i18n keys checked by both builds |
-| **Users (members)** | Users | **Settings → Users: add, template, suspend, branch access (Part C)** | `/members`, `GET /meta/permissions` | Online | member.* | members, `admin_test` |
+| **Users (members)** | Users | **Settings → Users: add, template, individual permission ticks, suspend, branch access (Part C)** | `/members`, `GET /meta/permissions` | Online | member.* | members, `admin_test`, `parity_test` |
+| **Dashboard analytics** (property mix, status, categories, follow-up performance, new records, match quality, lead sources, team) | Dashboard charts | **Settings → Analytics** (same data, bar lists) | `GET /dashboard/analytics?range` | Online | — | dashboard, `parity_test` |
+| **Audit log** | Audit log | **Settings → Audit log** (paged) | `GET /audit-logs` | Online | — | enhancements, `parity_test` |
+| **Documents library** | Documents | **Settings → Documents library** (filter by record type and category, open / share signed link) | `GET /documents`, `/documents/:id/download` | Online | — | media, `parity_test` |
 | **Client categories** | Settings → Client categories | **Settings → Client categories (Part C)** | `/client-categories` | List ✅ (synced), edits online | — | crm |
 | **Business settings (matching, cross-branch, reminders, commission)** | Settings → Matching / Deals | **Settings → Business settings (Part C)** | `/settings` | Online | — | crm, deals, finance |
 
@@ -43,27 +46,25 @@ Test files: server `server/tests/*.test.ts` (Jest), web `web/src/test/*.test.tsx
 | Commission payments / payouts, maths | Deal → Commission | Deal detail | `/deals/:id/payments`, `/payouts` | ✅ | ✅ | deals, `deals_test` (same cases as server) |
 | Commission report | Reports, Deals → report | Deals → report | `GET /reports/commissions` | Last result cached | — | deals |
 | **Income & expense (B2)** | Income & expense (entries, report, categories) | More → Income & expense, entry form, report (computed on the phone) | `/transactions`, `/transaction-categories`, `GET /reports/finance` | ✅ entries; categories synced, managed online; report computed locally | transaction.* | finance (6), `finance.test.tsx`, `finance_test` (4) |
+| Income / expense categories | Income & expense → Categories | **Settings → Income & expense categories** (add, Urdu name, archive) | `/transaction-categories` | Read ✅ (synced), editing online | ✅ | finance, `parity_test` |
 | Commission → income (once) | Entry shows "From deal" | Same, read-only | deal payment hook (`sourceKey`) | Created by the server when the payment syncs | ✅ | finance |
 | Receipts | Paperclip → documents | Entry detail → Receipts | `POST /documents` (`transaction`) | Online | — | finance (entity types) |
 | **Agreements (B3)** — draft, edit, statuses, versions | Agreements, detail, Agreements tab on deal | More → Agreements, detail, form, panel on deal | `/agreements` | ✅ drafts, edits, status (after first sync); text rendered by the server | agreement.* | agreements (7), `agreements.test.tsx` (3), `agreements_test` (4) |
 | Agreement text regenerate / PDF EN-UR | Detail → Regenerate / PDF | Detail → Regenerate / Share PDF | `/agreements/:id/render`, `/pdf` | Online (says so) | ✅ | agreements (PDF in both languages) |
 | Signed copy, lawyer-review note | Signed copy tab; note on every screen + PDF footer | Signed copy panel; note on every screen | `/documents` (`agreement`), status `signedDocumentId` | Upload online | ✅ | agreements |
 | Renewal follow-ups 30/7 days | Shown on detail; follow-ups list | Follow-ups + local reminders | server plans them | ✅ (follow-ups sync; reminders ring offline) | followup.* | agreements |
-| Templates | Agreements → Templates (copy/edit/archive) | Synced, chosen on the form (editing on web) | `/agreement-templates` | Read ✅ | ✅ | agreements |
+| Templates | Agreements → Templates (copy/edit/archive) | Chosen on the form (synced); **Settings → Agreement templates** (copy/edit/archive) | `/agreement-templates` | Read ✅, editing online | ✅ | agreements |
 | **Brochures (B5)** — PDF, 1080×1350 image, share text, WhatsApp | Property → Brochure | Property → Brochure sheet → share sheet / WhatsApp | `GET /properties/:id/brochure` | Online (says so) | — | brochures (4), `brochure.test.tsx`, `brochure_test` (2) |
 | Dashboard tiles: deals, income, agreements | Dashboard | Dashboard | `GET /dashboard` | Cached | ✅ | deals, finance, agreements |
 | Exports: deals, commissions, transactions, finance, agreements | Reports | Settings → Export & share | `/exports/:resource` | Online | — | deals, finance, agreements |
 | Urdu / RTL for all new screens and PDFs | ✅ | ✅ | EN/UR strings for every new key; Urdu PDFs and images laid out right to left | — | — | agreements (Urdu PDF), brochures (Urdu PNG/PDF) |
 | Pagination | All new lists | Lists read the phone's database | `page`/`limit`; sync pull pages | — | — | perf (page 50, sync pull) |
 
-## Known differences (by design)
+## Remaining differences
 
-| Item | Web | Mobile | Why |
-|---|---|---|---|
-| Fine-grained permission ticks | Full editor | Templates only (custom permissions are kept) | Small screen; templates cover normal use. |
-| Agreement template editing | Yes | Choose only | Long legal text is edited on a computer. |
-| Branch create/rename | Settings → Branches | More → Branches (owner) | Same capability. |
-| Finance report | Server report | Computed from the phone's entries (same maths, Karachi months) | Works offline; identical once synced (`finance_test`). |
+None in features. Presentation differs where the phone screen requires it: analytics are bar lists instead of charts, and the
+income & expense report on the phone is computed from the phone's entries (same maths and Karachi month boundaries as the server,
+`finance_test`), so it also works offline. The web reset-password page is opened from the e-mail link on any device.
 
 ## Performance (5,000 of each: clients, properties, deals, transactions, agreements)
 

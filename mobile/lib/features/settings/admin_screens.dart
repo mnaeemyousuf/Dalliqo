@@ -6,6 +6,7 @@ import '../../core/providers.dart';
 import '../../core/widgets/app_widgets.dart';
 import '../../data/repositories.dart';
 import '../auth/auth_controller.dart';
+import 'parity_screens.dart';
 
 /// Administration on the phone (parity with the web): users and their access, client categories, and
 /// business settings. These change shared configuration, so they need a connection.
@@ -191,6 +192,18 @@ class _MemberSheetState extends ConsumerState<_MemberSheet> {
               onChanged: (v) => setState(() => _template = v),
             ),
             if (_template == null && !isNew) Padding(padding: const EdgeInsets.only(top: 4), child: Text(l.t('mobile.admin.keepCustom'), style: Theme.of(context).textTheme.bodySmall)),
+            if (!isNew)
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton.icon(
+                  icon: const Icon(Icons.checklist),
+                  label: Text(l.t('mobile.parity.editPermissions')),
+                  onPressed: () async {
+                    final saved = await Navigator.of(context).push<bool>(MaterialPageRoute(builder: (_) => PermissionEditorScreen(member: widget.member!)));
+                    if (saved == true && context.mounted) Navigator.pop(context, true);
+                  },
+                ),
+              ),
             if (!isNew) SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(l.t('mobile.admin.active')), value: _active, onChanged: (v) => setState(() => _active = v)),
             if (branches.length > 1) ...[
               const SizedBox(height: 8),

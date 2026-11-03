@@ -477,7 +477,9 @@
       "documents": "دستاویزات",
       "reports": "رپورٹس اور ایکسپورٹ",
       "administration": "انتظامیہ",
-      "deals": "ڈیلز اور کمیشن"
+      "deals": "ڈیلز اور کمیشن",
+      "finance": "آمدنی و اخراجات",
+      "agreements": "معاہدے"
     },
     "template": "ٹیمپلیٹ سے شروع کریں",
     "access": "رسائی",
@@ -739,7 +741,16 @@
       "deals:create": "ڈیل بنائیں",
       "deals:update": "ڈیل میں ترمیم",
       "deals:delete": "ڈیل حذف کریں",
-      "commissions:manage": "کمیشن ادائیگیاں درج کریں"
+      "commissions:manage": "کمیشن ادائیگیاں درج کریں",
+      "finance:read": "آمدنی و اخراجات دیکھیں",
+      "finance:create": "آمدنی و اخراجات درج کریں",
+      "finance:update": "اندراجات اور زمروں میں ترمیم",
+      "finance:delete": "اندراجات حذف کریں",
+      "agreements:read": "معاہدے دیکھیں",
+      "agreements:create": "معاہدوں کے مسودے بنائیں",
+      "agreements:update": "معاہدوں میں ترمیم، حیثیت تبدیل",
+      "agreements:delete": "معاہدے حذف کریں",
+      "templates:manage": "معاہدوں کے نمونے منظم کریں"
     },
     "dealStage": {
       "INQUIRY": "انکوائری",

@@ -477,7 +477,9 @@
       "documents": "Documents",
       "reports": "Reports & exports",
       "administration": "Administration",
-      "deals": "Deals & commission"
+      "deals": "Deals & commission",
+      "finance": "Income & expense",
+      "agreements": "Agreements"
     },
     "template": "Start from a template",
     "access": "Access",
@@ -739,7 +741,16 @@
       "deals:create": "Create deals",
       "deals:update": "Edit deals",
       "deals:delete": "Delete deals",
-      "commissions:manage": "Record commission payments and payouts"
+      "commissions:manage": "Record commission payments and payouts",
+      "finance:read": "View income & expenses",
+      "finance:create": "Add income & expense entries",
+      "finance:update": "Edit entries and categories",
+      "finance:delete": "Delete entries",
+      "agreements:read": "View agreements",
+      "agreements:create": "Draft agreements",
+      "agreements:update": "Edit agreements, change status",
+      "agreements:delete": "Delete agreements",
+      "templates:manage": "Manage agreement templates"
     },
     "dealStage": {
       "INQUIRY": "Inquiry",

@@ -1,21 +1,40 @@
-# Device test script (Android, Phase 2)
+# Device test script (Android, Phase 2 — two phones: father and son)
 
-Everything below needs a real phone or emulator, so it could **not** be run on the development machine: no Android SDK or Java is
-installed there (`flutter doctor`: "Unable to locate Android SDK", checked 2026-11-03), so the APK build is **BLOCKED** and none of
-these steps has been executed yet. The logic behind them is covered by automated tests (named in each section); this script checks
-the parts only a device can show: real notifications, alarms, reboot, share sheet, WhatsApp, camera, PDF viewers, and right-to-left
-rendering on screen.
+The release APK is built by GitHub Actions (`.github/workflows/android-apk.yml`): the Phase 2 build is
+[release `apk-build-2`](https://github.com/mnaeemyousuf/Dalliqo/releases/tag/apk-build-2) (`Dalliqo-1.0.0+1-2.apk`, run 41659056656,
+pointing at `https://dalliqo.onrender.com`). It has **not yet been installed on a phone** — the development machine has no Android
+SDK and no phone — so none of the steps below has been executed. The logic behind them is covered by automated tests (named in
+each section); this script checks what only real phones can show: notifications and alarms, reboot, the share sheet, WhatsApp,
+the camera, PDF viewers, right-to-left Urdu on screen, and two people working on the same business at once.
 
-## 0. Build and install
+## 0. Setup (two phones)
 
-1. On a machine with Android Studio (SDK 34+, JDK 17): `cd mobile && flutter pub get && flutter build apk --release`
-   (or `flutter run` with a phone connected and USB debugging on).
-2. Point the app at the API: `--dart-define=API_BASE_URL=https://<your-api-host>` (no `/api` suffix; the demo is
-   `https://dalliqo.onrender.com`). Without it the app uses `http://10.0.2.2:4000` (a local API from the emulator).
-3. Optional push: add `google-services.json` for the business's Firebase project (without it, push is off; in-app and local
-   reminders still work).
-4. Install on an Android 13+ phone (14 recommended for the exact-alarm permission flow) and sign in as `owner@demo.recrm.test`
-   (demo password from the seed file). Record phone model, Android version and app build in the results table at the end.
+| | Phone A — "father" | Phone B — "son" |
+|---|---|---|
+| Account | `owner@demo.recrm.test` (Owner, full access) | `son@demo.recrm.test` (Standard member template) |
+| Role in the tests | Admin actions, approvals, owner-only screens | Day-to-day entry, offline work, permission limits |
+
+1. On each phone: open the release page above, download `Dalliqo-1.0.0+1-2.apk`, allow "install unknown apps" for the browser,
+   install. (The APK is debug-signed, for sideloading only; Play Store needs a release keystore.) To build your own instead:
+   on a machine with Android Studio (SDK 34+, JDK 17) run `cd mobile && flutter build apk --release --dart-define=API_BASE_URL=https://dalliqo.onrender.com`,
+   or push to the `build-apk` branch / run the workflow manually (it can take another API URL).
+2. The live demo uses the password set in Render's `DEMO_PASSWORD` (the code default is `Demo1234!`; `.env.example` suggests
+   `DEMO@1234`). The Render free plan sleeps: open https://dalliqo.onrender.com once and wait for it to wake before signing in.
+   Demo data resets when the service restarts.
+3. Optional push: the CI build has no `google-services.json`, so Firebase push is off; in-app and **local** reminders still work.
+4. Record phone model, Android version and build in the results table at the end. Use Android 13+ (14 recommended for the
+   exact-alarm permission flow).
+
+## 0b. Father and son on the same business (realtime, conflicts, permissions)
+
+| # | Steps | Expected |
+|---|---|---|
+| 0b.1 | Both phones open Clients. Father adds a client. | The client appears on the son's phone within a few seconds (no pull-down). |
+| 0b.2 | Son adds a follow-up for that client assigned to the father. | Father gets the in-app notification; the follow-up shows in his My Day and gets a local reminder. |
+| 0b.3 | Son turns on airplane mode, edits the client's budget and adds a deal payment; father edits the same deal's stage online. Son reconnects. | Son's edits sync once (no duplicates); the stage conflict shows Keep mine / Keep latest on the son's phone. |
+| 0b.4 | Father: Settings → Users → son → Edit permissions → untick "Delete follow-ups" (or apply the Agent template). | Within one screen load the son can no longer do it (the server refuses; the button disappears). Restore afterwards. |
+| 0b.5 | Father limits the son to the Clifton branch (Branch access: Selected). | After the next sync the son sees only Clifton records; new records he adds go to Clifton. Restore "All branches" afterwards. |
+| 0b.6 | Father records commission on a deal; son (no finance delete rights) opens Income & expense. | Son sees the "From deal" income entry, cannot edit or delete it. |
 
 ## 1. Local reminders (A3) — `mobile/test/reminders_test.dart`
 
@@ -79,7 +98,7 @@ rendering on screen.
 | 6.4 | Hide price on → PDF. | "Price on request"; no amount anywhere. Minimum/expected price never appear in any option. |
 | 6.5 | WhatsApp button. | WhatsApp opens with the share text. |
 
-## 7. Administration parity (Part C) — `admin_test.dart`, server `members.test.ts`
+## 7. Administration parity (Part C) — `admin_test.dart`, `parity_test.dart`, server `members.test.ts`
 
 | # | Steps | Expected |
 |---|---|---|
@@ -87,6 +106,8 @@ rendering on screen.
 | 7.2 | Suspend that user. | Their open sessions are signed out. |
 | 7.3 | Settings → Client categories → add "Overseas Pakistani" with an Urdu name; archive it. | Appears/disappears in the client form after sync. |
 | 7.4 | Settings → Business settings → change thresholds, cross-branch, reminder minutes, commission defaults → Save. | Web Settings shows the same values; a new deal uses the new default percentages. |
+| 7.5 | Father: Settings → Analytics (7 days / 30 days / 12 months), Audit log, Documents library (open and share a document). | Same figures and entries as the web; documents open through a short-lived link. Son (no audit access) does not see Audit log. |
+| 7.6 | Father: Settings → Agreement templates → copy a built-in, edit the copy, archive it; Settings → Income & expense categories → add one with an Urdu name. | Changes appear on the web and in the agreement / entry forms after sync. |
 
 ## 8. Realtime and Urdu
 
@@ -99,4 +120,4 @@ rendering on screen.
 
 | Section | Phone / Android | Build | Tester | Date | Pass / fail / notes |
 |---|---|---|---|---|---|
-| 1–8 | | | | | Not run yet (blocked: no Android SDK on the development machine) |
+| 0b, 1–8 | | apk-build-2 | | | Not run yet (needs two Android phones) |

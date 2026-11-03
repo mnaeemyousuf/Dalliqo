@@ -770,6 +770,30 @@ class OnlineRepository {
     return {for (final e in t.entries) e.key: (e.value as List).cast<String>()};
   }
 
+  Future<Map<String, List<String>>> permissionGroups() async {
+    final r = await api.get<Map<String, dynamic>>('/meta/permissions');
+    final g = Map<String, dynamic>.from((r['groups'] as Map?) ?? const {});
+    return {for (final e in g.entries) e.key: (e.value as List).cast<String>()};
+  }
+
+  Future<Map<String, dynamic>> analytics(String range) => api.get<Map<String, dynamic>>('/dashboard/analytics', query: {'range': range});
+
+  Future<({List<Map<String, dynamic>> items, Map<String, dynamic> meta})> auditLogs({int page = 1, String? entityType}) =>
+      api.page('/audit-logs', query: {'page': page, 'limit': 30, 'entityType': ?entityType});
+
+  Future<List<Map<String, dynamic>>> documentLibrary({String? entityType, String? category}) async =>
+      (await api.page('/documents', query: {'limit': 100, 'entityType': ?entityType, 'category': ?category})).items;
+
+  Future<List<Map<String, dynamic>>> agreementTemplatesOnline() async =>
+      (await api.get<List<dynamic>>('/agreement-templates', query: {'includeArchived': 'true'})).cast<Map<String, dynamic>>();
+  Future<void> createAgreementTemplate(Map<String, dynamic> body) => api.post('/agreement-templates', body);
+  Future<void> updateAgreementTemplate(String id, Map<String, dynamic> body) => api.patch('/agreement-templates/$id', body);
+
+  Future<List<Map<String, dynamic>>> financeCategories() async =>
+      (await api.get<List<dynamic>>('/transaction-categories', query: {'includeArchived': 'true'})).cast<Map<String, dynamic>>();
+  Future<void> createFinanceCategory(Map<String, dynamic> body) => api.post('/transaction-categories', body);
+  Future<void> updateFinanceCategory(String id, Map<String, dynamic> body) => api.patch('/transaction-categories/$id', body);
+
   Future<void> createMember(Map<String, dynamic> body) => api.post('/members', body);
   Future<void> updateMember(String id, Map<String, dynamic> body) => api.patch('/members/$id', body);
 

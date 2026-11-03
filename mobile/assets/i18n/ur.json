@@ -478,7 +478,9 @@
       "documents": "دستاویزات",
       "reports": "رپورٹس اور ایکسپورٹ",
       "administration": "انتظامیہ",
-      "deals": "ڈیلز اور کمیشن"
+      "deals": "ڈیلز اور کمیشن",
+      "finance": "آمدنی و اخراجات",
+      "agreements": "معاہدے"
     },
     "template": "ٹیمپلیٹ سے شروع کریں",
     "access": "رسائی",
@@ -739,7 +741,16 @@
       "deals:create": "ڈیل بنائیں",
       "deals:update": "ڈیل میں ترمیم",
       "deals:delete": "ڈیل حذف کریں",
-      "commissions:manage": "کمیشن ادائیگیاں درج کریں"
+      "commissions:manage": "کمیشن ادائیگیاں درج کریں",
+      "finance:read": "آمدنی و اخراجات دیکھیں",
+      "finance:create": "آمدنی و اخراجات درج کریں",
+      "finance:update": "اندراجات اور زمروں میں ترمیم",
+      "finance:delete": "اندراجات حذف کریں",
+      "agreements:read": "معاہدے دیکھیں",
+      "agreements:create": "معاہدوں کے مسودے بنائیں",
+      "agreements:update": "معاہدوں میں ترمیم، حیثیت تبدیل",
+      "agreements:delete": "معاہدے حذف کریں",
+      "templates:manage": "معاہدوں کے نمونے منظم کریں"
     },
     "dealStage": {
       "INQUIRY": "انکوائری",
@@ -911,6 +922,22 @@
       "buyerPct": "خریدار کا طے شدہ کمیشن (%)",
       "sellerPct": "فروخت کنندہ کا طے شدہ کمیشن (%)",
       "autoIncome": "وصول شدہ کمیشن خود بخود آمدنی میں درج کریں"
+    },
+    "parity": {
+      "analytics": "تجزیات",
+      "audit": "آڈٹ لاگ",
+      "documents": "دستاویزات",
+      "permissions": "اجازتیں",
+      "editPermissions": "اجازتوں میں ترمیم",
+      "templates": "معاہدوں کے نمونے",
+      "financeCategories": "آمدنی و اخراجات کے زمرے",
+      "copy": "نقل",
+      "builtIn": "پہلے سے موجود",
+      "newTemplate": "نیا نمونہ",
+      "templateBody": "نمونے کا متن (خانے دوہری خمیدہ قوسین میں)",
+      "allTypes": "تمام اقسام",
+      "open": "کھولیں",
+      "online": "انٹرنیٹ کنکشن درکار ہے۔"
     }
   },
   "branch": {
