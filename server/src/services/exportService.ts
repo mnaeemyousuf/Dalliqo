@@ -20,8 +20,10 @@ import { auditService } from './auditService';
 import { MAX_EXPORT_ROWS as MAX_ROWS } from '../constants';
 import { dealService, type DealQuery } from './dealService';
 import { transactionService, type TransactionQuery } from './transactionService';
+import { agreementService, type AgreementQuery } from './agreementService';
+import { ARABIC, URDU_FONT, pdfFont, pdfText, registerUrduFonts } from './pdf/pdfText';
 
-export type ExportResource = 'clients' | 'properties' | 'owners' | 'followups' | 'matches' | 'deals' | 'commissions' | 'transactions' | 'finance';
+export type ExportResource = 'clients' | 'properties' | 'owners' | 'followups' | 'matches' | 'deals' | 'commissions' | 'transactions' | 'finance' | 'agreements';
 export type ExportFormat = 'xlsx' | 'pdf';
 
 
@@ -64,7 +66,35 @@ async function build(auth: AuthContext, resource: ExportResource, filters: Recor
   const userNames = new Map((await User.find({ _id: { $in: memberIds } }).select('fullName').lean()).map((u) => [u._id.toString(), u.fullName]));
   if ((resource === 'deals' || resource === 'commissions') && !auth.permissions.includes(PERMISSIONS.DEALS_READ)) throw forbidden();
   if ((resource === 'transactions' || resource === 'finance') && !auth.permissions.includes(PERMISSIONS.FINANCE_READ)) throw forbidden();
+  if (resource === 'agreements' && !auth.permissions.includes(PERMISSIONS.AGREEMENTS_READ)) throw forbidden();
   switch (resource) {
+    case 'agreements': {
+      const items = await fetchAll((page, limit) => agreementService.list(auth, { ...(filters as Partial<AgreementQuery>), page, limit }));
+      return {
+        title: 'Agreements',
+        columns: [
+          { header: 'Agreement', key: 'no', width: 12, pdf: 1.1 },
+          { header: 'Kind', key: 'kind', width: 14, pdf: 1.2 },
+          { header: 'Language', key: 'language', width: 9, pdf: 0.8 },
+          { header: 'Status', key: 'status', width: 11, pdf: 1 },
+          { header: 'Client', key: 'client', width: 22, pdf: 2 },
+          { header: 'Owner', key: 'owner', width: 22, pdf: 1.8 },
+          { header: 'Property', key: 'property', width: 13, pdf: 1.1 },
+          { header: 'Amount', key: 'amount', width: 16, pdf: 1.4, money: true },
+          { header: 'Monthly rent', key: 'rent', width: 14, pdf: 1.2, money: true },
+          { header: 'Start', key: 'start', width: 12, pdf: 1 },
+          { header: 'End', key: 'end', width: 12, pdf: 1 },
+          { header: 'Versions', key: 'versions', width: 9 },
+          { header: 'Created', key: 'created', width: 12 },
+        ],
+        rows: items.map((a) => ({
+          no: a.agreementNo, kind: label(a.kind), language: a.language.toUpperCase(), status: label(a.status),
+          client: (a.clientId as unknown as { fullName?: string })?.fullName, owner: (a.ownerId as unknown as { fullName?: string } | null)?.fullName,
+          property: (a.propertyId as unknown as { propertyId?: string } | null)?.propertyId, amount: a.amount ?? undefined, rent: a.monthlyRent ?? undefined,
+          start: date(a.startDate ?? undefined), end: date(a.endDate ?? undefined), versions: a.versions?.length ?? 0, created: date(a.createdAt),
+        })),
+      };
+    }
     case 'transactions': {
       const items = await fetchAll((page, limit) => transactionService.list(auth, { ...(filters as Partial<TransactionQuery>), page, limit }));
       return {
@@ -335,47 +365,6 @@ function filterSummary(filters: Record<string, unknown>): string {
 const BRAND_LOGO = [join(__dirname, '../../assets/brand/dalliqo-logo-horizontal.png'), join(process.cwd(), 'assets/brand/dalliqo-logo-horizontal.png')].find((p) => existsSync(p));
 const C = { primary: BRAND.color.primary['600'], primaryDark: BRAND.color.primary['700'], zebra: BRAND.color.primary['50'], muted: BRAND.color.light.muted, ink: BRAND.color.light.ink };
 
-// Urdu (Arabic script) in PDFs: Helvetica has no Arabic glyphs, so Arabic-script runs use Noto Naskh Arabic
-// (bundled, OFL). That font has no Latin letters or digits, so mixed text is written run by run.
-const fontFile = (name: string) => [join(__dirname, '../../assets/fonts', name), join(process.cwd(), 'assets/fonts', name)].find((p) => existsSync(p));
-const URDU_FONT = { regular: fontFile('NotoNaskhArabic-Regular.woff'), bold: fontFile('NotoNaskhArabic-Bold.woff') };
-const ARABIC = /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]/;
-const ARABIC_RUNS = /([؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]+(?:s+[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]+)*)/;
-
-type Pdf = InstanceType<typeof PDFDocument>;
-function pdfFont(doc: Pdf, text: string, bold = false) {
-  if (URDU_FONT.regular && ARABIC.test(text)) return doc.font(bold && URDU_FONT.bold ? 'Urdu-Bold' : 'Urdu');
-  return doc.font(bold ? 'Helvetica-Bold' : 'Helvetica');
-}
-/**
- * Writes text that may mix Urdu and Latin on one line. Each script run is drawn whole (PDFKit's word
- * wrapper would split an Urdu phrase into left-to-right words; fontkit shapes and orders a whole run
- * correctly). Urdu-first text is right-aligned with its runs in right-to-left order. Text without
- * Arabic script keeps PDFKit's normal wrapping.
- */
-function pdfText(doc: Pdf, text: string, x: number, y: number, opts: PDFKit.Mixins.TextOptions, bold = false) {
-  if (!URDU_FONT.regular || !ARABIC.test(text)) {
-    pdfFont(doc, text, bold).text(text, x, y, opts);
-    return;
-  }
-  const rtl = ARABIC.test(text.trim()[0] ?? '');
-  const parts = text.split(ARABIC_RUNS).map((p) => p.trim()).filter(Boolean);
-  if (rtl) parts.reverse();
-  const gap = doc.font('Helvetica').widthOfString(' ');
-  const widths = parts.map((p) => pdfFont(doc, p, bold).widthOfString(p));
-  const total = widths.reduce((sum, w) => sum + w, 0) + gap * (parts.length - 1);
-  const width = opts.width ?? doc.page.width - x - doc.page.margins.right;
-  let cx = rtl && total < width ? x + width - total : x;
-  let lineHeight = 0;
-  parts.forEach((p, i) => {
-    pdfFont(doc, p, bold).text(p, cx, y, { lineBreak: false });
-    lineHeight = Math.max(lineHeight, doc.currentLineHeight(true));
-    cx += widths[i] + gap;
-  });
-  doc.x = x;
-  doc.y = y + lineHeight;
-}
-
 async function writeXlsx(out: Writable, businessName: string, report: Awaited<ReturnType<typeof build>>, filters: Record<string, unknown>) {
   const wb = new ExcelJS.stream.xlsx.WorkbookWriter({ stream: out, useStyles: true });
   wb.creator = BRAND.name;
@@ -409,8 +398,7 @@ function writePdf(out: Writable, businessName: string, report: Awaited<ReturnTyp
     const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 36, bufferPages: true, info: { Title: `${businessName} — ${report.title}`, Author: BRAND.name, Creator: `${BRAND.name} — ${BRAND.description}` } });
     doc.on('error', reject);
     out.on('finish', () => resolve());
-    if (URDU_FONT.regular) doc.registerFont('Urdu', URDU_FONT.regular);
-    if (URDU_FONT.bold) doc.registerFont('Urdu-Bold', URDU_FONT.bold);
+    registerUrduFonts(doc);
     doc.pipe(out);
 
     const cols = report.columns.filter((c) => c.pdf);

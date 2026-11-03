@@ -51,6 +51,14 @@ export const PERMISSIONS = {
   FINANCE_UPDATE: 'finance:update',
   FINANCE_DELETE: 'finance:delete',
 
+  AGREEMENTS_READ: 'agreements:read',
+  AGREEMENTS_CREATE: 'agreements:create',
+  /** Edit drafts, render new versions, change status, attach the signed copy. */
+  AGREEMENTS_UPDATE: 'agreements:update',
+  AGREEMENTS_DELETE: 'agreements:delete',
+  /** Add and edit agreement templates. */
+  TEMPLATES_MANAGE: 'templates:manage',
+
   REPORTS_READ: 'reports:read',
   EXPORTS_CREATE: 'exports:create',
 
@@ -101,6 +109,13 @@ export const PERMISSION_GROUPS: Record<string, readonly Permission[]> = {
     PERMISSIONS.COMMISSIONS_MANAGE,
   ],
   finance: [PERMISSIONS.FINANCE_READ, PERMISSIONS.FINANCE_CREATE, PERMISSIONS.FINANCE_UPDATE, PERMISSIONS.FINANCE_DELETE],
+  agreements: [
+    PERMISSIONS.AGREEMENTS_READ,
+    PERMISSIONS.AGREEMENTS_CREATE,
+    PERMISSIONS.AGREEMENTS_UPDATE,
+    PERMISSIONS.AGREEMENTS_DELETE,
+    PERMISSIONS.TEMPLATES_MANAGE,
+  ],
   reports: [PERMISSIONS.REPORTS_READ, PERMISSIONS.EXPORTS_CREATE],
   administration: [
     PERMISSIONS.MEMBERS_READ,

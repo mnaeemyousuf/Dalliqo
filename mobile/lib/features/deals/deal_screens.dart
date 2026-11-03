@@ -13,6 +13,7 @@ import '../../core/widgets/domain_widgets.dart';
 import '../../data/repositories.dart';
 import '../auth/auth_controller.dart';
 import '../branches/branch_screens.dart';
+import '../agreements/agreement_screens.dart';
 import '../common/record_panels.dart';
 
 final _dealSearchProvider = StateProvider<String>((ref) => '');
@@ -320,6 +321,7 @@ class DealDetailScreen extends ConsumerWidget {
                     trailing: canMoney && p['status'] != 'PAID' ? TextButton(onPressed: () => repo.markDealPayoutPaid(d.local!.uuid, p['_id'] as String), child: Text(l.t('deal.markPaid'))) : null,
                   ),
               ]),
+              if (auth.can('agreements:read')) AgreementsPanel(dealId: d.id, clientId: d.clientId, propertyId: d.propertyId, kind: d.stage == 'TOKEN' ? 'TOKEN_RECEIPT' : 'SALE'),
               DocumentsPanel(entityType: 'deal', serverId: d.serverId),
               NotesPanel(entityType: 'deal', entityId: d.id),
               d.serverId == null ? AppEmptyState(title: l.t('mobile.sync.pending')) : ActivityPanel(entityId: d.serverId!),

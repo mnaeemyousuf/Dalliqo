@@ -22,6 +22,9 @@ import type {
   DealStage,
   PaymentMethod,
   TransactionType,
+  AgreementKind,
+  AgreementLanguage,
+  AgreementStatus,
 } from '@recrm/shared';
 
 export interface ApiSuccess<T> {
@@ -367,6 +370,53 @@ export interface Transaction {
   updatedAt: string;
 }
 
+export interface AgreementTemplate {
+  _id: string;
+  uuid: string;
+  key?: string;
+  name: string;
+  kind: AgreementKind;
+  language: AgreementLanguage;
+  body: string;
+  builtIn: boolean;
+  archivedAt?: string | null;
+}
+
+export interface Agreement {
+  _id: string;
+  uuid: string;
+  version: number;
+  branchId?: string;
+  agreementNo: string;
+  templateId?: string | null;
+  kind: AgreementKind;
+  language: AgreementLanguage;
+  title?: string;
+  status: AgreementStatus;
+  dealId?: string | { _id: string; dealNo: string; title?: string } | null;
+  clientId: string | { _id: string; fullName: string; mobileNumber?: string };
+  ownerId?: string | { _id: string; fullName: string; mobileNumber?: string } | null;
+  propertyId?: string | { _id: string; propertyId: string; society?: string; block?: string } | null;
+  amount?: number | null;
+  tokenAmount?: number | null;
+  monthlyRent?: number | null;
+  securityDeposit?: number | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  clientCnic?: string;
+  ownerCnic?: string;
+  witness1?: string;
+  witness2?: string;
+  notes?: string;
+  versions: { no: number; body: string; source: 'RENDER' | 'EDIT'; createdAt: string; createdBy?: string | { _id: string; fullName: string } }[];
+  signedDocumentId?: string | null;
+  signedAt?: string | null;
+  renewalFollowUpIds: string[];
+  statusHistory: { status: AgreementStatus; at: string; by?: string | { _id: string; fullName: string }; note?: string }[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface FinanceReport {
   groupBy: 'month' | 'category';
   rows: { key: string; label: string; labelUr?: string; income: number; expense: number; net: number; count: number }[];
@@ -387,6 +437,7 @@ export interface DashboardSummary {
   today: { newClients: number; newProperties: number; newMatches: number };
   deals?: { open: number; wonThisMonth: number; receivedThisMonth: number; outstanding: number };
   finance?: { incomeThisMonth: number; expenseThisMonth: number; netThisMonth: number };
+  agreements?: { drafts: number; awaitingSignature: number; expiringSoon: number };
   generatedAt: string;
 }
 

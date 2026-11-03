@@ -23,7 +23,7 @@ async function branchOf(ctx: TenantContext, refs: ActivityRef[]): Promise<Types.
 }
 import type { TenantContext } from '../types/context';
 
-const READ_PERMISSION: Record<EntityType, string> = { client: 'clients:read', property: 'properties:read', owner: 'owners:read', followUp: 'followups:read', deal: 'deals:read', transaction: 'finance:read' };
+const READ_PERMISSION: Record<EntityType, string> = { client: 'clients:read', property: 'properties:read', owner: 'owners:read', followUp: 'followups:read', deal: 'deals:read', transaction: 'finance:read', agreement: 'agreements:read' };
 
 export interface ActivityRef {
   entityType: EntityType;

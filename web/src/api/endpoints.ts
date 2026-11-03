@@ -14,6 +14,8 @@ import type {
   Deal,
   DeviceSession,
   FinanceReport,
+  Agreement,
+  AgreementTemplate,
   Transaction,
   TransactionCategory,
   FileAsset,
@@ -79,6 +81,44 @@ export const dealApi = {
   updatePayout: (id: string, payoutId: string, body: Body) => api<Deal>({ method: 'PATCH', url: `/deals/${id}/payouts/${payoutId}`, data: body }),
   remove: (id: string) => api<null>({ method: 'DELETE', url: `/deals/${id}` }),
   report: (params: Params) => api<CommissionReport>({ url: '/reports/commissions', params: clean(params) }),
+};
+
+export const agreementApi = {
+  list: (params: Params) => apiPage<Agreement>('/agreements', params),
+  get: (id: string) => api<Agreement>({ url: `/agreements/${id}` }),
+  create: (body: Body) => api<Agreement>({ method: 'POST', url: '/agreements', data: body }),
+  update: (id: string, body: Body) => api<Agreement>({ method: 'PATCH', url: `/agreements/${id}`, data: body }),
+  render: (id: string, body: Body = {}) => api<Agreement>({ method: 'POST', url: `/agreements/${id}/render`, data: body }),
+  addVersion: (id: string, body: string) => api<Agreement>({ method: 'POST', url: `/agreements/${id}/versions`, data: { body } }),
+  status: (id: string, body: Body) => api<Agreement>({ method: 'POST', url: `/agreements/${id}/status`, data: body }),
+  remove: (id: string) => api<null>({ method: 'DELETE', url: `/agreements/${id}` }),
+  templates: (params: Params = {}) => api<AgreementTemplate[]>({ url: '/agreement-templates', params: clean(params) }),
+  createTemplate: (body: Body) => api<AgreementTemplate>({ method: 'POST', url: '/agreement-templates', data: body }),
+  updateTemplate: (id: string, body: Body) => api<AgreementTemplate>({ method: 'PATCH', url: `/agreement-templates/${id}`, data: body }),
+  /** Fetches the PDF through the authenticated client and opens it in a new tab. */
+  async openPdf(id: string, version?: number) {
+    // Open the tab during the click (a window opened after an await is blocked as a popup).
+    const tab = window.open('', '_blank');
+    try {
+      const r = await http.get<Blob>(`/agreements/${id}/pdf`, { params: clean({ version }), responseType: 'blob', timeout: 60_000 });
+      const name = /filename="([^"]+)"/.exec(String(r.headers['content-disposition']))?.[1] ?? 'agreement.pdf';
+      const url = URL.createObjectURL(new Blob([r.data], { type: 'application/pdf' }));
+      if (tab) {
+        tab.opener = null;
+        tab.location.href = url;
+      } else {
+        // Popups blocked entirely: download instead.
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        a.click();
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (e) {
+      tab?.close();
+      throw toApiError(e);
+    }
+  },
 };
 
 export const transactionApi = {

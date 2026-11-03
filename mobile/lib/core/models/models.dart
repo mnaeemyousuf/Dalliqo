@@ -219,6 +219,62 @@ class MoneyEntry extends JsonModel {
   bool get fromCommission => source == 'COMMISSION';
 }
 
+/// Allowed agreement status moves (mirrors shared/src/agreements.ts AGREEMENT_TRANSITIONS).
+const agreementTransitions = <String, List<String>>{
+  'DRAFT': ['SENT', 'SIGNED', 'CANCELLED'],
+  'SENT': ['DRAFT', 'SIGNED', 'CANCELLED'],
+  'SIGNED': ['EXPIRED', 'CANCELLED'],
+  'EXPIRED': [],
+  'CANCELLED': [],
+};
+const agreementKinds = ['SALE', 'RENT', 'TOKEN_RECEIPT', 'OTHER'];
+
+/// Shown on every agreement screen (mirrors AGREEMENT_DISCLAIMER).
+const agreementDisclaimer = {
+  'en': 'Template only, not legal advice. Have a qualified lawyer review this agreement before anyone signs it, and use the stamp paper required in your province.',
+  'ur': 'یہ صرف ایک نمونہ ہے، قانونی مشورہ نہیں۔ دستخط سے پہلے کسی مستند وکیل سے اس معاہدے کا جائزہ لازمی کروائیں اور اپنے صوبے کے مطابق اسٹامپ پیپر استعمال کریں۔',
+};
+
+class AgreementTemplateModel extends JsonModel {
+  AgreementTemplateModel(super.json, {super.local});
+  String get name => s('name');
+  String get kind => (json['kind'] as String?) ?? 'OTHER';
+  String get language => (json['language'] as String?) ?? 'en';
+  bool get builtIn => json['builtIn'] == true;
+  bool get archived => json['archivedAt'] != null;
+}
+
+/// Sale / rent / token agreement. Versions (the rendered text) are made by the server.
+class Agreement extends JsonModel {
+  Agreement(super.json, {super.local});
+  String get agreementNo => (json['agreementNo'] as String?) ?? '…';
+  String get kind => (json['kind'] as String?) ?? 'SALE';
+  String get language => (json['language'] as String?) ?? 'en';
+  String? get title => os('title');
+  String get status => (json['status'] as String?) ?? 'DRAFT';
+  bool get locked => status == 'SIGNED' || status == 'EXPIRED' || status == 'CANCELLED';
+  List<String> get nextStatuses => agreementTransitions[status] ?? const [];
+  String? get clientId => JsonModel.refId(json['clientId']);
+  String? get ownerId => JsonModel.refId(json['ownerId']);
+  String? get propertyId => JsonModel.refId(json['propertyId']);
+  String? get dealId => JsonModel.refId(json['dealId']);
+  String? get templateId => JsonModel.refId(json['templateId']);
+  num? get amount => n('amount');
+  num? get tokenAmount => n('tokenAmount');
+  num? get monthlyRent => n('monthlyRent');
+  num? get securityDeposit => n('securityDeposit');
+  DateTime? get startDate => parseDate(json['startDate']);
+  DateTime? get endDate => parseDate(json['endDate']);
+  String? get clientCnic => os('clientCnic');
+  String? get ownerCnic => os('ownerCnic');
+  String? get witness1 => os('witness1');
+  String? get witness2 => os('witness2');
+  String? get notes => os('notes');
+  List<Map<String, dynamic>> get versions => ((json['versions'] as List?) ?? const []).map((v) => Map<String, dynamic>.from(v as Map)).toList();
+  Map<String, dynamic>? get latestVersion => versions.isEmpty ? null : versions.last;
+  int get renewalCount => ((json['renewalFollowUpIds'] as List?) ?? const []).length;
+}
+
 class Note extends JsonModel {
   Note(super.json, {super.local});
   String get content => s('content');

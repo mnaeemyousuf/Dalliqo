@@ -19,6 +19,7 @@ import { clientApi, dealApi, exportApi, propertyApi } from '@/api/endpoints';
 import type { Deal } from '@/api/types';
 import { BranchField } from '@/components/branches';
 import { ActivityPanel, DocumentsPanel, NotesPanel } from '@/components/domain/panels';
+import { AgreementsPanel } from '@/pages/AgreementPages';
 import { Badge, Button, Card, ConfirmDialog, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Table, Tabs, Textarea, type BadgeColor, type Column } from '@/components/ui';
 import { formatDate, formatPkr } from '@/lib/format';
 import { useDebounce, useEnumOptions, useErrorText, useMembers, useOnError, useUrlState } from '@/lib/hooks';
@@ -338,8 +339,9 @@ export function DealDetailPage() {
   const canEdit = useCan(PERMISSIONS.DEALS_UPDATE);
   const canDelete = useCan(PERMISSIONS.DEALS_DELETE);
   const canMoney = useCan(PERMISSIONS.COMMISSIONS_MANAGE);
+  const canAgreements = useCan(PERMISSIONS.AGREEMENTS_READ);
   const q = useQuery({ queryKey: ['deal', id], queryFn: () => dealApi.get(id) });
-  const [tab, setTab] = useState<'commission' | 'documents' | 'notes' | 'activity'>('commission');
+  const [tab, setTab] = useState<'commission' | 'agreements' | 'documents' | 'notes' | 'activity'>('commission');
   const [editing, setEditing] = useState(false);
   const [paying, setPaying] = useState(false);
   const [payout, setPayout] = useState(false);
@@ -401,6 +403,7 @@ export function DealDetailPage() {
         onChange={setTab}
         tabs={[
           { value: 'commission', label: t('deal.commission') },
+          ...(canAgreements ? [{ value: 'agreements' as const, label: t('agreement.title') }] : []),
           { value: 'documents', label: t('document.title') },
           { value: 'notes', label: t('note.title') },
           { value: 'activity', label: t('activity.title') },
@@ -479,6 +482,12 @@ export function DealDetailPage() {
               )}
             </Card>
           </div>
+        )}
+        {tab === 'agreements' && (
+          <AgreementsPanel
+            dealId={d._id}
+            defaults={{ clientId: refId(d.clientId), propertyId: refId(d.propertyId) || undefined, amount: d.finalPrice ?? d.agreedPrice, kind: d.stage === 'TOKEN' ? 'TOKEN_RECEIPT' : 'SALE' }}
+          />
         )}
         {tab === 'documents' && <DocumentsPanel entityType="deal" entityId={d._id} />}
         {tab === 'notes' && <NotesPanel entityType="deal" entityId={d._id} />}

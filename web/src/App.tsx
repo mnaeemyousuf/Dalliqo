@@ -19,6 +19,7 @@ const props = () => import('@/pages/PropertyPages');
 const work = () => import('@/pages/WorkPages');
 const deals = () => import('@/pages/DealPages');
 const finance = () => import('@/pages/FinancePages');
+const agreements = () => import('@/pages/AgreementPages');
 const DashboardPage = page(dash, 'DashboardPage');
 const MyDayPage = page(dash, 'MyDayPage');
 const ClientsPage = page(clients, 'ClientsPage');
@@ -28,6 +29,8 @@ const PropertyDetailPage = page(props, 'PropertyDetailPage');
 const DealsPage = page(deals, 'DealsPage');
 const DealDetailPage = page(deals, 'DealDetailPage');
 const FinancePage = page(finance, 'FinancePage');
+const AgreementsPage = page(agreements, 'AgreementsPage');
+const AgreementDetailPage = page(agreements, 'AgreementDetailPage');
 const OwnersPage = page(work, 'OwnersPage');
 const OwnerDetailPage = page(work, 'OwnerDetailPage');
 const MatchesPage = page(work, 'MatchesPage');
@@ -88,6 +91,8 @@ export function AppRoutes() {
         <Route path="deals" element={<DealsPage />} />
         <Route path="deals/:id" element={<DealDetailPage />} />
         <Route path="finance" element={<FinancePage />} />
+        <Route path="agreements" element={<AgreementsPage />} />
+        <Route path="agreements/:id" element={<AgreementDetailPage />} />
         <Route path="owners" element={<OwnersPage />} />
         <Route path="owners/:id" element={<OwnerDetailPage />} />
         <Route path="matches" element={<MatchesPage />} />

@@ -9,6 +9,7 @@ import {
   clientController,
   dealController,
   transactionController,
+  agreementController,
   dashboardController,
   documentController,
   exportController,
@@ -75,6 +76,20 @@ r.delete('/deals/:id/payments/:subId', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), 
 r.post('/deals/:id/payouts', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), validate({ params: idParams, body: s.dealPayoutSchema }), h(dealController.addPayout));
 r.patch('/deals/:id/payouts/:subId', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), validate({ params: s.subIdParams, body: s.dealPayoutUpdateSchema }), h(dealController.updatePayout));
 r.delete('/deals/:id', can(P.DEALS_DELETE), id, h(dealController.remove));
+// Agreements (signed copies are documents with entityType 'agreement')
+r.get('/agreements', can(P.AGREEMENTS_READ), validate({ query: s.agreementListQuery }), h(agreementController.list));
+r.post('/agreements', can(P.AGREEMENTS_CREATE), validate({ body: s.agreementCreateSchema }), h(agreementController.create));
+r.get('/agreements/:id', can(P.AGREEMENTS_READ), id, h(agreementController.get));
+r.patch('/agreements/:id', can(P.AGREEMENTS_UPDATE), validate({ params: idParams, body: s.agreementUpdateSchema }), h(agreementController.update));
+r.post('/agreements/:id/render', can(P.AGREEMENTS_UPDATE), validate({ params: idParams, body: s.agreementRenderSchema }), h(agreementController.render));
+r.post('/agreements/:id/versions', can(P.AGREEMENTS_UPDATE), validate({ params: idParams, body: s.agreementVersionSchema }), h(agreementController.addVersion));
+r.post('/agreements/:id/status', can(P.AGREEMENTS_UPDATE), validate({ params: idParams, body: s.agreementStatusSchema }), h(agreementController.status));
+r.get('/agreements/:id/pdf', can(P.AGREEMENTS_READ), validate({ params: idParams, query: s.agreementPdfQuery }), h(agreementController.pdf));
+r.delete('/agreements/:id', can(P.AGREEMENTS_DELETE), id, h(agreementController.remove));
+r.get('/agreement-templates', can(P.AGREEMENTS_READ), validate({ query: s.agreementTemplateListQuery }), h(agreementController.templates));
+r.post('/agreement-templates', can(P.TEMPLATES_MANAGE), validate({ body: s.agreementTemplateCreateSchema }), h(agreementController.createTemplate));
+r.patch('/agreement-templates/:id', can(P.TEMPLATES_MANAGE), validate({ params: idParams, body: s.agreementTemplateUpdateSchema }), h(agreementController.updateTemplate));
+
 // Income & expense (receipts are documents with entityType 'transaction')
 r.get('/transactions', can(P.FINANCE_READ), validate({ query: s.transactionListQuery }), h(transactionController.list));
 r.post('/transactions', can(P.FINANCE_CREATE), validate({ body: s.transactionCreateSchema }), h(transactionController.create));

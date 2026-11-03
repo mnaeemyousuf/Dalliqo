@@ -2,6 +2,7 @@ import { Schema, model } from 'mongoose';
 import { logger } from '../config/logger';
 import { migrateBranches } from './001-branches';
 import { migrateFinanceCategories } from './002-finance-categories';
+import { migrateAgreementTemplates } from './003-agreement-templates';
 
 /** One row per migration run (history; every migration is also idempotent on its own). */
 const MigrationRun = model(
@@ -13,6 +14,7 @@ const MigrationRun = model(
 const MIGRATIONS: { name: string; run: () => Promise<unknown> }[] = [
   { name: '001-branches', run: migrateBranches },
   { name: '002-finance-categories', run: migrateFinanceCategories },
+  { name: '003-agreement-templates', run: migrateAgreementTemplates },
 ];
 
 /**

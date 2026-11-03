@@ -19,8 +19,9 @@ import { searchService } from '../services/searchService';
 import { settingsService } from '../services/settingsService';
 import { syncService } from '../services/syncService';
 import { transactionService } from '../services/transactionService';
+import { agreementService } from '../services/agreementService';
 import { clientRepository, propertyRepository } from '../repositories/entityRepositories';
-import { clientListQuery, dealListQuery, documentUploadFields, financeReportQuery, followUpListQuery, matchListQuery, ownerListQuery, propertyListQuery, transactionListQuery } from '../validators/crm.schemas';
+import { clientListQuery, dealListQuery, documentUploadFields, agreementListQuery, financeReportQuery, followUpListQuery, matchListQuery, ownerListQuery, propertyListQuery, transactionListQuery } from '../validators/crm.schemas';
 import type { ZodTypeAny } from 'zod';
 
 const EXPORT_FILTERS: Record<ExportResource, ZodTypeAny> = {
@@ -33,6 +34,7 @@ const EXPORT_FILTERS: Record<ExportResource, ZodTypeAny> = {
   commissions: dealListQuery,
   transactions: transactionListQuery,
   finance: financeReportQuery,
+  agreements: agreementListQuery,
 };
 import { forbidden } from '../utils/AppError';
 import { pageMeta, sendSuccess } from '../utils/http';
@@ -66,6 +68,55 @@ export const branchController = {
   async update(req: Request, res: Response) {
     const { body, baseVersion } = versioned(req);
     sendSuccess(res, await branchService.update(authOf(req), req.params.id, body, { baseVersion, meta: requestMeta(req) }), { message: 'Branch updated' });
+  },
+};
+
+export const agreementController = {
+  async list(req: Request, res: Response) {
+    const q = query<Q>(req);
+    list(res, q.page, q.limit, await agreementService.list(authOf(req), q));
+  },
+  async get(req: Request, res: Response) {
+    sendSuccess(res, await agreementService.get(authOf(req), req.params.id));
+  },
+  async create(req: Request, res: Response) {
+    sendSuccess(res, await agreementService.create(authOf(req), req.body, requestMeta(req)), { status: 201, message: 'Agreement drafted' });
+  },
+  async update(req: Request, res: Response) {
+    const { body, baseVersion } = versioned(req);
+    sendSuccess(res, await agreementService.update(authOf(req), req.params.id, body, { baseVersion, meta: requestMeta(req) }), { message: 'Agreement updated' });
+  },
+  async render(req: Request, res: Response) {
+    sendSuccess(res, await agreementService.render(authOf(req), req.params.id, req.body), { status: 201, message: 'New version generated' });
+  },
+  async addVersion(req: Request, res: Response) {
+    sendSuccess(res, await agreementService.addVersion(authOf(req), req.params.id, (req.body as { body: string }).body), { status: 201, message: 'Version saved' });
+  },
+  async status(req: Request, res: Response) {
+    sendSuccess(res, await agreementService.changeStatus(authOf(req), req.params.id, req.body, { meta: requestMeta(req) }), { message: 'Status changed' });
+  },
+  async remove(req: Request, res: Response) {
+    const { baseVersion } = versioned(req);
+    await agreementService.remove(authOf(req), req.params.id, { baseVersion, meta: requestMeta(req) });
+    sendSuccess(res, null, { message: 'Agreement deleted' });
+  },
+  async pdf(req: Request, res: Response) {
+    const auth = authOf(req);
+    const a = await agreementService.get(auth, req.params.id);
+    const v = (req.query as { version?: number }).version;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${a.agreementNo}-v${v ?? a.versions.at(-1)?.no ?? 0}.pdf"`);
+    res.setHeader('Cache-Control', 'no-store');
+    await agreementService.pdf(auth, req.params.id, res, v);
+  },
+  async templates(req: Request, res: Response) {
+    sendSuccess(res, await agreementService.templates(authOf(req), req.query as never));
+  },
+  async createTemplate(req: Request, res: Response) {
+    sendSuccess(res, await agreementService.createTemplate(authOf(req), req.body), { status: 201, message: 'Template added' });
+  },
+  async updateTemplate(req: Request, res: Response) {
+    sendSuccess(res, await agreementService.updateTemplate(authOf(req), req.params.id, req.body), { message: 'Template updated' });
   },
 };
 
@@ -412,12 +463,13 @@ export const dashboardController = {
   async summary(req: Request, res: Response) {
     const auth = authOf(req);
     // Deal figures depend on who asks (agents only count their own deals), so they are not cached with the rest.
-    const [summary, deals, finance] = await Promise.all([
+    const [summary, deals, finance, agreements] = await Promise.all([
       dashboardService.summary(auth),
       auth.permissions.includes('deals:read') ? dealService.stats(auth) : Promise.resolve(undefined),
       auth.permissions.includes('finance:read') ? transactionService.stats(auth) : Promise.resolve(undefined),
+      auth.permissions.includes('agreements:read') ? agreementService.stats(auth) : Promise.resolve(undefined),
     ]);
-    sendSuccess(res, { ...summary, ...(deals ? { deals } : {}), ...(finance ? { finance } : {}) });
+    sendSuccess(res, { ...summary, ...(deals ? { deals } : {}), ...(finance ? { finance } : {}), ...(agreements ? { agreements } : {}) });
   },
   async analytics(req: Request, res: Response) {
     sendSuccess(res, await dashboardService.analytics(authOf(req), (req.query as { range: '7d' | '30d' | '12m' }).range));

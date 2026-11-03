@@ -406,7 +406,8 @@ export function ReportsPage() {
   const [busy, setBusy] = useState(false);
   const canDeals = useCan(PERMISSIONS.DEALS_READ);
   const canFinance = useCan(PERMISSIONS.FINANCE_READ);
-  const resources = useEnumOptions('exportResource', ['clients', 'properties', 'owners', 'followups', 'matches', ...(canDeals ? ['deals', 'commissions'] : []), ...(canFinance ? ['transactions', 'finance'] : [])]);
+  const canAgreements = useCan(PERMISSIONS.AGREEMENTS_READ);
+  const resources = useEnumOptions('exportResource', ['clients', 'properties', 'owners', 'followups', 'matches', ...(canDeals ? ['deals', 'commissions'] : []), ...(canFinance ? ['transactions', 'finance'] : []), ...(canAgreements ? ['agreements'] : [])]);
   const f = (k: string) => (e: { target: { value: string } }) => setFilters((x) => ({ ...x, [k]: e.target.value }));
   const filterFields: Record<string, React.ReactNode> = {
     properties: (

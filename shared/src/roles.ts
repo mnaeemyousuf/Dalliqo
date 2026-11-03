@@ -50,13 +50,15 @@ const WORK_ALL: Permission[] = [
 const DEALS_OWN: Permission[] = [P.DEALS_READ, P.DEALS_CREATE, P.DEALS_UPDATE];
 const DEALS_ALL: Permission[] = [...DEALS_OWN, P.DEALS_READ_ALL, P.COMMISSIONS_MANAGE];
 const FINANCE_ALL: Permission[] = [P.FINANCE_READ, P.FINANCE_CREATE, P.FINANCE_UPDATE, P.FINANCE_DELETE];
+const AGREEMENTS_WORK: Permission[] = [P.AGREEMENTS_READ, P.AGREEMENTS_CREATE, P.AGREEMENTS_UPDATE];
+const AGREEMENTS_ALL: Permission[] = [...AGREEMENTS_WORK, P.AGREEMENTS_DELETE, P.TEMPLATES_MANAGE];
 
 /** Default permissions granted when a member is created with a given role. */
 export const ROLE_PRESETS: Record<Role, readonly Permission[]> = {
   OWNER: ALL_PERMISSIONS,
   // The family-business default: the second user can do all day-to-day work
   // but cannot delete core records or administer the account.
-  MEMBER: [...WORK_ALL, ...DEALS_ALL, P.FINANCE_READ, P.FINANCE_CREATE, P.FINANCE_UPDATE, P.REPORTS_READ, P.EXPORTS_CREATE, P.MEMBERS_READ],
+  MEMBER: [...WORK_ALL, ...DEALS_ALL, P.FINANCE_READ, P.FINANCE_CREATE, P.FINANCE_UPDATE, ...AGREEMENTS_WORK, P.REPORTS_READ, P.EXPORTS_CREATE, P.MEMBERS_READ],
   ADMIN: ALL_PERMISSIONS.filter((p) => p !== P.BUSINESS_MANAGE),
   MANAGER: [
     ...WORK_ALL,
@@ -68,13 +70,14 @@ export const ROLE_PRESETS: Record<Role, readonly Permission[]> = {
     ...DEALS_ALL,
     P.DEALS_DELETE,
     ...FINANCE_ALL,
+    ...AGREEMENTS_ALL,
     P.REPORTS_READ,
     P.EXPORTS_CREATE,
     P.MEMBERS_READ,
     P.AUDIT_READ,
   ],
   // Agents see and work their own deals only (no deals:read_all).
-  AGENT: [...WORK_ALL, ...DEALS_OWN],
+  AGENT: [...WORK_ALL, ...DEALS_OWN, ...AGREEMENTS_WORK],
   SALESPERSON: [
     ...READ_ALL,
     P.CLIENTS_CREATE,
@@ -84,8 +87,8 @@ export const ROLE_PRESETS: Record<Role, readonly Permission[]> = {
     P.NOTES_CREATE,
     ...DEALS_OWN,
   ],
-  ACCOUNTANT: [...READ_ALL, P.DEALS_READ, P.DEALS_READ_ALL, P.COMMISSIONS_MANAGE, ...FINANCE_ALL, P.REPORTS_READ, P.EXPORTS_CREATE],
-  VIEWER: [...READ_ALL, P.DEALS_READ, P.DEALS_READ_ALL, P.FINANCE_READ],
+  ACCOUNTANT: [...READ_ALL, P.DEALS_READ, P.DEALS_READ_ALL, P.COMMISSIONS_MANAGE, ...FINANCE_ALL, P.AGREEMENTS_READ, P.REPORTS_READ, P.EXPORTS_CREATE],
+  VIEWER: [...READ_ALL, P.DEALS_READ, P.DEALS_READ_ALL, P.FINANCE_READ, P.AGREEMENTS_READ],
 };
 
 /**

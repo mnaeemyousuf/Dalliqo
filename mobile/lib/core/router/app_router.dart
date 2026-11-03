@@ -7,6 +7,7 @@ import '../../features/auth/auth_screens.dart';
 import '../../features/branches/branch_screens.dart';
 import '../../features/deals/deal_screens.dart';
 import '../../features/finance/finance_screens.dart';
+import '../../features/agreements/agreement_screens.dart';
 import '../../features/clients/client_screens.dart';
 import '../../features/dashboard/dashboard_screens.dart';
 import '../../features/followups/followup_screens.dart';
@@ -98,6 +99,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
       GoRoute(path: '/sync', builder: (_, _) => const SyncScreen()),
       GoRoute(path: '/branches', builder: (_, _) => const BranchesScreen()),
+      GoRoute(path: '/agreements', builder: (_, _) => const AgreementsScreen()),
+      GoRoute(
+        path: '/agreements/new',
+        builder: (_, s) => AgreementFormScreen(clientId: s.uri.queryParameters['clientId'], propertyId: s.uri.queryParameters['propertyId'], dealId: s.uri.queryParameters['dealId'], kind: s.uri.queryParameters['kind']),
+      ),
+      GoRoute(path: '/agreements/:id', builder: (_, s) => AgreementDetailScreen(id: s.pathParameters['id']!)),
+      GoRoute(path: '/agreements/:id/edit', builder: (_, s) => AgreementFormScreen(id: s.pathParameters['id'])),
       GoRoute(path: '/finance', builder: (_, _) => const FinanceScreen()),
       GoRoute(path: '/finance/new', builder: (_, s) => MoneyEntryFormScreen(type: s.uri.queryParameters['type'])),
       GoRoute(path: '/finance/report', builder: (_, _) => const FinanceReportScreen()),

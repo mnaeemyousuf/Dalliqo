@@ -23,6 +23,9 @@ import {
   PROPERTY_TYPES,
   SIZE_UNITS,
   TRANSACTION_TYPES,
+  AGREEMENT_KINDS,
+  AGREEMENT_LANGUAGES,
+  AGREEMENT_STATUSES,
 } from '@recrm/shared';
 import { email, objectId, pagination, personName, phone } from './common';
 
@@ -337,6 +340,62 @@ export const transactionCategoryUpdateSchema = z
   .object({ name: z.string().trim().min(1).max(80).optional(), nameUr: optionalText(80), archived: z.boolean().optional() })
   .strict();
 export const transactionCategoryListQuery = z.object({ includeArchived: bool.optional() });
+// ── Agreements ──
+const cnic = z.string().trim().max(20).regex(/^[\d-]*$/, 'CNIC digits and dashes only').optional().transform((v) => (v === '' ? undefined : v));
+const agreementFields = {
+  branchId: branchRef,
+  templateId: objectId.nullable().optional(),
+  kind: z.enum(AGREEMENT_KINDS),
+  language: z.enum(AGREEMENT_LANGUAGES).optional(),
+  title: optionalText(150),
+  dealId: ref.nullable().optional(),
+  clientId: ref,
+  ownerId: ref.nullable().optional(),
+  propertyId: ref.nullable().optional(),
+  amount: money.nullable().optional(),
+  tokenAmount: money.nullable().optional(),
+  monthlyRent: money.nullable().optional(),
+  securityDeposit: money.nullable().optional(),
+  startDate: z.coerce.date().nullable().optional(),
+  endDate: z.coerce.date().nullable().optional(),
+  clientCnic: cnic,
+  ownerCnic: cnic,
+  witness1: optionalText(150),
+  witness2: optionalText(150),
+  notes: optionalText(2000),
+};
+const datesInOrder = (v: { startDate?: Date | null; endDate?: Date | null }) => !v.startDate || !v.endDate || v.endDate > v.startDate;
+export const agreementCreateSchema = z
+  .object({ uuid: uuid.optional(), ...agreementFields })
+  .strict()
+  .refine(datesInOrder, { message: 'End date must be after the start date', path: ['endDate'] });
+export const agreementUpdateSchema = z
+  .object(agreementFields)
+  .partial()
+  .extend({ status: z.enum(AGREEMENT_STATUSES).optional(), baseVersion: z.number().int().positive().optional() })
+  .strict()
+  .refine(datesInOrder, { message: 'End date must be after the start date', path: ['endDate'] });
+export const agreementListQuery = pagination.extend({
+  q: optionalText(100),
+  status: z.enum(AGREEMENT_STATUSES).optional(),
+  kind: z.enum(AGREEMENT_KINDS).optional(),
+  clientId: objectId.optional(),
+  propertyId: objectId.optional(),
+  dealId: objectId.optional(),
+  expiringWithinDays: z.coerce.number().int().min(0).max(365).optional(),
+  branchId: objectId.optional(),
+});
+export const agreementStatusSchema = z.object({ status: z.enum(AGREEMENT_STATUSES), note: optionalText(300), signedDocumentId: objectId.optional() }).strict();
+export const agreementRenderSchema = z.object({ templateId: objectId.optional() }).strict();
+export const agreementVersionSchema = z.object({ body: z.string().trim().min(20).max(40_000) }).strict();
+export const agreementPdfQuery = z.object({ version: z.coerce.number().int().positive().optional() });
+export const agreementTemplateCreateSchema = z
+  .object({ uuid: uuid.optional(), name: z.string().trim().min(1).max(120), kind: z.enum(AGREEMENT_KINDS), language: z.enum(AGREEMENT_LANGUAGES), body: z.string().trim().min(20).max(30_000) })
+  .strict();
+export const agreementTemplateUpdateSchema = z
+  .object({ name: z.string().trim().min(1).max(120).optional(), body: z.string().trim().min(20).max(30_000).optional(), archived: z.boolean().optional() })
+  .strict();
+export const agreementTemplateListQuery = z.object({ kind: z.enum(AGREEMENT_KINDS).optional(), language: z.enum(AGREEMENT_LANGUAGES).optional(), includeArchived: bool.optional() });
 export const financeReportQuery = z.object({ groupBy: z.enum(['month', 'category']).default('month'), from: z.coerce.date().optional(), to: z.coerce.date().optional() });
 
 // ── Media & documents ──
@@ -435,7 +494,7 @@ export const searchQuery = z.object({
   types: list(z.enum(['clients', 'properties', 'owners', 'matches'])).default(['clients', 'properties', 'owners', 'matches']),
   limit: z.coerce.number().int().min(1).max(20).default(5),
 });
-export const exportParams = z.object({ resource: z.enum(['clients', 'properties', 'owners', 'followups', 'matches', 'deals', 'commissions', 'transactions', 'finance']) });
+export const exportParams = z.object({ resource: z.enum(['clients', 'properties', 'owners', 'followups', 'matches', 'deals', 'commissions', 'transactions', 'finance', 'agreements']) });
 export const exportQuery = z
   .object({ format: z.enum(['xlsx', 'pdf']).default('xlsx') })
   .passthrough();
@@ -443,7 +502,7 @@ export const exportQuery = z
 const mutation = z
   .object({
     mutationId: uuid,
-    entity: z.enum(['clients', 'owners', 'properties', 'followUps', 'notes', 'deals', 'transactions']),
+    entity: z.enum(['clients', 'owners', 'properties', 'followUps', 'notes', 'deals', 'transactions', 'agreements']),
     op: z.enum(['create', 'update', 'delete']),
     uuid,
     baseVersion: z.number().int().positive().optional(),

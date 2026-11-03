@@ -126,6 +126,13 @@ export function DashboardPage() {
             <Stat label={t('dashboard.netThisMonth')} value={<span className="ltr-nums">{formatPkr(s.finance.netThisMonth)}</span>} icon={<Handshake className={i} />} tone={s.finance.netThisMonth < 0 ? 'red' : 'blue'} to="/finance?tab=report" />
           </>
         )}
+        {s.agreements && (
+          <>
+            <Stat label={t('dashboard.agreementDrafts')} value={s.agreements.drafts} icon={<CalendarCheck className={i} />} to="/agreements?status=DRAFT" />
+            <Stat label={t('dashboard.agreementsAwaitingSignature')} value={s.agreements.awaitingSignature} icon={<AlarmClock className={i} />} tone="blue" to="/agreements?status=SENT" />
+            <Stat label={t('dashboard.agreementsExpiring')} value={s.agreements.expiringSoon} icon={<AlarmClock className={i} />} tone="amber" to="/agreements?expiring=1" />
+          </>
+        )}
       </div>
 
       {canReports && (

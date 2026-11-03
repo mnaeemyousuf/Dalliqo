@@ -35,6 +35,9 @@ const INVALIDATES: Record<string, string[][]> = {
   [SOCKET_EVENTS.TRANSACTION_CREATED]: [['transactions'], ['dashboard'], ['reports']],
   [SOCKET_EVENTS.TRANSACTION_UPDATED]: [['transactions'], ['transactionCategories'], ['dashboard'], ['reports']],
   [SOCKET_EVENTS.TRANSACTION_DELETED]: [['transactions'], ['dashboard'], ['reports']],
+  [SOCKET_EVENTS.AGREEMENT_CREATED]: [['agreements'], ['dashboard'], ['activities']],
+  [SOCKET_EVENTS.AGREEMENT_UPDATED]: [['agreements'], ['agreement'], ['agreementTemplates'], ['dashboard'], ['followups'], ['activities']],
+  [SOCKET_EVENTS.AGREEMENT_DELETED]: [['agreements'], ['dashboard']],
 };
 
 let socket: Socket | null = null;

@@ -19,7 +19,9 @@ class Entities {
   static const deals = 'deals';
   static const transactionCategories = 'transactionCategories';
   static const transactions = 'transactions';
-  static const all = [branches, categories, clients, owners, properties, followUps, notes, deals, transactionCategories, transactions];
+  static const agreementTemplates = 'agreementTemplates';
+  static const agreements = 'agreements';
+  static const all = [branches, categories, clients, owners, properties, followUps, notes, deals, transactionCategories, transactions, agreementTemplates, agreements];
 }
 
 /// A locally stored record. `data` is the record as the API returns it

@@ -99,7 +99,8 @@
     "profile": "Profile",
     "myDay": "My Day",
     "deals": "Deals",
-    "finance": "Income & expense"
+    "finance": "Income & expense",
+    "agreements": "Agreements"
   },
   "topbar": {
     "searchPlaceholder": "Search clients, properties, owners…",
@@ -192,7 +193,10 @@
     "commissionOutstanding": "Commission outstanding",
     "incomeThisMonth": "Income this month",
     "expenseThisMonth": "Expenses this month",
-    "netThisMonth": "Net this month"
+    "netThisMonth": "Net this month",
+    "agreementDrafts": "Agreement drafts",
+    "agreementsAwaitingSignature": "Awaiting signature",
+    "agreementsExpiring": "Rent agreements ending in 30 days"
   },
   "myDay": {
     "title": "My Day",
@@ -665,7 +669,8 @@
       "owner": "Owner",
       "followUp": "Follow-up",
       "deal": "Deal",
-      "transaction": "Income / expense"
+      "transaction": "Income / expense",
+      "agreement": "Agreement"
     },
     "exportResource": {
       "clients": "Clients",
@@ -676,7 +681,8 @@
       "deals": "Deals",
       "commissions": "Commission received",
       "transactions": "Income & expense entries",
-      "finance": "Income & expense summary"
+      "finance": "Income & expense summary",
+      "agreements": "Agreements"
     },
     "matchReason": {
       "TYPE_MATCH": "Property type",
@@ -773,6 +779,19 @@
     "transactionType": {
       "INCOME": "Income",
       "EXPENSE": "Expense"
+    },
+    "agreementKind": {
+      "SALE": "Sale agreement",
+      "RENT": "Rent agreement",
+      "TOKEN_RECEIPT": "Token receipt",
+      "OTHER": "Other"
+    },
+    "agreementStatus": {
+      "DRAFT": "Draft",
+      "SENT": "Sent",
+      "SIGNED": "Signed",
+      "EXPIRED": "Expired",
+      "CANCELLED": "Cancelled"
     }
   },
   "errors": {
@@ -919,5 +938,79 @@
     "emptyHint": "Record office expenses like rent and utilities, or other income.",
     "deleteTitle": "Delete this entry?",
     "deleteMessage": "It will be removed from reports. Receipts attached to it stay in documents."
+  },
+  "agreement": {
+    "title": "Agreements",
+    "subtitle": "Sale, rent and token agreements from templates, in English or Urdu, with every version kept.",
+    "add": "New agreement",
+    "edit": "Edit agreement",
+    "created": "Agreement drafted",
+    "updated": "Agreement updated",
+    "deleted": "Agreement deleted",
+    "no": "No.",
+    "kind": "Type",
+    "language": "Language",
+    "template": "Template",
+    "defaultTemplate": "Built-in template",
+    "titleField": "Title (optional)",
+    "buyer": "Buyer / client",
+    "seller": "Seller",
+    "tenant": "Tenant",
+    "landlord": "Landlord",
+    "propertyOwner": "Property's owner",
+    "clientCnic": "Client CNIC",
+    "ownerCnic": "Owner CNIC",
+    "amount": "Total price (PKR)",
+    "tokenAmount": "Token / bayana (PKR)",
+    "monthlyRent": "Monthly rent (PKR)",
+    "securityDeposit": "Security deposit (PKR)",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "agreementDate": "Agreement date",
+    "transferBy": "Transfer / balance by",
+    "witness1": "Witness 1",
+    "witness2": "Witness 2",
+    "month": "month",
+    "renewalHint": "Renewal follow-ups are added 30 and 7 days before the end date (also as phone reminders).",
+    "renewalsPlanned": "{{count}} renewal follow-up(s) planned before the end date.",
+    "searchPlaceholder": "Search number, title or client",
+    "expiringSoon": "Rent ending in 30 days",
+    "empty": "No agreements yet",
+    "emptyHint": "Draft a sale agreement, tenancy agreement or token receipt from a template.",
+    "templates": "Templates",
+    "newTemplate": "New template",
+    "editTemplate": "Edit template",
+    "templateSaved": "Template saved",
+    "copy": "Copy",
+    "placeholdersHint": "Placeholders you can use:",
+    "pdf": "PDF",
+    "text": "Text",
+    "version": "Version",
+    "versionOf": "Version {{no}} of {{total}}",
+    "noText": "No text yet",
+    "noTextHint": "Generate the text from the template.",
+    "regenerate": "Regenerate from template",
+    "rendered": "New version generated",
+    "editText": "Edit text",
+    "editTextHint": "Your changes are saved as a new version; earlier versions are kept.",
+    "saveVersion": "Save as new version",
+    "versionSaved": "Version saved",
+    "source": {
+      "RENDER": "generated",
+      "EDIT": "edited"
+    },
+    "signedCopy": "Signed copy",
+    "signedCopyHint": "Upload the scanned signed agreement here, then mark the agreement signed.",
+    "noSignedCopy": "No signed copy attached",
+    "uploadFirst": "Tip: upload the signed scan under \"Signed copy\" first to attach it.",
+    "statusChanged": "Status changed",
+    "deleteTitle": "Delete this agreement?",
+    "to": {
+      "DRAFT": "Back to draft",
+      "SENT": "Mark sent",
+      "SIGNED": "Mark signed",
+      "EXPIRED": "Mark expired",
+      "CANCELLED": "Cancel agreement"
+    }
   }
 }

@@ -99,7 +99,8 @@
     "profile": "پروفائل",
     "myDay": "میرا دن",
     "deals": "ڈیلز",
-    "finance": "آمدنی و اخراجات"
+    "finance": "آمدنی و اخراجات",
+    "agreements": "معاہدے"
   },
   "topbar": {
     "searchPlaceholder": "کلائنٹس، پراپرٹیز، مالکان تلاش کریں…",
@@ -192,7 +193,10 @@
     "commissionOutstanding": "باقی کمیشن",
     "incomeThisMonth": "اس ماہ آمدنی",
     "expenseThisMonth": "اس ماہ اخراجات",
-    "netThisMonth": "اس ماہ خالص"
+    "netThisMonth": "اس ماہ خالص",
+    "agreementDrafts": "معاہدوں کے مسودے",
+    "agreementsAwaitingSignature": "دستخط کے منتظر",
+    "agreementsExpiring": "30 دن میں ختم ہونے والے کرایہ نامے"
   },
   "myDay": {
     "title": "میرا دن",
@@ -665,7 +669,8 @@
       "owner": "مالک",
       "followUp": "فالو اپ",
       "deal": "ڈیل",
-      "transaction": "آمدنی / خرچ"
+      "transaction": "آمدنی / خرچ",
+      "agreement": "معاہدہ"
     },
     "exportResource": {
       "clients": "کلائنٹس",
@@ -676,7 +681,8 @@
       "deals": "ڈیلز",
       "commissions": "وصول شدہ کمیشن",
       "transactions": "آمدنی و اخراجات کے اندراجات",
-      "finance": "آمدنی و اخراجات کا خلاصہ"
+      "finance": "آمدنی و اخراجات کا خلاصہ",
+      "agreements": "معاہدے"
     },
     "matchReason": {
       "TYPE_MATCH": "پراپرٹی کی قسم",
@@ -773,6 +779,19 @@
     "transactionType": {
       "INCOME": "آمدنی",
       "EXPENSE": "خرچ"
+    },
+    "agreementKind": {
+      "SALE": "اقرار نامہ بیع",
+      "RENT": "کرایہ نامہ",
+      "TOKEN_RECEIPT": "رسید بیعانہ",
+      "OTHER": "دیگر"
+    },
+    "agreementStatus": {
+      "DRAFT": "مسودہ",
+      "SENT": "بھیجا گیا",
+      "SIGNED": "دستخط شدہ",
+      "EXPIRED": "میعاد ختم",
+      "CANCELLED": "منسوخ"
     }
   },
   "errors": {
@@ -919,5 +938,79 @@
     "emptyHint": "دفتر کے اخراجات جیسے کرایہ اور بل، یا دیگر آمدنی درج کریں۔",
     "deleteTitle": "یہ اندراج حذف کریں؟",
     "deleteMessage": "یہ رپورٹس سے ہٹ جائے گا۔ منسلک رسیدیں دستاویزات میں رہیں گی۔"
+  },
+  "agreement": {
+    "title": "معاہدے",
+    "subtitle": "نمونوں سے بیع، کرایہ اور بیعانہ کے معاہدے، انگریزی یا اردو میں، ہر ورژن محفوظ۔",
+    "add": "نیا معاہدہ",
+    "edit": "معاہدے میں ترمیم",
+    "created": "معاہدے کا مسودہ تیار",
+    "updated": "معاہدہ اپ ڈیٹ ہو گیا",
+    "deleted": "معاہدہ حذف ہو گیا",
+    "no": "نمبر",
+    "kind": "قسم",
+    "language": "زبان",
+    "template": "نمونہ",
+    "defaultTemplate": "پہلے سے موجود نمونہ",
+    "titleField": "عنوان (اختیاری)",
+    "buyer": "خریدار / کلائنٹ",
+    "seller": "فروخت کنندہ",
+    "tenant": "کرایہ دار",
+    "landlord": "مالک مکان",
+    "propertyOwner": "جائیداد کا مالک",
+    "clientCnic": "کلائنٹ کا شناختی کارڈ",
+    "ownerCnic": "مالک کا شناختی کارڈ",
+    "amount": "کل قیمت (روپے)",
+    "tokenAmount": "بیعانہ (روپے)",
+    "monthlyRent": "ماہانہ کرایہ (روپے)",
+    "securityDeposit": "زر ضمانت (روپے)",
+    "startDate": "آغاز کی تاریخ",
+    "endDate": "اختتام کی تاریخ",
+    "agreementDate": "معاہدے کی تاریخ",
+    "transferBy": "انتقال / باقی رقم کی تاریخ",
+    "witness1": "گواہ 1",
+    "witness2": "گواہ 2",
+    "month": "ماہ",
+    "renewalHint": "اختتام سے 30 اور 7 دن پہلے تجدید کے فالو اپ شامل ہوں گے (فون یاد دہانی بھی)۔",
+    "renewalsPlanned": "اختتام سے پہلے {{count}} تجدیدی فالو اپ طے ہیں۔",
+    "searchPlaceholder": "نمبر، عنوان یا کلائنٹ تلاش کریں",
+    "expiringSoon": "30 دن میں ختم ہونے والا کرایہ",
+    "empty": "ابھی کوئی معاہدہ نہیں",
+    "emptyHint": "نمونے سے اقرار نامہ بیع، کرایہ نامہ یا رسید بیعانہ تیار کریں۔",
+    "templates": "نمونے",
+    "newTemplate": "نیا نمونہ",
+    "editTemplate": "نمونے میں ترمیم",
+    "templateSaved": "نمونہ محفوظ ہو گیا",
+    "copy": "نقل",
+    "placeholdersHint": "استعمال ہونے والے خانے:",
+    "pdf": "پی ڈی ایف",
+    "text": "متن",
+    "version": "ورژن",
+    "versionOf": "ورژن {{no}} از {{total}}",
+    "noText": "ابھی متن نہیں",
+    "noTextHint": "نمونے سے متن تیار کریں۔",
+    "regenerate": "نمونے سے دوبارہ بنائیں",
+    "rendered": "نیا ورژن تیار",
+    "editText": "متن میں ترمیم",
+    "editTextHint": "آپ کی تبدیلیاں نئے ورژن کے طور پر محفوظ ہوں گی؛ پرانے ورژن محفوظ رہیں گے۔",
+    "saveVersion": "نئے ورژن کے طور پر محفوظ کریں",
+    "versionSaved": "ورژن محفوظ ہو گیا",
+    "source": {
+      "RENDER": "تیار کردہ",
+      "EDIT": "ترمیم شدہ"
+    },
+    "signedCopy": "دستخط شدہ نقل",
+    "signedCopyHint": "دستخط شدہ معاہدے کی اسکین یہاں اپ لوڈ کریں، پھر معاہدے کو دستخط شدہ کریں۔",
+    "noSignedCopy": "کوئی دستخط شدہ نقل منسلک نہیں",
+    "uploadFirst": "پہلے \"دستخط شدہ نقل\" میں اسکین اپ لوڈ کریں تاکہ منسلک ہو سکے۔",
+    "statusChanged": "حیثیت تبدیل ہو گئی",
+    "deleteTitle": "یہ معاہدہ حذف کریں؟",
+    "to": {
+      "DRAFT": "واپس مسودہ",
+      "SENT": "بھیجا گیا",
+      "SIGNED": "دستخط شدہ",
+      "EXPIRED": "میعاد ختم",
+      "CANCELLED": "معاہدہ منسوخ کریں"
+    }
   }
 }

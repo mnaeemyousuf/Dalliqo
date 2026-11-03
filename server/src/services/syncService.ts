@@ -18,6 +18,7 @@ import { authService } from './authService';
 import { branchRepository } from './branchService';
 import { dealRepository, dealService, ownDealsFilter } from './dealService';
 import { transactionCategoryRepository, transactionRepository, transactionService } from './transactionService';
+import { agreementRepository, agreementService, agreementTemplateRepository } from './agreementService';
 import { clientService } from './clientService';
 import { followUpService } from './followUpService';
 import { memberService } from './memberService';
@@ -40,6 +41,8 @@ import {
   dealUpdateSchema,
   transactionCreateSchema,
   transactionUpdateSchema,
+  agreementCreateSchema,
+  agreementUpdateSchema,
 } from '../validators/crm.schemas';
 import type { ZodTypeAny } from 'zod';
 
@@ -52,9 +55,10 @@ const SCHEMAS: Record<PushEntity, { create: ZodTypeAny; update: ZodTypeAny }> = 
   notes: { create: noteCreateSchema, update: noteUpdateSchema },
   deals: { create: dealCreateSchema, update: dealUpdateSchema },
   transactions: { create: transactionCreateSchema, update: transactionUpdateSchema },
+  agreements: { create: agreementCreateSchema, update: agreementUpdateSchema },
 };
 
-export type PushEntity = 'clients' | 'owners' | 'properties' | 'followUps' | 'notes' | 'deals' | 'transactions';
+export type PushEntity = 'clients' | 'owners' | 'properties' | 'followUps' | 'notes' | 'deals' | 'transactions' | 'agreements';
 
 export interface Mutation {
   mutationId: string;
@@ -87,6 +91,7 @@ const PROTECTED_FIELDS: Partial<Record<PushEntity, string[]>> = {
   // Money and stage: a silent last-write-wins could lose a recorded payment.
   deals: ['stage', 'payments', 'payouts', 'commission'],
   transactions: ['amount', 'type'],
+  agreements: ['status', 'amount', 'monthlyRent', 'endDate'],
 };
 
 const REPOS = {
@@ -97,6 +102,7 @@ const REPOS = {
   notes: noteRepository,
   deals: dealRepository,
   transactions: transactionRepository,
+  agreements: agreementRepository,
 } as const;
 
 const WRITE_PERMS: Record<PushEntity, Record<Mutation['op'], Permission>> = {
@@ -107,6 +113,7 @@ const WRITE_PERMS: Record<PushEntity, Record<Mutation['op'], Permission>> = {
   notes: { create: PERMISSIONS.NOTES_CREATE, update: PERMISSIONS.NOTES_CREATE, delete: PERMISSIONS.NOTES_CREATE },
   deals: { create: PERMISSIONS.DEALS_CREATE, update: PERMISSIONS.DEALS_UPDATE, delete: PERMISSIONS.DEALS_DELETE },
   transactions: { create: PERMISSIONS.FINANCE_CREATE, update: PERMISSIONS.FINANCE_UPDATE, delete: PERMISSIONS.FINANCE_DELETE },
+  agreements: { create: PERMISSIONS.AGREEMENTS_CREATE, update: PERMISSIONS.AGREEMENTS_UPDATE, delete: PERMISSIONS.AGREEMENTS_DELETE },
 };
 
 const isObjectId = (v: unknown): v is string => typeof v === 'string' && /^[a-f\d]{24}$/i.test(v);
@@ -134,12 +141,12 @@ async function resolveRefs(auth: AuthContext, data: Record<string, unknown>): Pr
     }
   }
   if (typeof out.entityId === 'string' && !isObjectId(out.entityId)) {
-    const repo = { client: clientRepository, property: propertyRepository, owner: ownerRepository, followUp: followUpRepository, deal: dealRepository, transaction: transactionRepository }[String(out.entityType)];
+    const repo = { client: clientRepository, property: propertyRepository, owner: ownerRepository, followUp: followUpRepository, deal: dealRepository, transaction: transactionRepository, agreement: agreementRepository }[String(out.entityType)];
     const found = repo ? await repo.findByUuid(auth, out.entityId) : null;
     if (!found) throw new AppError(400, ERROR_CODES.ENTITY_NOT_FOUND, `entity ${out.entityId} not found`);
     out.entityId = String(found._id);
   }
-  for (const k of ['dueAt', 'reminderAt', 'expectedCloseDate']) if (typeof out[k] === 'string') out[k] = new Date(out[k] as string);
+  for (const k of ['dueAt', 'reminderAt', 'expectedCloseDate', 'startDate', 'endDate', 'date']) if (typeof out[k] === 'string') out[k] = new Date(out[k] as string);
   delete out._id;
   delete out.uuid;
   delete out.version;
@@ -157,6 +164,7 @@ async function create(auth: AuthContext, entity: PushEntity, uuid: string, data:
     case 'notes': return noteService.create(auth, input);
     case 'deals': return dealService.create(auth, input);
     case 'transactions': return transactionService.create(auth, input);
+    case 'agreements': return agreementService.create(auth, input);
   }
 }
 
@@ -170,6 +178,7 @@ async function update(auth: AuthContext, entity: PushEntity, id: string, data: R
     case 'notes': return noteService.update(auth, id, String(data.content ?? ''), baseVersion);
     case 'deals': return dealService.update(auth, id, input, { baseVersion });
     case 'transactions': return transactionService.update(auth, id, input, { baseVersion });
+    case 'agreements': return agreementService.update(auth, id, input, { baseVersion });
   }
 }
 
@@ -182,6 +191,7 @@ async function remove(auth: AuthContext, entity: PushEntity, id: string) {
     case 'notes': return noteService.remove(auth, id);
     case 'deals': return dealService.remove(auth, id);
     case 'transactions': return transactionService.remove(auth, id);
+    case 'agreements': return agreementService.remove(auth, id);
   }
 }
 
@@ -272,6 +282,8 @@ const PULL_REPOS = {
   deals: dealRepository,
   transactionCategories: transactionCategoryRepository,
   transactions: transactionRepository,
+  agreementTemplates: agreementTemplateRepository,
+  agreements: agreementRepository,
 } as const;
 type PullEntity = keyof typeof PULL_REPOS;
 
@@ -286,6 +298,8 @@ const READ_PERMS: Record<PullEntity, Permission | null> = {
   deals: PERMISSIONS.DEALS_READ,
   transactionCategories: PERMISSIONS.FINANCE_READ,
   transactions: PERMISSIONS.FINANCE_READ,
+  agreementTemplates: PERMISSIONS.AGREEMENTS_READ,
+  agreements: PERMISSIONS.AGREEMENTS_READ,
 };
 
 export const syncService = {

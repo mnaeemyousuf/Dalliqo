@@ -30,6 +30,7 @@ import { mediaService } from '../services/mediaService';
 import { branchService } from '../services/branchService';
 import { dealService } from '../services/dealService';
 import { transactionService } from '../services/transactionService';
+import { agreementService } from '../services/agreementService';
 import { demoDocumentPdf, demoPropertyImage } from './demoImages';
 import type { AuthContext } from '../types/context';
 import { normalizePhone } from '../utils/phone';
@@ -338,6 +339,29 @@ export async function seed(opts: { reset?: boolean } = {}): Promise<Record<strin
   }
   await transactionService.create(father, { type: 'INCOME', categoryId: cats.get('CONSULTANCY')!, amount: 25_000, date: day(18), method: 'CASH', description: 'Valuation advice, DHA Phase 6 plot' });
 
+  // Agreements: a sale agreement for the won deal (sent for signature), a signed English tenancy
+  // ending in 45 days (renewal follow-ups at 30 and 7 days) and an Urdu token receipt draft.
+  const won = (await dealService.list(father, { stage: 'CLOSED_WON', page: 1, limit: 1 })).items[0];
+  const saleProp = mainProps[0];
+  const sale = await agreementService.create(father, {
+    kind: 'SALE', language: 'en', title: `Sale of ${saleProp.propertyId}`, dealId: won ? String(won._id) : null, clientId: clients[0]._id.toString(),
+    propertyId: saleProp._id.toString(), ownerId: saleProp.ownerId ? String(saleProp.ownerId) : null, amount: won?.finalPrice ?? saleProp.askingPrice,
+    tokenAmount: Math.round((won?.finalPrice ?? saleProp.askingPrice) * 0.1), endDate: day(-20), witness1: 'Bilal Ahmed', witness2: 'Usman Tariq',
+  });
+  await agreementService.changeStatus(father, String(sale._id), { status: 'SENT', note: 'Sent to both parties on WhatsApp' });
+  const rentProp = properties.find((p) => p.listingPurpose === 'RENT') ?? mainProps[1];
+  const tenant = clients.find((c) => c.purchaseOrRental === 'RENTAL') ?? clients[1];
+  const rent = await agreementService.create(father, {
+    kind: 'RENT', language: 'en', title: `Tenancy ${rentProp.propertyId}`, clientId: tenant._id.toString(), propertyId: rentProp._id.toString(),
+    ownerId: rentProp.ownerId ? String(rentProp.ownerId) : null, monthlyRent: rentProp.askingPrice, securityDeposit: rentProp.askingPrice * 2,
+    startDate: day(320), endDate: day(-45), witness1: 'Hamza Ali',
+  });
+  await agreementService.changeStatus(father, String(rent._id), { status: 'SIGNED', note: 'Signed at the office' });
+  await agreementService.create(son, {
+    kind: 'TOKEN_RECEIPT', language: 'ur', clientId: clients[2]._id.toString(), propertyId: mainProps[2]._id.toString(),
+    ownerId: mainProps[2].ownerId ? String(mainProps[2].ownerId) : null, amount: mainProps[2].askingPrice, tokenAmount: 500_000, endDate: day(-30),
+  });
+
   return {
     users: 1 + team.length,
     owners: owners.length,
@@ -346,6 +370,7 @@ export async function seed(opts: { reset?: boolean } = {}): Promise<Record<strin
     followUps: 20,
     deals: 6,
     transactions: expenses.length + 1,
+    agreements: 3,
     matches: await Match.countDocuments({ businessId: father.businessId }),
   };
 }

@@ -109,7 +109,7 @@ class SettingsScreen extends ConsumerWidget {
         ),
         if (auth.can('exports:create')) ...[
           SectionHeader(l.t('mobile.exportShare')),
-          for (final r in ['clients', 'properties', 'owners', 'followups', 'matches', if (auth.can('deals:read')) ...['deals', 'commissions'], if (auth.can('finance:read')) ...['transactions', 'finance']])
+          for (final r in ['clients', 'properties', 'owners', 'followups', 'matches', if (auth.can('deals:read')) ...['deals', 'commissions'], if (auth.can('finance:read')) ...['transactions', 'finance'], if (auth.can('agreements:read')) 'agreements'])
             ListTile(
               leading: const Icon(Icons.file_download_outlined),
               title: Text(l.t('enums.exportResource.$r')),
