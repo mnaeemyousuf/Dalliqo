@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/auth_controller.dart';
 import '../../features/auth/auth_screens.dart';
+import '../../features/auth/onboarding.dart';
 import '../../features/branches/branch_screens.dart';
 import '../../features/deals/deal_screens.dart';
 import '../../features/finance/finance_screens.dart';
@@ -62,7 +63,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),
-      GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
+      GoRoute(path: '/login', builder: (_, _) => const OnboardingGate(child: LoginScreen())),
       GoRoute(path: '/register', builder: (_, _) => const RegisterScreen()),
       GoRoute(path: '/forgot-password', builder: (_, _) => const ForgotPasswordScreen()),
       GoRoute(path: '/change-password', builder: (_, _) => const ChangeTemporaryPasswordScreen()),

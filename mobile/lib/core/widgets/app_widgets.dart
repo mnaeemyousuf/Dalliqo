@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import '../network/api_client.dart';
+import '../theme/app_theme.dart';
 
 /// Design-system building blocks. Screens compose these instead of styling
 /// Material widgets ad hoc.
@@ -117,17 +118,127 @@ class AppDropdown<T> extends StatelessWidget {
       );
 }
 
-class AppCard extends StatelessWidget {
-  const AppCard({super.key, required this.child, this.onTap, this.padding = const EdgeInsets.all(14)});
+/// Surface card with a soft shadow; when tappable it springs down slightly on press.
+class AppCard extends StatefulWidget {
+  const AppCard({super.key, required this.child, this.onTap, this.padding = const EdgeInsets.all(16), this.color, this.gradient, this.border = true});
   final Widget child;
   final VoidCallback? onTap;
   final EdgeInsets padding;
+  final Color? color;
+  final Gradient? gradient;
+  final bool border;
 
   @override
-  Widget build(BuildContext context) => Card(
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(onTap: onTap, child: Padding(padding: padding, child: child)),
-      );
+  State<AppCard> createState() => _AppCardState();
+}
+
+class _AppCardState extends State<AppCard> {
+  bool _down = false;
+
+  void _set(bool v) {
+    if (widget.onTap != null && _down != v) setState(() => _down = v);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(16);
+    return AnimatedScale(
+      scale: _down ? 0.975 : 1,
+      duration: const Duration(milliseconds: 140),
+      curve: Curves.easeOutCubic,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        decoration: BoxDecoration(
+          color: widget.gradient == null ? (widget.color ?? scheme.surface) : null,
+          gradient: widget.gradient,
+          borderRadius: radius,
+          border: widget.border ? Border.all(color: scheme.outlineVariant.withValues(alpha: 0.8)) : null,
+          boxShadow: AppTheme.softShadow(context, raised: _down),
+        ),
+        child: Material(
+          type: MaterialType.transparency,
+          borderRadius: radius,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: widget.onTap,
+            onTapDown: (_) => _set(true),
+            onTapUp: (_) => _set(false),
+            onTapCancel: () => _set(false),
+            child: Padding(padding: widget.padding, child: widget.child),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Initials avatar with a stable colour per name.
+class AppAvatar extends StatelessWidget {
+  const AppAvatar(this.name, {super.key, this.size = 40});
+  final String? name;
+  final double size;
+
+  static const _hues = [Color(0xFF2563EB), Color(0xFF7C3AED), Color(0xFF059669), Color(0xFFD97706), Color(0xFFE11D48), Color(0xFF0891B2), Color(0xFF4F46E5), Color(0xFF0D9488)];
+
+  @override
+  Widget build(BuildContext context) {
+    final n = (name ?? '').trim();
+    final parts = n.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).take(2);
+    final initials = parts.isEmpty ? '?' : parts.map((p) => p.characters.first.toUpperCase()).join();
+    final hue = _hues[n.codeUnits.fold<int>(0, (a, b) => a + b) % _hues.length];
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(colors: [hue, Color.lerp(hue, Colors.black, 0.18)!], begin: Alignment.topLeft, end: Alignment.bottomRight),
+      ),
+      child: Text(initials, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: size * 0.36), textDirection: TextDirection.ltr),
+    );
+  }
+}
+
+/// Animates a number from 0 to [value] once (ease-out), keeping digits left-to-right.
+class CountUpText extends StatelessWidget {
+  const CountUpText(this.value, {super.key, this.style, this.duration = const Duration(milliseconds: 900)});
+  final num value;
+  final TextStyle? style;
+  final Duration duration;
+
+  @override
+  Widget build(BuildContext context) {
+    if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) return Text('$value', style: style, textDirection: TextDirection.ltr);
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: value.toDouble()),
+      duration: duration,
+      curve: Curves.easeOutQuart,
+      builder: (_, v, _) => Text('${v.round()}', style: style, textDirection: TextDirection.ltr),
+    );
+  }
+}
+
+/// Fades and lifts its child into place; [index] staggers siblings.
+class FadeSlideIn extends StatelessWidget {
+  const FadeSlideIn({super.key, required this.child, this.index = 0, this.offset = 14});
+  final Widget child;
+  final int index;
+  final double offset;
+
+  @override
+  Widget build(BuildContext context) {
+    if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) return child;
+    final delay = (index.clamp(0, 12)) * 40;
+    final total = 380 + delay;
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: Duration(milliseconds: total),
+      curve: Interval(delay / total, 1, curve: Curves.easeOutCubic),
+      builder: (_, t, c) => Opacity(opacity: t, child: Transform.translate(offset: Offset(0, (1 - t) * offset), child: c)),
+      child: child,
+    );
+  }
 }
 
 enum ChipTone { green, blue, amber, red, grey, purple }
@@ -161,10 +272,100 @@ class AppChip extends StatelessWidget {
   }
 }
 
+/// Loading placeholder: shimmering skeleton cards in the shape of a list.
 class AppLoader extends StatelessWidget {
-  const AppLoader({super.key});
+  const AppLoader({super.key, this.rows = 5});
+  final int rows;
   @override
-  Widget build(BuildContext context) => const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()));
+  Widget build(BuildContext context) => ListView.separated(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        itemCount: rows,
+        separatorBuilder: (_, _) => const SizedBox(height: 10),
+        itemBuilder: (_, i) => Semantics(
+          label: i == 0 ? MaterialLocalizations.of(context).refreshIndicatorSemanticLabel : null,
+          child: const _SkeletonCard(),
+        ),
+      );
+}
+
+class _SkeletonCard extends StatelessWidget {
+  const _SkeletonCard();
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: scheme.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.8))),
+      child: const Row(children: [
+        Skeleton(width: 44, height: 44, radius: 22),
+        SizedBox(width: 14),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Skeleton(width: 160, height: 14),
+            SizedBox(height: 10),
+            Skeleton(height: 10),
+            SizedBox(height: 6),
+            Skeleton(width: 110, height: 10),
+          ]),
+        ),
+      ]),
+    );
+  }
+}
+
+/// A shimmering placeholder block.
+class Skeleton extends StatefulWidget {
+  const Skeleton({super.key, this.width, this.height = 12, this.radius = 6});
+  final double? width;
+  final double height;
+  final double radius;
+  @override
+  State<Skeleton> createState() => _SkeletonState();
+}
+
+class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400));
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (still) {
+      _c.stop();
+    } else if (!_c.isAnimating) {
+      _c.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final base = dark ? const Color(0xFF1C2742) : const Color(0xFFEDF1F7);
+    final glow = dark ? const Color(0xFF26324B) : const Color(0xFFF8FAFD);
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (_, _) => Container(
+        width: widget.width,
+        height: widget.height,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(widget.radius),
+          gradient: LinearGradient(
+            begin: Alignment(-1.5 + _c.value * 3, 0),
+            end: Alignment(-0.5 + _c.value * 3, 0),
+            colors: [base, glow, base],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class AppEmptyState extends StatelessWidget {
@@ -177,16 +378,32 @@ class AppEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          CircleAvatar(radius: 28, backgroundColor: theme.colorScheme.primaryContainer, child: Icon(icon, color: theme.colorScheme.primary)),
-          const SizedBox(height: 12),
-          Text(title, style: theme.textTheme.titleMedium, textAlign: TextAlign.center),
-          if (hint != null) ...[const SizedBox(height: 6), Text(hint!, textAlign: TextAlign.center, style: theme.textTheme.bodySmall)],
-          if (action != null) ...[const SizedBox(height: 16), action!],
-        ]),
+        child: FadeSlideIn(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: scheme.primary.withValues(alpha: 0.05)),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(shape: BoxShape.circle, color: scheme.primary.withValues(alpha: 0.08)),
+                child: Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: scheme.surface, boxShadow: AppTheme.softShadow(context)),
+                  child: Icon(icon, color: scheme.primary, size: 26),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(title, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700), textAlign: TextAlign.center),
+            if (hint != null) ...[const SizedBox(height: 6), Text(hint!, textAlign: TextAlign.center, style: theme.textTheme.bodySmall)],
+            if (action != null) ...[const SizedBox(height: 18), action!],
+          ]),
+        ),
       ),
     );
   }
@@ -204,9 +421,14 @@ class AppErrorState extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Icon(Icons.error_outline, size: 40, color: theme.colorScheme.error),
-          const SizedBox(height: 10),
-          Text(errorText(context, error), textAlign: TextAlign.center),
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(color: theme.colorScheme.error.withValues(alpha: 0.1), shape: BoxShape.circle),
+            child: Icon(Icons.cloud_off_rounded, size: 30, color: theme.colorScheme.error),
+          ),
+          const SizedBox(height: 14),
+          Text(errorText(context, error), textAlign: TextAlign.center, style: theme.textTheme.titleSmall),
           if (onRetry != null) ...[const SizedBox(height: 12), AppButton(label: context.t('common.retry'), outlined: true, onPressed: onRetry)],
         ]),
       ),
@@ -287,10 +509,10 @@ Future<T?> showAppBottomSheet<T>(BuildContext context, {required String title, r
       useSafeArea: true,
       showDragHandle: true,
       builder: (c) => Padding(
-        padding: EdgeInsets.only(left: 16, right: 16, bottom: MediaQuery.of(c).viewInsets.bottom + 16),
+        padding: EdgeInsets.only(left: 20, right: 20, bottom: MediaQuery.of(c).viewInsets.bottom + 20),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text(title, style: Theme.of(c).textTheme.titleLarge),
-          const SizedBox(height: 12),
+          Text(title, style: Theme.of(c).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+          const SizedBox(height: 14),
           Flexible(child: SingleChildScrollView(child: child)),
         ]),
       ),
@@ -311,9 +533,9 @@ class SectionHeader extends StatelessWidget {
   final Widget? trailing;
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),
+        padding: const EdgeInsets.fromLTRB(4, 20, 4, 10),
         child: Row(children: [
-          Expanded(child: Text(title, style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700))),
+          Expanded(child: Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.2))),
           ?trailing,
         ]),
       );

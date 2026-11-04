@@ -25,21 +25,72 @@ class BrandLogo extends StatelessWidget {
   }
 }
 
-/// Branded launch screen shown while the session is restored (matches the native splash).
+/// Deep navy backdrop with soft brand glows, shared by the splash and onboarding.
+class BrandBackdrop extends StatelessWidget {
+  const BrandBackdrop({super.key, required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(colors: [Color(0xFF0E2260), Brand.splashBackground, Color(0xFF070F2B)], begin: Alignment.topCenter, end: Alignment.bottomCenter),
+        ),
+        child: Stack(fit: StackFit.expand, children: [
+          const Positioned(top: -120, left: -80, child: _Orb(320, Brand.primary500, 0.35)),
+          const Positioned(bottom: -140, right: -100, child: _Orb(360, Brand.accent, 0.16)),
+          child,
+        ]),
+      );
+}
+
+class _Orb extends StatelessWidget {
+  const _Orb(this.size, this.color, this.alpha);
+  final double size;
+  final Color color;
+  final double alpha;
+  @override
+  Widget build(BuildContext context) => IgnorePointer(
+        child: Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(shape: BoxShape.circle, gradient: RadialGradient(colors: [color.withValues(alpha: alpha), color.withValues(alpha: 0)])),
+        ),
+      );
+}
+
+/// Branded launch screen shown while the session is restored (matches the native splash): the logo
+/// eases in, then a slim progress bar sweeps underneath.
 class BrandSplash extends StatelessWidget {
   const BrandSplash({super.key});
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        backgroundColor: Brand.splashBackground,
-        body: Center(
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            const BrandLogo(variant: BrandLogoVariant.primary, height: 200, onDark: true),
-            const SizedBox(height: 32),
-            const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white)),
-            const SizedBox(height: 12),
-            Text(context.t('app.description'), style: const TextStyle(color: Color(0xFFB8C6E0), fontSize: 13)),
-          ]),
+  Widget build(BuildContext context) {
+    final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    return Scaffold(
+      backgroundColor: Brand.splashBackground,
+      body: BrandBackdrop(
+        child: Center(
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: still ? 1 : 0, end: 1),
+            duration: const Duration(milliseconds: 700),
+            curve: Curves.easeOutCubic,
+            builder: (_, t, child) => Opacity(opacity: t, child: Transform.scale(scale: 0.92 + 0.08 * t, child: child)),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              const BrandLogo(variant: BrandLogoVariant.primary, height: 200, onDark: true),
+              const SizedBox(height: 28),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: SizedBox(
+                  width: 120,
+                  child: LinearProgressIndicator(minHeight: 3, color: Colors.white, backgroundColor: Colors.white.withValues(alpha: 0.12), value: still ? 0.6 : null),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(context.t('app.description'), style: const TextStyle(color: Color(0xFFB8C6E0), fontSize: 13, fontWeight: FontWeight.w500, letterSpacing: 0.2)),
+            ]),
+          ),
         ),
-      );
+      ),
+    );
+  }
 }

@@ -938,6 +938,31 @@
       "allTypes": "All types",
       "open": "Open",
       "online": "Needs an internet connection."
+    },
+    "ui": {
+      "workspace": "Workspace",
+      "business": "Business",
+      "app": "App",
+      "greetingMorning": "Good morning",
+      "greetingAfternoon": "Good afternoon",
+      "greetingEvening": "Good evening",
+      "daySummary": "{{overdue}} overdue · {{today}} due today · {{matches}} new matches",
+      "viewDashboard": "Business overview",
+      "portfolio": "Portfolio",
+      "clientsGroup": "Clients & follow-ups",
+      "businessGroup": "Deals & money",
+      "agreementsGroup": "Agreements",
+      "onboarding": {
+        "skip": "Skip",
+        "next": "Next",
+        "start": "Get started",
+        "t1": "Every property, one place",
+        "b1": "Capture listings with photos, prices and owners — and know what is available at a glance.",
+        "t2": "Matches that find themselves",
+        "b2": "Dalliqo pairs clients with properties automatically, so you call the right buyer first.",
+        "t3": "Works offline, syncs later",
+        "b3": "Keep working in the field without signal. Everything syncs the moment you are back online."
+      }
     }
   },
   "branch": {
