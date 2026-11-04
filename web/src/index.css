@@ -1,29 +1,102 @@
-/* Dalliqo theme: colours come from shared/brand/dalliqo.tokens.json (generated). */
+/* Dalliqo theme: brand colours come from shared/brand/dalliqo.tokens.json (generated into brand.css).
+   The design-system tokens below add neutral tiers, surfaces and shadows on top of them. */
 @import './styles/brand.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --canvas: 246 247 250;
+  --surface: 255 255 255;
+  --surface-2: 249 250 252;
+  --sidebar: 250 251 253;
+  --line: 230 233 239;
+  --line-strong: 211 216 226;
+  --ink: 13 18 32;
+  --ink-2: 51 61 81;
+  --muted: 100 112 132;
+  --subtle: 148 158 176;
+  --shadow: 15 23 42;
+}
+.dark {
+  --canvas: 9 12 20;
+  --surface: 16 21 33;
+  --surface-2: 20 26 40;
+  --sidebar: 12 16 26;
+  --line: 33 41 58;
+  --line-strong: 48 58 80;
+  --ink: 236 240 247;
+  --ink-2: 196 205 220;
+  --muted: 145 157 178;
+  --subtle: 102 114 136;
+  --shadow: 0 0 0;
+}
+
 html, body, #root { height: 100%; }
-body { @apply bg-canvas text-ink antialiased; }
+body {
+  @apply bg-canvas text-ink antialiased;
+  font-feature-settings: 'cv11', 'ss01';
+  text-rendering: optimizeLegibility;
+}
+::selection { background: rgb(var(--brand-500) / 0.18); }
 .font-urdu body { font-family: 'Noto Nastaliq Urdu', 'Noto Naskh Arabic', serif; line-height: 1.9; }
-h1, h2, h3, .font-display { letter-spacing: -0.01em; }
+h1, h2, h3, .font-display { letter-spacing: -0.02em; }
 /* Numbers, phone numbers and IDs stay left-to-right inside RTL text. */
-.ltr-nums { direction: ltr; unicode-bidi: isolate; }
+.ltr-nums { direction: ltr; unicode-bidi: isolate; font-variant-numeric: tabular-nums; }
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* Quiet, thin scrollbars. */
+* { scrollbar-width: thin; scrollbar-color: rgb(var(--line-strong)) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: rgb(var(--line-strong)); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+*::-webkit-scrollbar-track { background: transparent; }
 
 @layer components {
-  .card { @apply rounded-xl border border-line bg-surface shadow-sm; }
-  .input { @apply w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 disabled:opacity-60; }
-  .label { @apply mb-1 block text-xs font-medium text-muted; }
-  .btn { @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg px-3.5 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-brand-500/40 disabled:cursor-not-allowed disabled:opacity-60; }
-  .btn-primary { @apply btn bg-brand-600 text-on-brand hover:bg-brand-700; }
-  .btn-secondary { @apply btn border border-line bg-surface text-ink hover:bg-canvas; }
-  .btn-danger { @apply btn bg-red-600 text-white hover:bg-red-700; }
-  .btn-ghost { @apply btn text-muted hover:bg-canvas hover:text-ink; }
-  .chip { @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium; }
+  .card { @apply rounded-xl border border-line bg-surface shadow-card; }
+  .card-interactive { @apply transition duration-200 ease-out hover:-translate-y-0.5 hover:border-line-strong hover:shadow-lift; }
+  .input {
+    @apply h-10 w-full rounded-[10px] border border-line bg-surface px-3 text-sm text-ink shadow-xs outline-none transition duration-150 placeholder:text-subtle;
+    @apply hover:border-line-strong focus:border-brand-500 focus:shadow-ring disabled:cursor-not-allowed disabled:bg-surface-2 disabled:opacity-70;
+  }
+  textarea.input { @apply h-auto py-2.5 leading-relaxed; }
+  select.input { @apply cursor-pointer appearance-none bg-no-repeat pe-9; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23949eb0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E"); background-position: right 0.7rem center; }
+  [dir='rtl'] select.input { background-position: left 0.7rem center; }
+  input[type='date'].input, input[type='datetime-local'].input { @apply cursor-text; }
+  .label { @apply mb-1.5 block text-xs font-semibold text-ink-2; }
+
+  .btn {
+    @apply relative inline-flex h-9 select-none items-center justify-center gap-2 whitespace-nowrap rounded-[10px] px-3.5 text-sm font-semibold outline-none;
+    @apply transition duration-150 ease-out active:scale-[0.97] focus-visible:shadow-ring disabled:pointer-events-none disabled:opacity-55;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-on-brand hover:bg-brand-700;
+    box-shadow: 0 1px 2px rgb(var(--shadow) / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 -1px 0 rgb(0 0 0 / 0.08);
+  }
+  .btn-secondary { @apply btn border border-line bg-surface text-ink shadow-xs hover:border-line-strong hover:bg-surface-2; }
+  .btn-danger { @apply btn bg-red-600 text-white shadow-xs hover:bg-red-700; }
+  .btn-ghost { @apply btn text-muted hover:bg-ink/[0.05] hover:text-ink dark:hover:bg-white/[0.06]; }
+  .icon-btn { @apply btn-ghost h-9 w-9 !px-0; }
+
+  .chip { @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold; }
+  .kbd { @apply inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded border border-line bg-surface-2 px-1 font-sans text-2xs font-semibold text-muted; }
+
+  /* Skeleton placeholder with a soft travelling shimmer. */
+  .skeleton {
+    @apply animate-shimmer rounded-md;
+    background: linear-gradient(90deg, rgb(var(--line) / 0.55) 25%, rgb(var(--line) / 0.95) 37%, rgb(var(--line) / 0.55) 63%);
+    background-size: 200% 100%;
+  }
+
+  /* Page enter: content rises in; children can stagger with [style="--i:n"]. */
+  .page-enter { animation: rise .36s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .stagger > * { animation: rise .42s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(var(--i, 0) * 35ms); }
 }
 
 /* Horizontally scrollable tab rows without a visible scrollbar. */
 [role='tablist'] { scrollbar-width: none; }
 [role='tablist']::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+}

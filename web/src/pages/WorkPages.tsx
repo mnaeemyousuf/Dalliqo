@@ -11,9 +11,9 @@ import { ActivityPanel, DocumentsPanel, FollowUpForm, FollowUpItem, NotesPanel, 
 import { BranchField } from '@/components/branches';
 import { CommissionReport, DealsPanel } from '@/pages/DealPages';
 import { FinanceReport } from '@/pages/FinancePages';
-import { Badge, Button, Card, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column } from '@/components/ui';
+import { Badge, Button, Card, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column, Avatar } from '@/components/ui';
 import { formatBytes, formatDate, formatPkr } from '@/lib/format';
-import { useDebounce, useEnumOptions, useErrorText, useMembers, useOnError, useUrlState } from '@/lib/hooks';
+import { useDebounce, useEnumOptions, useErrorText, useMembers, useOnError, useUrlState, useOpenOnNew } from '@/lib/hooks';
 import { useAuth, useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
 
@@ -88,7 +88,7 @@ export function OwnersPage() {
   const page = Number(filters.page);
   const query = useQuery({ queryKey: ['owners', { ...filters, q }], queryFn: () => ownerApi.list({ q, sort: filters.sort, page, limit: 20 }), placeholderData: (p) => p });
   const columns: Column<Owner>[] = [
-    { key: 'name', header: t('common.name'), render: (o) => <span className="font-medium">{o.fullName}</span> },
+    { key: 'name', header: t('common.name'), render: (o) => <span className="flex items-center gap-3 whitespace-nowrap font-semibold text-ink"><Avatar name={o.fullName} size="sm" />{o.fullName}</span> },
     { key: 'mobile', header: t('common.mobile'), render: (o) => <span className="ltr-nums">{o.mobileNumber}</span> },
     { key: 'email', header: t('common.email'), render: (o) => o.email ?? '—' },
     { key: 'count', header: t('owner.properties'), render: (o) => <span className="ltr-nums">{o.propertyCount}</span> },
@@ -281,6 +281,7 @@ export function FollowUpsPage() {
   const types = useEnumOptions('followUpType', FOLLOWUP_TYPES);
   const [filters, setFilters] = useUrlState({ tab: 'today', assignedTo: 'me', type: '', page: '1' });
   const [formOpen, setFormOpen] = useState(false);
+  useOpenOnNew(() => setFormOpen(true));
   const page = Number(filters.page);
   const start = new Date();
   start.setHours(0, 0, 0, 0);

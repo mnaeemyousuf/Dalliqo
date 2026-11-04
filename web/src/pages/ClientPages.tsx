@@ -11,9 +11,9 @@ import { ClientCard, ContactActions, MatchCard, PriorityBadge } from '@/componen
 import { ActivityPanel, DocumentsPanel, FollowUpForm, FollowUpsPanel, NotesPanel } from '@/components/domain/panels';
 import { BranchField, useBranchName, useBranches } from '@/components/branches';
 import { DealsPanel } from '@/pages/DealPages';
-import { Badge, Button, Card, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column } from '@/components/ui';
+import { Badge, Button, Card, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column, Avatar, FilterBar, ViewToggle } from '@/components/ui';
 import { formatDate, formatRange, mailHref, smsHref, splitList, telHref, waHref } from '@/lib/format';
-import { useCategories, useDebounce, useEnumOptions, useMembers, useOnError, useUrlState } from '@/lib/hooks';
+import { useCategories, useDebounce, useEnumOptions, useMembers, useOnError, useUrlState, useOpenOnNew, isNarrowScreen } from '@/lib/hooks';
 import { useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
 
@@ -253,9 +253,10 @@ export function ClientsPage() {
   const cats = useCategories();
   const members = useMembers();
   const canCreate = useCan(PERMISSIONS.CLIENTS_CREATE);
-  const [filters, setFilters] = useUrlState({ q: '', categoryId: '', status: '', purpose: '', propertyType: '', assignedTo: '', area: '', block: '', minBudget: '', maxBudget: '', minSize: '', maxSize: '', sizeUnit: 'SQ_YARD', sort: '-updatedAt', page: '1', view: 'table' });
+  const [filters, setFilters] = useUrlState({ q: '', categoryId: '', status: '', purpose: '', propertyType: '', assignedTo: '', area: '', block: '', minBudget: '', maxBudget: '', minSize: '', maxSize: '', sizeUnit: 'SQ_YARD', sort: '-updatedAt', page: '1', view: isNarrowScreen() ? 'cards' : 'table' });
   const [formOpen, setFormOpen] = useState(false);
   const [followUpFor, setFollowUpFor] = useState<string | null>(null);
+  useOpenOnNew(() => setFormOpen(true));
   const q = useDebounce(filters.q, 300);
   const area = useDebounce(filters.area, 300);
   const block = useDebounce(filters.block, 300);
@@ -270,13 +271,13 @@ export function ClientsPage() {
   const f = (k: keyof typeof filters) => (e: { target: { value: string } }) => setFilters({ [k]: e.target.value, page: '1' } as never);
 
   const columns: Column<Client>[] = [
-    { key: 'name', header: t('common.name'), render: (c) => <span className="font-medium">{c.fullName}</span> },
-    { key: 'mobile', header: t('common.mobile'), render: (c) => <span className="ltr-nums">{c.mobileNumber}</span> },
+    { key: 'name', header: t('common.name'), render: (c) => <span className="flex items-center gap-3 whitespace-nowrap font-semibold text-ink"><Avatar name={c.fullName} size="sm" />{c.fullName}</span> },
+    { key: 'mobile', header: t('common.mobile'), render: (c) => <span className="ltr-nums whitespace-nowrap">{c.mobileNumber}</span> },
     { key: 'category', header: t('client.category'), render: (c) => cats.name(c.categoryId) ?? '—' },
     { key: 'location', header: t('property.society'), render: (c) => c.preferredSociety ?? c.preferredArea ?? '—' },
-    { key: 'budget', header: t('client.budget'), render: (c) => formatRange(c.minBudget, c.maxBudget) },
+    { key: 'budget', header: t('client.budget'), render: (c) => <span className="ltr-nums whitespace-nowrap font-medium text-ink">{formatRange(c.minBudget, c.maxBudget)}</span> },
     { key: 'priority', header: t('client.priority'), render: (c) => <PriorityBadge priority={c.priority} /> },
-    { key: 'matches', header: t('nav.matches'), render: (c) => <span className="ltr-nums">{c.matchCount}</span> },
+    { key: 'matches', header: t('nav.matches'), render: (c) => (c.matchCount ? <span className="ltr-nums inline-flex min-w-[1.75rem] justify-center rounded-full bg-brand-50 px-2 py-0.5 text-xs font-bold text-brand-600">{c.matchCount}</span> : <span className="text-subtle">—</span>) },
     {
       key: 'contact',
       header: t('common.actions'),
@@ -294,14 +295,14 @@ export function ClientsPage() {
         title={t('client.title')}
         actions={
           <>
-            <div className="flex rounded-lg border border-line">
-              <button className={`btn-ghost !rounded-e-none ${filters.view === 'table' ? 'bg-canvas text-ink' : ''}`} onClick={() => setFilters({ view: 'table' })} title={t('property.tableView')}>
-                <Rows3 className="h-4 w-4" />
-              </button>
-              <button className={`btn-ghost !rounded-s-none ${filters.view === 'cards' ? 'bg-canvas text-ink' : ''}`} onClick={() => setFilters({ view: 'cards' })} title={t('property.gridView')}>
-                <LayoutGrid className="h-4 w-4" />
-              </button>
-            </div>
+            <ViewToggle
+              value={filters.view}
+              onChange={(v) => setFilters({ view: v })}
+              options={[
+                { value: 'table', icon: <Rows3 className="h-4 w-4" />, label: t('property.tableView') },
+                { value: 'cards', icon: <LayoutGrid className="h-4 w-4" />, label: t('property.gridView') },
+              ]}
+            />
             {canCreate && (
               <Button icon={<Plus className="h-4 w-4" />} onClick={() => setFormOpen(true)}>
                 {t('client.add')}
@@ -310,20 +311,26 @@ export function ClientsPage() {
           </>
         }
       />
-      <Card className="mb-4" bodyClassName="grid gap-3 md:grid-cols-4 lg:grid-cols-6">
-        <Input wrapperClassName="md:col-span-2" placeholder={t('client.searchPlaceholder')} value={filters.q} onChange={f('q')} aria-label={t('common.search')} />
+      <FilterBar
+        activeAdvanced={[filters.area, filters.block, filters.minSize, filters.maxSize, filters.minBudget, filters.maxBudget, filters.assignedTo].filter(Boolean).length}
+        advanced={
+          <>
+            <Input placeholder={t('property.area')} value={filters.area} onChange={f('area')} aria-label={t('property.area')} />
+            <Input placeholder={t('property.block')} value={filters.block} onChange={f('block')} aria-label={t('property.block')} />
+            <Input type="number" min={0} placeholder={t('client.minSize')} value={filters.minSize} onChange={f('minSize')} aria-label={t('client.minSize')} />
+            <Input type="number" min={0} placeholder={t('client.maxSize')} value={filters.maxSize} onChange={f('maxSize')} aria-label={t('client.maxSize')} />
+            <Select options={units} value={filters.sizeUnit} onChange={f('sizeUnit')} aria-label={t('property.sizeUnit')} />
+            <Input type="number" placeholder={t('client.minBudget')} value={filters.minBudget} onChange={f('minBudget')} aria-label={t('client.minBudget')} />
+            <Input type="number" placeholder={t('client.maxBudget')} value={filters.maxBudget} onChange={f('maxBudget')} aria-label={t('client.maxBudget')} />
+            {members.options.length > 0 && <Select options={members.options} placeholder={`${t('client.assignedTo')}: ${t('common.all')}`} value={filters.assignedTo} onChange={f('assignedTo')} />}
+          </>
+        }
+      >
+        <Input wrapperClassName="!min-w-[14rem] !flex-[2]" placeholder={t('client.searchPlaceholder')} value={filters.q} onChange={f('q')} aria-label={t('common.search')} />
         <Select options={cats.options} placeholder={`${t('client.category')}: ${t('common.all')}`} value={filters.categoryId} onChange={f('categoryId')} />
         <Select options={statuses} placeholder={`${t('common.status')}: ${t('common.all')}`} value={filters.status} onChange={f('status')} />
         <Select options={purposes} placeholder={`${t('client.purpose')}: ${t('common.all')}`} value={filters.purpose} onChange={f('purpose')} />
         <Select options={types} placeholder={`${t('common.type')}: ${t('common.all')}`} value={filters.propertyType} onChange={f('propertyType')} />
-        <Input placeholder={t('property.area')} value={filters.area} onChange={f('area')} />
-        <Input placeholder={t('property.block')} value={filters.block} onChange={f('block')} aria-label={t('property.block')} />
-        <Input type="number" min={0} placeholder={t('client.minSize')} value={filters.minSize} onChange={f('minSize')} aria-label={t('client.minSize')} />
-        <Input type="number" min={0} placeholder={t('client.maxSize')} value={filters.maxSize} onChange={f('maxSize')} aria-label={t('client.maxSize')} />
-        <Select options={units} value={filters.sizeUnit} onChange={f('sizeUnit')} aria-label={t('property.sizeUnit')} />
-        <Input type="number" placeholder={t('client.minBudget')} value={filters.minBudget} onChange={f('minBudget')} />
-        <Input type="number" placeholder={t('client.maxBudget')} value={filters.maxBudget} onChange={f('maxBudget')} />
-        {members.options.length > 0 && <Select options={members.options} placeholder={`${t('client.assignedTo')}: ${t('common.all')}`} value={filters.assignedTo} onChange={f('assignedTo')} />}
         <Select
           options={[
             { value: '-updatedAt', label: t('common.updatedAt') },
@@ -336,7 +343,7 @@ export function ClientsPage() {
           onChange={f('sort')}
           aria-label={t('common.sortBy')}
         />
-      </Card>
+      </FilterBar>
 
       {filters.view === 'cards' ? (
         query.isLoading ? (

@@ -80,7 +80,8 @@
     "dateAdded": "Date added",
     "date": "Date",
     "archive": "Archive",
-    "restore": "Restore"
+    "restore": "Restore",
+    "moreFilters": "More filters"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -100,7 +101,13 @@
     "myDay": "My Day",
     "deals": "Deals",
     "finance": "Income & expense",
-    "agreements": "Agreements"
+    "agreements": "Agreements",
+    "section": {
+      "overview": "Overview",
+      "workspace": "Workspace",
+      "business": "Business",
+      "admin": "Administration"
+    }
   },
   "topbar": {
     "searchPlaceholder": "Search clients, properties, owners…",
@@ -110,7 +117,11 @@
     "dark": "Dark",
     "system": "System",
     "live": "Live",
-    "reconnecting": "Reconnecting…"
+    "reconnecting": "Reconnecting…",
+    "create": "Create",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar",
+    "openHint": "Choose a result to open it"
   },
   "auth": {
     "signIn": "Sign in",
@@ -142,7 +153,17 @@
     "passwordsMismatch": "Passwords do not match",
     "passwordHint": "At least 8 characters with letters and numbers",
     "backToSignIn": "Back to sign in",
-    "sessionExpired": "Your session has ended. Please sign in again."
+    "sessionExpired": "Your session has ended. Please sign in again.",
+    "brand": {
+      "headline": "Every property, every lead, one calm workspace.",
+      "subline": "Clients, listings, matches, deals and agreements for your agency — on the web and on your phone, even offline.",
+      "point1": "Automatic two-way matching with clear reasons",
+      "point2": "Works offline on the phone and syncs by itself",
+      "point3": "Every action permission-checked and audited",
+      "kpi1": "Listings",
+      "kpi2": "Active deals",
+      "kpi3": "Match rate"
+    }
   },
   "dashboard": {
     "title": "Dashboard",
@@ -196,7 +217,20 @@
     "netThisMonth": "Net this month",
     "agreementDrafts": "Agreement drafts",
     "agreementsAwaitingSignature": "Awaiting signature",
-    "agreementsExpiring": "Rent agreements ending in 30 days"
+    "agreementsExpiring": "Rent agreements ending in 30 days",
+    "greeting": {
+      "morning": "Good morning, {{name}}",
+      "afternoon": "Good afternoon, {{name}}",
+      "evening": "Good evening, {{name}}"
+    },
+    "heroSummary": "{{today}} follow-ups today, {{overdue}} overdue and {{matches}} new matches. Here is how the business is doing.",
+    "groups": {
+      "portfolio": "Portfolio",
+      "clients": "Clients & follow-ups",
+      "business": "Deals, money & agreements"
+    },
+    "analytics": "Analytics",
+    "analyticsHint": "Trends across properties, clients, follow-ups and lead sources."
   },
   "myDay": {
     "title": "My Day",

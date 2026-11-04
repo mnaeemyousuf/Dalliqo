@@ -22,7 +22,7 @@ import { BranchField } from '@/components/branches';
 import { ActivityPanel, DocumentsPanel, NotesPanel } from '@/components/domain/panels';
 import { Badge, Button, Card, ConfirmDialog, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Table, Tabs, Textarea, type BadgeColor, type Column } from '@/components/ui';
 import { formatDate, formatPkr } from '@/lib/format';
-import { useDebounce, useEnumOptions, useErrorText, useOnError, useUrlState } from '@/lib/hooks';
+import { useDebounce, useEnumOptions, useErrorText, useOnError, useUrlState, useOpenOnNew } from '@/lib/hooks';
 import { useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
 
@@ -202,6 +202,7 @@ export function AgreementsPage() {
   const list = useQuery({ queryKey: ['agreements', params], queryFn: () => agreementApi.list(params), placeholderData: (p) => p });
   const [formOpen, setFormOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
+  useOpenOnNew(() => setFormOpen(true));
   const f = (k: keyof typeof filters) => (e: { target: { value: string } }) => setFilters({ [k]: e.target.value, page: '1' } as never);
   const columns: Column<Agreement>[] = [
     { key: 'no', header: t('agreement.no'), render: (a) => <span className="ltr-nums font-medium">{a.agreementNo}</span> },
@@ -242,7 +243,9 @@ export function AgreementsPage() {
         <EmptyState title={t('agreement.empty')} hint={t('agreement.emptyHint')} icon={<FileSignature className="h-6 w-6" />} action={canCreate ? <Button onClick={() => setFormOpen(true)}>{t('agreement.add')}</Button> : undefined} />
       ) : (
         <>
-          <Table columns={columns} rows={list.data!.items} onRowClick={(a) => navigate(`/agreements/${a._id}`)} />
+          <Card bodyClassName="!p-0">
+            <Table columns={columns} rows={list.data!.items} onRowClick={(a) => navigate(`/agreements/${a._id}`)} />
+          </Card>
           <Pagination page={Number(filters.page)} totalPages={list.data!.meta.totalPages} total={list.data!.meta.total} limit={20} onChange={(p) => setFilters({ page: String(p) })} />
         </>
       )}

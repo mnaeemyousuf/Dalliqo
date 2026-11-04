@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { BadgeCheck, BookImage, CalendarPlus, Crosshair, MessageCircle, ExternalLink, LayoutGrid, MapPin, Pencil, Plus, RefreshCw, Rows3, Share2, Star, Trash2, Upload, Video } from 'lucide-react';
+import { BadgeCheck, BookImage, CalendarPlus, Home, Crosshair, MessageCircle, ExternalLink, LayoutGrid, MapPin, Pencil, Plus, RefreshCw, Rows3, Share2, Star, Trash2, Upload, Video } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -11,9 +11,9 @@ import { ActivityPanel, DocumentsPanel, FollowUpForm, FollowUpsPanel, NotesPanel
 import { BranchField, useBranchName, useBranches } from '@/components/branches';
 import { DealsPanel } from '@/pages/DealPages';
 import { BrochureDialog } from '@/components/domain/BrochureDialog';
-import { Badge, Button, Card, Checkbox, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column } from '@/components/ui';
+import { Badge, Button, Card, Checkbox, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column, FilterBar, ViewToggle } from '@/components/ui';
 import { formatDate, formatPkr, waHref } from '@/lib/format';
-import { useDebounce, useEnumOptions, useOnError, useUrlState } from '@/lib/hooks';
+import { useDebounce, useEnumOptions, useOnError, useUrlState, useOpenOnNew } from '@/lib/hooks';
 import { useAuth, useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
 
@@ -220,6 +220,7 @@ export function PropertiesPage() {
     q: '', propertyType: '', status: '', listingPurpose: '', area: '', society: '', block: '', minPrice: '', maxPrice: '', minSize: '', maxSize: '', sizeUnit: 'SQ_YARD', ownerId: '', verification: '', sort: '-updatedAt', page: '1', view: 'grid',
   });
   const [formOpen, setFormOpen] = useState(false);
+  useOpenOnNew(() => setFormOpen(true));
   const q = useDebounce(filters.q, 300);
   const society = useDebounce(filters.society, 300);
   const area = useDebounce(filters.area, 300);
@@ -235,14 +236,23 @@ export function PropertiesPage() {
   const f = (k: keyof typeof filters) => (e: { target: { value: string } }) => setFilters({ [k]: e.target.value, page: '1' } as never);
 
   const columns: Column<Property>[] = [
-    { key: 'id', header: t('property.id'), render: (p) => <span className="ltr-nums font-medium text-brand-600">{p.propertyId}</span> },
+    {
+      key: 'id',
+      header: t('property.id'),
+      render: (p) => (
+        <span className="flex items-center gap-3 whitespace-nowrap">
+          {p.coverThumbnailUrl ? <img src={p.coverThumbnailUrl} alt="" loading="lazy" className="h-9 w-12 rounded-md object-cover ring-1 ring-line" /> : <span className="flex h-9 w-12 items-center justify-center rounded-md bg-surface-2 text-subtle ring-1 ring-line"><Home className="h-4 w-4" /></span>}
+          <span className="ltr-nums font-bold text-brand-600">{p.propertyId}</span>
+        </span>
+      ),
+    },
     { key: 'type', header: t('property.type'), render: (p) => `${t(`enums.propertyType.${p.propertyType}`)} · ${t(`enums.listingPurpose.${p.listingPurpose}`)}` },
     { key: 'location', header: t('property.location'), render: (p) => locationLabel(p) },
     { key: 'size', header: t('property.size'), render: (p) => size(p.size, p.sizeUnit) },
-    { key: 'price', header: t('property.askingPrice'), render: (p) => formatPkr(p.askingPrice) },
+    { key: 'price', header: t('property.askingPrice'), render: (p) => <span className="ltr-nums whitespace-nowrap font-semibold text-ink">{formatPkr(p.askingPrice)}</span> },
     { key: 'owner', header: t('property.owner'), render: (p) => ownerOf(p)?.fullName ?? '—' },
     { key: 'status', header: t('common.status'), render: (p) => <PropertyStatusBadge status={p.status} /> },
-    { key: 'matches', header: t('nav.matches'), render: (p) => <span className="ltr-nums">{p.matchCount}</span> },
+    { key: 'matches', header: t('nav.matches'), render: (p) => (p.matchCount ? <span className="ltr-nums inline-flex min-w-[1.75rem] justify-center rounded-full bg-brand-50 px-2 py-0.5 text-xs font-bold text-brand-600">{p.matchCount}</span> : <span className="text-subtle">—</span>) },
   ];
   const empty = <EmptyState title={t('property.noProperties')} hint={t('property.noPropertiesHint')} action={canCreate && <Button onClick={() => setFormOpen(true)}>{t('property.add')}</Button>} />;
 
@@ -252,14 +262,14 @@ export function PropertiesPage() {
         title={t('property.title')}
         actions={
           <>
-            <div className="flex rounded-lg border border-line">
-              <button className={`btn-ghost !rounded-e-none ${filters.view === 'table' ? 'bg-canvas text-ink' : ''}`} onClick={() => setFilters({ view: 'table', page: '1' })} title={t('property.tableView')}>
-                <Rows3 className="h-4 w-4" />
-              </button>
-              <button className={`btn-ghost !rounded-s-none ${filters.view === 'grid' ? 'bg-canvas text-ink' : ''}`} onClick={() => setFilters({ view: 'grid', page: '1' })} title={t('property.gridView')}>
-                <LayoutGrid className="h-4 w-4" />
-              </button>
-            </div>
+            <ViewToggle
+              value={filters.view}
+              onChange={(v) => setFilters({ view: v, page: '1' })}
+              options={[
+                { value: 'table', icon: <Rows3 className="h-4 w-4" />, label: t('property.tableView') },
+                { value: 'grid', icon: <LayoutGrid className="h-4 w-4" />, label: t('property.gridView') },
+              ]}
+            />
             {canCreate && (
               <Button icon={<Plus className="h-4 w-4" />} onClick={() => setFormOpen(true)}>
                 {t('property.add')}
@@ -268,36 +278,42 @@ export function PropertiesPage() {
           </>
         }
       />
-      <Card className="mb-4" bodyClassName="grid gap-3 md:grid-cols-4 lg:grid-cols-6">
-        <Input wrapperClassName="md:col-span-2" placeholder={t('property.searchPlaceholder')} value={filters.q} onChange={f('q')} aria-label={t('common.search')} />
+      <FilterBar
+        activeAdvanced={[filters.area, filters.society, filters.block, filters.minPrice, filters.maxPrice, filters.minSize, filters.maxSize, filters.verification, filters.ownerId].filter(Boolean).length}
+        advanced={
+          <>
+            <Input placeholder={t('property.area')} value={filters.area} onChange={f('area')} />
+            <Input placeholder={t('property.society')} value={filters.society} onChange={f('society')} />
+            <Input placeholder={t('property.block')} value={filters.block} onChange={f('block')} />
+            <Input type="number" placeholder={t('property.minPrice')} value={filters.minPrice} onChange={f('minPrice')} />
+            <Input type="number" placeholder={t('property.maxPrice')} value={filters.maxPrice} onChange={f('maxPrice')} />
+            <Input type="number" placeholder={t('client.minSize')} value={filters.minSize} onChange={f('minSize')} />
+            <Input type="number" placeholder={t('client.maxSize')} value={filters.maxSize} onChange={f('maxSize')} />
+            <Select options={units} value={filters.sizeUnit} onChange={f('sizeUnit')} aria-label={t('property.sizeUnit')} />
+            <Select
+              options={[
+                { value: 'stale', label: t('property.needsVerification') },
+                { value: 'fresh', label: t('property.recentlyVerified') },
+              ]}
+              placeholder={`${t('property.verification')}: ${t('common.all')}`}
+              value={filters.verification}
+              onChange={f('verification')}
+              aria-label={t('property.verification')}
+            />
+            <Select
+              options={(ownerOptions.data?.items ?? []).map((o) => ({ value: o._id, label: o.fullName }))}
+              placeholder={`${t('property.owner')}: ${t('common.all')}`}
+              value={filters.ownerId}
+              onChange={f('ownerId')}
+              aria-label={t('property.owner')}
+            />
+          </>
+        }
+      >
+        <Input wrapperClassName="!min-w-[14rem] !flex-[2]" placeholder={t('property.searchPlaceholder')} value={filters.q} onChange={f('q')} aria-label={t('common.search')} />
         <Select options={types} placeholder={`${t('common.type')}: ${t('common.all')}`} value={filters.propertyType} onChange={f('propertyType')} />
         <Select options={statuses} placeholder={`${t('common.status')}: ${t('common.all')}`} value={filters.status} onChange={f('status')} />
         <Select options={purposes} placeholder={`${t('property.purpose')}: ${t('common.all')}`} value={filters.listingPurpose} onChange={f('listingPurpose')} />
-        <Input placeholder={t('property.area')} value={filters.area} onChange={f('area')} />
-        <Input placeholder={t('property.society')} value={filters.society} onChange={f('society')} />
-        <Input placeholder={t('property.block')} value={filters.block} onChange={f('block')} />
-        <Input type="number" placeholder={t('property.minPrice')} value={filters.minPrice} onChange={f('minPrice')} />
-        <Input type="number" placeholder={t('property.maxPrice')} value={filters.maxPrice} onChange={f('maxPrice')} />
-        <Input type="number" placeholder={t('client.minSize')} value={filters.minSize} onChange={f('minSize')} />
-        <Input type="number" placeholder={t('client.maxSize')} value={filters.maxSize} onChange={f('maxSize')} />
-        <Select options={units} value={filters.sizeUnit} onChange={f('sizeUnit')} aria-label={t('property.sizeUnit')} />
-        <Select
-          options={[
-            { value: 'stale', label: t('property.needsVerification') },
-            { value: 'fresh', label: t('property.recentlyVerified') },
-          ]}
-          placeholder={`${t('property.verification')}: ${t('common.all')}`}
-          value={filters.verification}
-          onChange={f('verification')}
-          aria-label={t('property.verification')}
-        />
-        <Select
-          options={(ownerOptions.data?.items ?? []).map((o) => ({ value: o._id, label: o.fullName }))}
-          placeholder={`${t('property.owner')}: ${t('common.all')}`}
-          value={filters.ownerId}
-          onChange={f('ownerId')}
-          aria-label={t('property.owner')}
-        />
         <Select
           options={[
             { value: '-updatedAt', label: t('common.updatedAt') },
@@ -312,7 +328,7 @@ export function PropertiesPage() {
           onChange={f('sort')}
           aria-label={t('common.sortBy')}
         />
-      </Card>
+      </FilterBar>
 
       {filters.view === 'grid' ? (
         query.isLoading ? (

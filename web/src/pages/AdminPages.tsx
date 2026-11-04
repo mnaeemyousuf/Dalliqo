@@ -8,7 +8,7 @@ import { auditApi, authApi, businessApi, categoryApi, memberApi, notificationApi
 import type { Member, Settings } from '@/api/types';
 import { BrandLogo } from '@/components/BrandLogo';
 import { BranchAccessEditor, BranchSettings, useBranchName } from '@/components/branches';
-import { Badge, Button, Card, Checkbox, ConfirmDialog, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Tabs } from '@/components/ui';
+import { Badge, Button, Card, Checkbox, ConfirmDialog, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Tabs, Avatar } from '@/components/ui';
 import { formatDate, relativeTime } from '@/lib/format';
 import { useEnumOptions, useOnError, useUrlState } from '@/lib/hooks';
 import { useAuth, useCan } from '@/store/auth';
@@ -105,12 +105,15 @@ export function UsersPage() {
           return (
             <Card key={m._id}>
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-semibold">
-                    {m.user.fullName} {isMe && <Badge color="blue">{t('user.you')}</Badge>}
-                  </p>
-                  <p className="text-sm text-muted">{m.user.email}</p>
-                  <p className="ltr-nums text-sm text-muted">{m.user.mobileNumber}</p>
+                <div className="flex min-w-0 items-start gap-3">
+                  <Avatar name={m.user.fullName} size="lg" />
+                  <div className="min-w-0">
+                    <p className="flex flex-wrap items-center gap-2 font-semibold text-ink">
+                      {m.user.fullName} {isMe && <Badge color="blue">{t('user.you')}</Badge>}
+                    </p>
+                    <p className="truncate text-sm text-muted">{m.user.email}</p>
+                    <p className="ltr-nums text-sm text-muted">{m.user.mobileNumber}</p>
+                  </div>
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <Badge color={isOwner ? 'purple' : 'gray'}>{t(`enums.role.${m.role}`)}</Badge>

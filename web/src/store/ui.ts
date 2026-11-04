@@ -27,9 +27,12 @@ interface UiState {
   theme: Theme;
   lang: Lang;
   sidebarOpen: boolean;
+  /** Desktop sidebar shrunk to an icon rail. */
+  sidebarCollapsed: boolean;
   setTheme(theme: Theme): void;
   setLang(lang: Lang): void;
   toggleSidebar(open?: boolean): void;
+  toggleCollapsed(): void;
 }
 
 /** Per-device preferences (theme, language) — also synced to the user profile when signed in. */
@@ -37,6 +40,7 @@ export const useUi = create<UiState>((set) => ({
   theme: read<Theme>('recrm.theme', 'system'),
   lang: read<Lang>('recrm.lang', 'en'),
   sidebarOpen: false,
+  sidebarCollapsed: read<string>('recrm.sidebar', 'open') === 'collapsed',
   setTheme(theme) {
     write('recrm.theme', theme);
     applyTheme(theme);
@@ -49,6 +53,12 @@ export const useUi = create<UiState>((set) => ({
   },
   toggleSidebar(open) {
     set((s) => ({ sidebarOpen: open ?? !s.sidebarOpen }));
+  },
+  toggleCollapsed() {
+    set((s) => {
+      write('recrm.sidebar', s.sidebarCollapsed ? 'open' : 'collapsed');
+      return { sidebarCollapsed: !s.sidebarCollapsed };
+    });
   },
 }));
 

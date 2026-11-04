@@ -20,9 +20,9 @@ import type { Deal } from '@/api/types';
 import { BranchField } from '@/components/branches';
 import { ActivityPanel, DocumentsPanel, NotesPanel } from '@/components/domain/panels';
 import { AgreementsPanel } from '@/pages/AgreementPages';
-import { Badge, Button, Card, ConfirmDialog, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Table, Tabs, Textarea, type BadgeColor, type Column } from '@/components/ui';
+import { Badge, Button, Card, ConfirmDialog, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Table, Tabs, Textarea, type BadgeColor, type Column, ViewToggle, MetricTile } from '@/components/ui';
 import { formatDate, formatPkr } from '@/lib/format';
-import { useDebounce, useEnumOptions, useErrorText, useMembers, useOnError, useUrlState } from '@/lib/hooks';
+import { useDebounce, useEnumOptions, useErrorText, useMembers, useOnError, useUrlState, useOpenOnNew } from '@/lib/hooks';
 import { useAuth, useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
 
@@ -198,6 +198,7 @@ export function DealsPage() {
   const params = { q, stage: filters.stage, agentId: filters.agentId, commissionStatus: filters.commissionStatus, page: board ? 1 : Number(filters.page), limit: board ? 100 : 20, ...(board ? { open: true } : {}) };
   const query = useQuery({ queryKey: ['deals', params], queryFn: () => dealApi.list(params), placeholderData: (p) => p });
   const [formOpen, setFormOpen] = useState(false);
+  useOpenOnNew(() => setFormOpen(true));
   const stages = useEnumOptions('dealStage', DEAL_STAGES);
   const cstatus = useEnumOptions('commissionStatus', COMMISSION_STATUSES);
   const f = (k: keyof typeof filters) => (e: { target: { value: string } }) => setFilters({ [k]: e.target.value, page: '1' } as never);
@@ -218,19 +219,19 @@ export function DealsPage() {
         subtitle={t('deal.subtitle')}
         actions={
           <>
-            <div className="flex rounded-lg border border-line">
-              <button className={`btn-ghost !rounded-e-none ${board ? 'bg-canvas text-ink' : ''}`} onClick={() => setFilters({ view: 'board' })} title={t('deal.board')}>
-                <Columns3 className="h-4 w-4" />
-              </button>
-              <button className={`btn-ghost !rounded-s-none ${!board ? 'bg-canvas text-ink' : ''}`} onClick={() => setFilters({ view: 'table' })} title={t('property.tableView')}>
-                <Rows3 className="h-4 w-4" />
-              </button>
-            </div>
+            <ViewToggle
+              value={filters.view}
+              onChange={(v) => setFilters({ view: v })}
+              options={[
+                { value: 'board', icon: <Columns3 className="h-4 w-4" />, label: t('deal.board') },
+                { value: 'table', icon: <Rows3 className="h-4 w-4" />, label: t('property.tableView') },
+              ]}
+            />
             {canCreate && <Button icon={<Plus className="h-4 w-4" />} onClick={() => setFormOpen(true)}>{t('deal.add')}</Button>}
           </>
         }
       />
-      <Card className="mb-4" bodyClassName="grid gap-3 md:grid-cols-4">
+      <Card className="mb-4" bodyClassName="grid gap-2 !p-3 md:grid-cols-4">
         <Input placeholder={t('deal.searchPlaceholder')} value={filters.q} onChange={f('q')} aria-label={t('common.search')} />
         {!board && <Select options={stages} placeholder={`${t('deal.stage')}: ${t('common.all')}`} value={filters.stage} onChange={f('stage')} />}
         {members.options.length > 0 && <Select options={members.options} placeholder={`${t('deal.agent')}: ${t('common.all')}`} value={filters.agentId} onChange={f('agentId')} />}
@@ -243,24 +244,36 @@ export function DealsPage() {
       ) : !query.data!.items.length ? (
         <EmptyState title={t('deal.empty')} hint={t('deal.emptyHint')} icon={<HandCoins className="h-6 w-6" />} action={canCreate ? <Button onClick={() => setFormOpen(true)}>{t('deal.add')}</Button> : undefined} />
       ) : board ? (
-        <div className="grid auto-cols-[16rem] grid-flow-col gap-3 overflow-x-auto pb-2">
-          {OPEN_DEAL_STAGES.map((stage) => {
+        <div className="grid auto-cols-[17rem] grid-flow-col gap-3 overflow-x-auto pb-3">
+          {OPEN_DEAL_STAGES.map((stage, si) => {
             const items = query.data!.items.filter((d) => d.stage === stage);
+            const total = items.reduce((sum, d) => sum + (d.expectedTotal ?? 0), 0);
             return (
-              <div key={stage} className="rounded-xl bg-canvas p-2">
-                <p className="mb-2 flex items-center justify-between px-1 text-sm font-medium">
-                  {t(`enums.dealStage.${stage}`)} <span className="ltr-nums text-xs text-muted">{items.length}</span>
-                </p>
-                <div className="space-y-2">
+              <div key={stage} className="flex animate-rise flex-col rounded-2xl border border-line bg-surface-2/70 p-2" style={{ animationDelay: `${si * 40}ms` }}>
+                <div className="mb-2 px-2 pt-1.5">
+                  <p className="flex items-center justify-between gap-2 text-sm font-semibold">
+                    <span className="flex items-center gap-2">
+                      <span className={`h-2 w-2 rounded-full ${['bg-slate-400', 'bg-sky-500', 'bg-violet-500', 'bg-amber-500', 'bg-indigo-500', 'bg-emerald-500'][si] ?? 'bg-slate-400'}`} />
+                      {t(`enums.dealStage.${stage}`)}
+                    </span>
+                    <span className="ltr-nums rounded-full bg-ink/[0.06] px-2 py-px text-2xs font-bold text-ink-2 dark:bg-white/10">{items.length}</span>
+                  </p>
+                  <p className="ltr-nums mt-0.5 text-2xs font-medium text-muted">{formatPkr(total)}</p>
+                </div>
+                <div className="flex-1 space-y-2">
                   {items.map((d) => (
-                    <Link key={d._id} to={`/deals/${d._id}`} className="card block p-3 text-sm transition hover:shadow-md">
-                      <p className="flex items-center justify-between font-medium">
-                        <span className="ltr-nums">{d.dealNo}</span> <CommissionStatusBadge status={d.commissionStatus} />
+                    <Link key={d._id} to={`/deals/${d._id}`} className="card card-interactive block space-y-2 p-3 text-sm">
+                      <p className="flex items-center justify-between gap-2">
+                        <span className="ltr-nums text-xs font-bold text-brand-600">{d.dealNo}</span> <CommissionStatusBadge status={d.commissionStatus} />
                       </p>
-                      <p className="truncate">{d.title || name(d.clientId)}</p>
-                      <p className="ltr-nums text-xs text-muted">{formatPkr(d.expectedTotal)}</p>
+                      <p className="line-clamp-2 font-semibold leading-snug text-ink">{d.title || name(d.clientId)}</p>
+                      <p className="flex items-center justify-between border-t border-line pt-2 text-xs text-muted">
+                        <span className="truncate">{name(d.clientId)}</span>
+                        <span className="ltr-nums font-semibold text-ink-2">{formatPkr(d.expectedTotal)}</span>
+                      </p>
                     </Link>
                   ))}
+                  {!items.length && <p className="rounded-xl border border-dashed border-line px-3 py-6 text-center text-xs text-subtle">—</p>}
                 </div>
               </div>
             );
@@ -268,7 +281,9 @@ export function DealsPage() {
         </div>
       ) : (
         <>
-          <Table columns={columns} rows={query.data!.items} onRowClick={(d) => navigate(`/deals/${d._id}`)} />
+          <Card bodyClassName="!p-0">
+            <Table columns={columns} rows={query.data!.items} onRowClick={(d) => navigate(`/deals/${d._id}`)} />
+          </Card>
           <Pagination page={Number(filters.page)} totalPages={query.data!.meta.totalPages} total={query.data!.meta.total} limit={20} onChange={(p) => setFilters({ page: String(p) })} />
         </>
       )}
@@ -392,11 +407,11 @@ export function DealDetailPage() {
         )}
         {d.stage === 'CLOSED_LOST' && d.lostReason && <p className="w-full pt-1 text-xs text-red-600">{t('deal.lostReason')}: {d.lostReason}</p>}
       </Card>
-      <div className="mb-4 grid gap-3 sm:grid-cols-4">
-        <Card><p className="text-xs text-muted">{t('deal.expected')}</p><p className="ltr-nums text-lg font-semibold">{formatPkr(s.expected.total)}</p></Card>
-        <Card><p className="text-xs text-muted">{t('deal.received')}</p><p className="ltr-nums text-lg font-semibold text-emerald-600">{formatPkr(s.received.total)}</p></Card>
-        <Card><p className="text-xs text-muted">{t('deal.outstanding')}</p><p className="ltr-nums text-lg font-semibold text-amber-600">{formatPkr(s.outstanding)}</p></Card>
-        <Card><p className="text-xs text-muted">{t('deal.commissionStatus')}</p><CommissionStatusBadge status={s.status} /></Card>
+      <div className="stagger mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <MetricTile tone="brand" label={t('deal.expected')} value={formatPkr(s.expected.total)} />
+        <MetricTile tone="good" label={t('deal.received')} value={formatPkr(s.received.total)} />
+        <MetricTile tone="warn" label={t('deal.outstanding')} value={formatPkr(s.outstanding)} />
+        <MetricTile label={t('deal.commissionStatus')} value={<CommissionStatusBadge status={s.status} />} />
       </div>
       <Tabs
         value={tab}
@@ -562,28 +577,28 @@ export function CommissionReport() {
       </div>
       {q.data && (
         <>
-          <div className="mb-4 grid gap-3 sm:grid-cols-3 text-sm">
-            <div><p className="text-muted">{t('deal.expected')}</p><p className="ltr-nums text-base font-semibold">{formatPkr(q.data.totals.expected)}</p></div>
-            <div><p className="text-muted">{t('deal.received')}</p><p className="ltr-nums text-base font-semibold text-emerald-600">{formatPkr(q.data.totals.received)}</p></div>
-            <div><p className="text-muted">{t('deal.outstanding')}</p><p className="ltr-nums text-base font-semibold text-amber-600">{formatPkr(q.data.totals.outstanding)}</p></div>
+          <div className="stagger mb-5 grid gap-3 sm:grid-cols-3">
+            <MetricTile tone="brand" label={t('deal.expected')} value={formatPkr(q.data.totals.expected)} />
+            <MetricTile tone="good" label={t('deal.received')} value={formatPkr(q.data.totals.received)} />
+            <MetricTile tone="warn" label={t('deal.outstanding')} value={formatPkr(q.data.totals.outstanding)} />
           </div>
-          <table className="mb-4 w-full text-sm">
-            <thead><tr className="text-start text-muted"><th className="py-1 text-start">{groupBy === 'month' ? t('deal.month') : t('deal.agent')}</th><th className="py-1 text-end">{t('deal.received')}</th><th className="py-1 text-end">{t('deal.paymentsCount')}</th></tr></thead>
+          <table className="mb-5 w-full overflow-hidden rounded-xl text-sm ring-1 ring-line">
+            <thead className="bg-surface-2 text-2xs font-semibold uppercase tracking-wider text-muted"><tr><th className="px-3 py-2 text-start">{groupBy === 'month' ? t('deal.month') : t('deal.agent')}</th><th className="px-3 py-2 text-end">{t('deal.received')}</th><th className="px-3 py-2 text-end">{t('deal.paymentsCount')}</th></tr></thead>
             <tbody>
               {q.data.rows.map((r) => (
-                <tr key={r.key} className="border-t border-line"><td className="py-1.5 ltr-nums">{r.label}</td><td className="py-1.5 text-end ltr-nums">{formatPkr(r.received)}</td><td className="py-1.5 text-end ltr-nums">{r.payments}</td></tr>
+                <tr key={r.key} className="border-t border-line transition-colors hover:bg-surface-2/60"><td className="ltr-nums px-3 py-2 font-medium">{r.label}</td><td className="ltr-nums px-3 py-2 text-end font-semibold text-ink">{formatPkr(r.received)}</td><td className="ltr-nums px-3 py-2 text-end">{r.payments}</td></tr>
               ))}
-              {!q.data.rows.length && <tr><td colSpan={3} className="py-2 text-muted">{t('deal.noPayments')}</td></tr>}
+              {!q.data.rows.length && <tr><td colSpan={3} className="px-3 py-3 text-muted">{t('deal.noPayments')}</td></tr>}
             </tbody>
           </table>
           {q.data.outstanding.length > 0 && (
             <>
-              <p className="mb-1 text-sm font-medium">{t('deal.outstandingDeals')}</p>
-              <ul className="divide-y divide-line text-sm">
+              <p className="mb-2 text-sm font-semibold">{t('deal.outstandingDeals')}</p>
+              <ul className="divide-y divide-line overflow-hidden rounded-xl text-sm ring-1 ring-line">
                 {q.data.outstanding.map((o) => (
-                  <li key={o._id} className="flex justify-between py-1.5">
-                    <Link className="hover:underline" to={`/deals/${o._id}`}><span className="ltr-nums">{o.dealNo}</span> {o.title}</Link>
-                    <span className="ltr-nums text-amber-600">{formatPkr(o.outstanding)}</span>
+                  <li key={o._id} className="flex items-center justify-between gap-3 px-3 py-2 transition-colors hover:bg-surface-2/60">
+                    <Link className="min-w-0 truncate hover:text-brand-600" to={`/deals/${o._id}`}><span className="ltr-nums me-2 rounded-md bg-brand-50 px-1.5 py-0.5 text-2xs font-bold text-brand-600">{o.dealNo}</span>{o.title}</Link>
+                    <span className="ltr-nums shrink-0 font-semibold text-amber-600">{formatPkr(o.outstanding)}</span>
                   </li>
                 ))}
               </ul>

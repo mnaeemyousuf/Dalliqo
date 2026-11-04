@@ -8,9 +8,9 @@ import { exportApi, transactionApi } from '@/api/endpoints';
 import type { Transaction, TransactionCategory } from '@/api/types';
 import { BranchField } from '@/components/branches';
 import { DocumentsPanel } from '@/components/domain/panels';
-import { Badge, Button, Card, ConfirmDialog, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Table, Tabs, type Column } from '@/components/ui';
+import { Badge, Button, Card, ConfirmDialog, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Table, Tabs, type Column, MetricTile } from '@/components/ui';
 import { formatDate, formatPkr } from '@/lib/format';
-import { useDebounce, useEnumOptions, useErrorText, useOnError, useUrlState } from '@/lib/hooks';
+import { useDebounce, useEnumOptions, useErrorText, useOnError, useUrlState, useOpenOnNew } from '@/lib/hooks';
 import { useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
 
@@ -176,6 +176,7 @@ export function FinancePage() {
   const list = useQuery({ queryKey: ['transactions', params], queryFn: () => transactionApi.list(params), placeholderData: (p) => p, enabled: filters.tab === 'entries' || !canReports });
   const cats = useTransactionCategories();
   const [editing, setEditing] = useState<Transaction | 'new' | null>(null);
+  useOpenOnNew(() => setEditing('new'));
   const [receipts, setReceipts] = useState<Transaction | null>(null);
   const [removing, setRemoving] = useState<Transaction | null>(null);
   const [catsOpen, setCatsOpen] = useState(false);
@@ -259,7 +260,9 @@ export function FinancePage() {
             <EmptyState title={t('finance.empty')} hint={t('finance.emptyHint')} icon={<Wallet className="h-6 w-6" />} action={canCreate ? <Button onClick={() => setEditing('new')}>{t('finance.add')}</Button> : undefined} />
           ) : (
             <>
-              <Table columns={columns} rows={list.data!.items} />
+              <Card bodyClassName="!p-0">
+                <Table columns={columns} rows={list.data!.items} />
+              </Card>
               <Pagination page={Number(filters.page)} totalPages={list.data!.meta.totalPages} total={list.data!.meta.total} limit={20} onChange={(p) => setFilters({ page: String(p) })} />
             </>
           )}
@@ -321,30 +324,30 @@ export function FinanceReport() {
       {q.isError && <ErrorState onRetry={() => q.refetch()} />}
       {q.data && (
         <>
-          <div className="mb-4 grid gap-3 text-sm sm:grid-cols-3">
-            <div><p className="text-muted">{t('finance.income')}</p><p className="ltr-nums text-base font-semibold text-emerald-600">{formatPkr(q.data.totals.income)}</p></div>
-            <div><p className="text-muted">{t('finance.expense')}</p><p className="ltr-nums text-base font-semibold text-red-600">{formatPkr(q.data.totals.expense)}</p></div>
-            <div><p className="text-muted">{t('finance.net')}</p><p className={`ltr-nums text-base font-semibold ${q.data.totals.net < 0 ? 'text-red-600' : ''}`}>{formatPkr(q.data.totals.net)}</p></div>
+          <div className="stagger mb-5 grid gap-3 sm:grid-cols-3">
+            <MetricTile tone="good" label={t('finance.income')} value={formatPkr(q.data.totals.income)} />
+            <MetricTile tone="bad" label={t('finance.expense')} value={formatPkr(q.data.totals.expense)} />
+            <MetricTile tone={q.data.totals.net < 0 ? 'bad' : 'brand'} label={t('finance.net')} value={formatPkr(q.data.totals.net)} />
           </div>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-muted">
-                <th className="py-1 text-start">{groupBy === 'month' ? t('deal.month') : t('finance.category')}</th>
-                <th className="py-1 text-end">{t('finance.income')}</th>
-                <th className="py-1 text-end">{t('finance.expense')}</th>
-                <th className="py-1 text-end">{t('finance.net')}</th>
+          <table className="w-full overflow-hidden rounded-xl text-sm ring-1 ring-line">
+            <thead className="bg-surface-2 text-2xs font-semibold uppercase tracking-wider text-muted">
+              <tr>
+                <th className="px-3 py-2 text-start">{groupBy === 'month' ? t('deal.month') : t('finance.category')}</th>
+                <th className="px-3 py-2 text-end">{t('finance.income')}</th>
+                <th className="px-3 py-2 text-end">{t('finance.expense')}</th>
+                <th className="px-3 py-2 text-end">{t('finance.net')}</th>
               </tr>
             </thead>
             <tbody>
               {q.data.rows.map((r) => (
-                <tr key={r.key} className="border-t border-line">
-                  <td className="ltr-nums py-1.5">{rowLabel(r)}</td>
-                  <td className="ltr-nums py-1.5 text-end">{formatPkr(r.income)}</td>
-                  <td className="ltr-nums py-1.5 text-end">{formatPkr(r.expense)}</td>
-                  <td className={`ltr-nums py-1.5 text-end ${r.net < 0 ? 'text-red-600' : ''}`}>{formatPkr(r.net)}</td>
+                <tr key={r.key} className="border-t border-line transition-colors hover:bg-surface-2/60">
+                  <td className="ltr-nums px-3 py-2 font-medium">{rowLabel(r)}</td>
+                  <td className="ltr-nums px-3 py-2 text-end text-emerald-600">{formatPkr(r.income)}</td>
+                  <td className="ltr-nums px-3 py-2 text-end text-red-600">{formatPkr(r.expense)}</td>
+                  <td className={`ltr-nums px-3 py-2 text-end font-semibold ${r.net < 0 ? 'text-red-600' : 'text-ink'}`}>{formatPkr(r.net)}</td>
                 </tr>
               ))}
-              {!q.data.rows.length && <tr><td colSpan={4} className="py-2 text-muted">{t('finance.empty')}</td></tr>}
+              {!q.data.rows.length && <tr><td colSpan={4} className="px-3 py-3 text-muted">{t('finance.empty')}</td></tr>}
             </tbody>
           </table>
         </>

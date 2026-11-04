@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { categoryApi, memberApi } from '@/api/endpoints';
 import { ApiError, toApiError } from '@/api/client';
 import { toast } from '@/store/toast';
@@ -83,4 +84,51 @@ export function useUrlState<T extends Record<string, string>>(defaults: T) {
     });
   };
   return [state, update] as const;
+}
+
+/**
+ * Opens a page's "create" form when the URL carries ?new=1 (used by the top bar's Create menu), then removes
+ * the parameter so a refresh or back navigation doesn't reopen it.
+ */
+export function useOpenOnNew(open: () => void) {
+  const [params, setParams] = useSearchParams();
+  const wantsNew = params.get('new') === '1';
+  useEffect(() => {
+    if (!wantsNew) return;
+    open();
+    const next = new URLSearchParams(params);
+    next.delete('new');
+    setParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wantsNew]);
+}
+
+/** Counts a number up from 0 when it first appears (and eases to new values), for KPI tiles. */
+export function useCountUp(target: number, duration = 900): number {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (!Number.isFinite(target)) return;
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || target === 0) {
+      setValue(target);
+      return;
+    }
+    let raf = 0;
+    const from = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 4);
+      setValue(Math.round(from + (target - from) * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return value;
+}
+
+/** True on phone-width viewports, where wide tables give way to card layouts by default. */
+export function isNarrowScreen() {
+  return typeof window !== 'undefined' && !!window.matchMedia?.('(max-width: 639px)').matches;
 }
