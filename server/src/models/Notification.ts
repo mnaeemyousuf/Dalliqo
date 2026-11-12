@@ -14,6 +14,8 @@ export interface NotificationDoc {
   data?: Record<string, unknown>;
   readAt?: Date | null;
   pushedAt?: Date | null;
+  /** Automation alerts: one notification per user per key (e.g. rule + record + day). */
+  dedupeKey?: string;
   createdAt: Date;
 }
 
@@ -28,12 +30,14 @@ const schema = new Schema<NotificationDoc>(
     data: Schema.Types.Mixed,
     readAt: { type: Date, default: null },
     pushedAt: { type: Date, default: null },
+    dedupeKey: { type: String, maxlength: 200 },
   },
   { timestamps: { createdAt: true, updatedAt: false }, versionKey: false },
 );
 
 schema.index({ businessId: 1, userId: 1, readAt: 1, createdAt: -1 });
 schema.index({ businessId: 1, userId: 1, category: 1, createdAt: -1 });
+schema.index({ businessId: 1, userId: 1, dedupeKey: 1 }, { unique: true, partialFilterExpression: { dedupeKey: { $type: 'string' } } });
 schema.index({ createdAt: 1 }, { expireAfterSeconds: 180 * 86_400 });
 schema.plugin(tenantGuardPlugin);
 

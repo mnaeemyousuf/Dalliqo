@@ -1,4 +1,13 @@
+import { Types } from 'mongoose';
 import {
+  PROPERTY_CATEGORY_OF,
+  propertyTypesInCategory,
+  type ConstructionStatus,
+  type DevelopmentStatus,
+  type FacingDirection,
+  type FurnishingStatus,
+  type PossessionStatus,
+  type PropertyCategory,
   ERROR_CODES,
   LISTING_VERIFICATION_STALE_DAYS,
   PROPERTY_STATUS_TRANSITIONS,
@@ -9,12 +18,14 @@ import {
   type SizeUnit,
 } from '@recrm/shared';
 import { nextSequence } from '../models/Counter';
+import { Property } from '../models/Property';
+import { branchFilter } from './branchScope';
 import { scopedPopulate } from '../models/plugins/tenant';
 import type { PropertyDoc } from '../models/Property';
 import { ownerRepository, propertyRepository } from '../repositories/entityRepositories';
 import { memberRepository } from '../repositories/memberRepository';
 import type { AuthContext, RequestMeta, TenantContext } from '../types/context';
-import { badRequest, notFound } from '../utils/AppError';
+import { badRequest, conflict, notFound } from '../utils/AppError';
 import { diffFields } from '../utils/diff';
 import { escapeRegex, formatPkr, searchBlob } from '../utils/text';
 import { withTransaction } from '../utils/transaction';
@@ -53,6 +64,23 @@ export interface PropertyInput {
   bedrooms?: number;
   bathrooms?: number;
   floors?: number;
+  phase?: string;
+  sector?: string;
+  unitNumber?: string;
+  possessionStatus?: PossessionStatus;
+  developmentStatus?: DevelopmentStatus;
+  constructionStatus?: ConstructionStatus;
+  furnishing?: FurnishingStatus;
+  facing?: FacingDirection;
+  corner?: boolean;
+  mainRoad?: boolean;
+  parkFacing?: boolean;
+  amenities?: string[];
+  availabilityExpiresAt?: Date | null;
+  coOwnerIds?: string[];
+  agentIds?: string[];
+  /** Save even when another listing has the same society/block/plot number. */
+  allowDuplicate?: boolean;
 }
 
 export interface PropertyQuery {
@@ -70,6 +98,18 @@ export interface PropertyQuery {
   maxSize?: number;
   sizeUnit?: SizeUnit;
   ownerId?: string;
+  category?: PropertyCategory;
+  phase?: string;
+  agentId?: string;
+  corner?: boolean;
+  parkFacing?: boolean;
+  mainRoad?: boolean;
+  possessionStatus?: PossessionStatus;
+  constructionStatus?: ConstructionStatus;
+  furnishing?: FurnishingStatus;
+  minBedrooms?: number;
+  /** Listings whose availability lapses within this many days. */
+  expiringDays?: number;
   verification?: 'stale' | 'fresh';
   near?: { lat: number; lng: number; radiusKm: number };
   sort?: string;
@@ -80,11 +120,12 @@ export interface PropertyQuery {
 const EDITABLE = [
   'branchId', 'propertyType', 'listingPurpose', 'title', 'area', 'society', 'block', 'street', 'plotNumber', 'city', 'size', 'sizeUnit',
   'askingPrice', 'expectedFinalPrice', 'minimumPrice', 'negotiable', 'ownerId', 'description', 'latitude', 'longitude',
-  'googleMapsUrl', 'bedrooms', 'bathrooms', 'floors',
+  'googleMapsUrl', 'bedrooms', 'bathrooms', 'floors', 'phase', 'sector', 'unitNumber', 'possessionStatus', 'developmentStatus',
+  'constructionStatus', 'furnishing', 'facing', 'corner', 'mainRoad', 'parkFacing', 'amenities', 'availabilityExpiresAt', 'coOwnerIds', 'agentIds',
 ] as const;
 
 /** Changes to these fields can change which clients match. */
-const MATCH_FIELDS = ['branchId', 'propertyType', 'listingPurpose', 'area', 'society', 'block', 'size', 'sizeUnit', 'askingPrice', 'minimumPrice', 'negotiable'];
+const MATCH_FIELDS = ['branchId', 'propertyType', 'listingPurpose', 'area', 'society', 'block', 'size', 'sizeUnit', 'askingPrice', 'minimumPrice', 'negotiable', 'bedrooms'];
 
 const SORTS: Record<string, Record<string, 1 | -1>> = {
   '-updatedAt': { updatedAt: -1, _id: -1 },
@@ -98,7 +139,7 @@ const SORTS: Record<string, Record<string, 1 | -1>> = {
 };
 
 const STATUS_LABEL: Record<PropertyStatus, string> = {
-  AVAILABLE: 'Available', RESERVED: 'Reserved', SOLD: 'Sold', RENTED: 'Rented', WITHDRAWN: 'Withdrawn', INACTIVE: 'Inactive',
+  AVAILABLE: 'Available', RESERVED: 'Reserved', UNDER_NEGOTIATION: 'Under negotiation', ON_HOLD: 'On hold', SOLD: 'Sold', RENTED: 'Rented', EXPIRED: 'Expired', WITHDRAWN: 'Withdrawn', INACTIVE: 'Inactive',
 };
 
 export const formatPropertyId = (n: number) => `RE-${String(n).padStart(6, '0')}`;
@@ -119,8 +160,17 @@ function locationFields(lat?: number | null, lng?: number | null, url?: string) 
 
 const blob = (p: object) => {
   const v = p as Record<string, string | undefined>; // only string fields are read
-  return searchBlob(v.propertyId, v.title, v.area, v.society, v.block, v.street, v.plotNumber, v.city);
+  return searchBlob(v.propertyId, v.title, v.area, v.society, v.block, v.phase, v.sector, v.street, v.plotNumber, v.unitNumber, v.city);
 };
+
+async function assertPeople(ctx: TenantContext, p: { coOwnerIds?: string[]; agentIds?: string[] }) {
+  for (const id of p.coOwnerIds ?? []) await assertOwner(ctx, id);
+  for (const id of p.agentIds ?? []) {
+    if (!(await memberRepository.isActiveMemberUser(ctx, id))) throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'Agent is not an active member of this business');
+  }
+}
+
+const norm = (s?: string | null) => (s ?? '').toLowerCase().replace(/[^a-z0-9]+/g, '');
 
 async function assertOwner(ctx: TenantContext, ownerId?: string | null) {
   if (ownerId && !(await ownerRepository.findById(ctx, ownerId))) throw badRequest(ERROR_CODES.OWNER_NOT_FOUND, 'Owner not found');
@@ -145,13 +195,30 @@ export const propertyService = {
     }
     assertPrices(input);
     await assertOwner(auth, input.ownerId);
+    await assertPeople(auth, input);
+    if (!input.uuid && !input.allowDuplicate && input.plotNumber) {
+      const dupes = await propertyService.findDuplicates(auth, input);
+      if (dupes.length) {
+        throw conflict(ERROR_CODES.PROPERTY_DUPLICATE, `This plot is already listed as ${dupes[0].propertyId}`, { duplicates: dupes });
+      }
+    }
     const settings = await settingsService.get(auth);
     const loc = locationFields(input.latitude, input.longitude, input.googleMapsUrl);
-    const { latitude: _la, longitude: _lo, googleMapsUrl: _g, ownerId, ...rest } = input;
+    const { latitude: _la, longitude: _lo, googleMapsUrl: _g, ownerId, allowDuplicate: _ad, ...rest } = input;
 
     const property = await withTransaction(async (session) => {
       const propertyId = formatPropertyId(await nextSequence(auth.businessId, 'property', session));
-      const doc = { ...rest, ...(ownerId ? { ownerId } : {}), ...loc.set, propertyId, status: input.status ?? 'AVAILABLE', statusChangedAt: new Date(), lastVerifiedAt: new Date(), lastVerifiedBy: auth.userId };
+      const doc = {
+        ...rest,
+        ...(ownerId ? { ownerId } : {}),
+        ...loc.set,
+        propertyId,
+        status: input.status ?? 'AVAILABLE',
+        statusChangedAt: new Date(),
+        lastVerifiedAt: new Date(),
+        lastVerifiedBy: auth.userId,
+        priceHistory: [{ price: input.askingPrice, at: new Date(), by: auth.userId, note: 'Listed' }],
+      };
       return propertyRepository.create(auth, { ...doc, sizeSqft: settingsService.toSqft(settings, input.size, input.sizeUnit), searchText: blob(doc) }, session);
     });
 
@@ -186,6 +253,20 @@ export const propertyService = {
     if (q.society) filter.society = new RegExp(escapeRegex(q.society), 'i');
     if (q.block) filter.block = new RegExp(`^${escapeRegex(q.block)}$`, 'i');
     if (q.ownerId) filter.ownerId = q.ownerId;
+    if (q.category && !q.propertyType) filter.propertyType = { $in: propertyTypesInCategory(q.category) };
+    if (q.phase) filter.phase = new RegExp(escapeRegex(q.phase), 'i');
+    if (q.agentId) filter.agentIds = q.agentId;
+    if (q.corner) filter.corner = true;
+    if (q.parkFacing) filter.parkFacing = true;
+    if (q.mainRoad) filter.mainRoad = true;
+    if (q.possessionStatus) filter.possessionStatus = q.possessionStatus;
+    if (q.constructionStatus) filter.constructionStatus = q.constructionStatus;
+    if (q.furnishing) filter.furnishing = q.furnishing;
+    if (q.minBedrooms !== undefined) filter.bedrooms = { $gte: q.minBedrooms };
+    if (q.expiringDays !== undefined) {
+      filter.availabilityExpiresAt = { $ne: null, $lte: new Date(Date.now() + q.expiringDays * 86_400_000) };
+      if (!q.status) filter.status = 'AVAILABLE';
+    }
     if (q.verification) {
       const cutoff = new Date(Date.now() - LISTING_VERIFICATION_STALE_DAYS * 86_400_000);
       if (q.verification === 'stale') {
@@ -235,6 +316,7 @@ export const propertyService = {
       opts = { ...opts, baseVersion: undefined };
     }
     await assertOwner(auth, input.ownerId);
+    await assertPeople(auth, input);
     const set: Record<string, unknown> = {};
     const unset: string[] = [];
     for (const k of EDITABLE) {
@@ -252,7 +334,9 @@ export const propertyService = {
     }
     set.searchText = blob(merged);
 
-    const updated = await propertyRepository.update(auth, id, set, { baseVersion: opts.baseVersion, unset });
+    const priceChanged = set.askingPrice !== undefined && set.askingPrice !== before.askingPrice;
+    const push = priceChanged ? { priceHistory: { price: set.askingPrice, at: new Date(), by: auth.userId } } : undefined;
+    const updated = await propertyRepository.update(auth, id, set, { baseVersion: opts.baseVersion, unset, push });
     const changes = diffFields(before as unknown as Record<string, unknown>, { ...set, ...Object.fromEntries(unset.map((u) => [u, null])) }, EDITABLE);
     const refs = [{ entityType: 'property' as const, entityId: updated._id, label: updated.propertyId }];
 
@@ -316,6 +400,77 @@ export const propertyService = {
     await auditService.record(auth, { action: 'property.deleted', entityType: 'property', entityId: deleted._id, entityLabel: deleted.propertyId, ip: opts.meta?.ip });
     publishChange(auth, SOCKET_EVENTS.PROPERTY_DELETED, 'property', deleted);
     return deleted;
+  },
+
+  /**
+   * Listings of the same plot: same society + block (or phase) + plot/unit number, compared
+   * ignoring case, spaces and punctuation ("Plot 12-A" = "plot 12a").
+   */
+  async findDuplicates(ctx: TenantContext, p: { society?: string; block?: string; phase?: string; plotNumber?: string; unitNumber?: string; propertyType?: string }, excludeId?: string) {
+    const plot = norm(p.plotNumber);
+    if (!plot) return [];
+    const candidates = await propertyRepository.find(ctx, { plotNumber: new RegExp(escapeRegex(p.plotNumber!.trim().slice(0, 3)), 'i'), ...(excludeId ? { _id: { $ne: excludeId } } : {}) }, {
+      limit: 50,
+      select: 'propertyId plotNumber unitNumber society block phase status askingPrice propertyType',
+    });
+    return candidates
+      .filter((c) => norm(c.plotNumber) === plot && norm(c.society) === norm(p.society) && norm(c.block ?? c.phase) === norm(p.block ?? p.phase) && norm(c.unitNumber) === norm(p.unitNumber))
+      .slice(0, 5)
+      .map((c) => ({ _id: c._id, propertyId: c.propertyId, status: c.status, askingPrice: c.askingPrice, propertyType: c.propertyType, society: c.society, block: c.block, plotNumber: c.plotNumber }));
+  },
+
+  /** Inventory aging: on-market listings bucketed by days listed, plus status and category mix. */
+  async inventoryReport(ctx: TenantContext) {
+    const match = { businessId: new Types.ObjectId(ctx.businessId), deletedAt: null, ...branchFilter(ctx) };
+    const now = Date.now();
+    const [byStatus, byType, onMarket] = await Promise.all([
+      Property.aggregate([{ $match: match }, { $group: { _id: '$status', n: { $sum: 1 }, value: { $sum: '$askingPrice' } } }]),
+      Property.aggregate([{ $match: { ...match, status: 'AVAILABLE' } }, { $group: { _id: '$propertyType', n: { $sum: 1 } } }]),
+      Property.find({ ...match, status: { $in: ['AVAILABLE', 'RESERVED', 'UNDER_NEGOTIATION'] } })
+        .select('propertyId createdAt askingPrice society block propertyType lastVerifiedAt status')
+        .lean<PropertyDoc[]>(),
+    ]);
+    const buckets = [
+      { key: '0_30', max: 30 },
+      { key: '31_60', max: 60 },
+      { key: '61_90', max: 90 },
+      { key: '90_PLUS', max: Infinity },
+    ].map((b) => ({ ...b, count: 0, value: 0 }));
+    const days = (d: Date) => Math.floor((now - new Date(d).getTime()) / 86_400_000);
+    for (const p of onMarket) {
+      const b = buckets.find((x) => days(p.createdAt) <= x.max)!;
+      b.count++;
+      b.value += p.askingPrice ?? 0;
+    }
+    const byCategory: Record<string, number> = {};
+    for (const t of byType) byCategory[PROPERTY_CATEGORY_OF[t._id as PropertyType] ?? 'RESIDENTIAL'] = (byCategory[PROPERTY_CATEGORY_OF[t._id as PropertyType] ?? 'RESIDENTIAL'] ?? 0) + t.n;
+    const oldest = [...onMarket].sort((a, b) => +new Date(a.createdAt) - +new Date(b.createdAt)).slice(0, 10).map((p) => ({
+      _id: p._id,
+      propertyId: p.propertyId,
+      days: days(p.createdAt),
+      askingPrice: p.askingPrice,
+      society: p.society,
+      block: p.block,
+      propertyType: p.propertyType,
+      status: p.status,
+    }));
+    const avgDays = onMarket.length ? Math.round(onMarket.reduce((s, p) => s + days(p.createdAt), 0) / onMarket.length) : 0;
+    return {
+      onMarket: onMarket.length,
+      avgDaysOnMarket: avgDays,
+      aging: buckets.map(({ key, count, value }) => ({ key, count, value })),
+      byStatus: Object.fromEntries(byStatus.map((s) => [s._id, { count: s.n, value: s.value }])),
+      byType: Object.fromEntries(byType.map((t) => [t._id, t.n])),
+      byCategory,
+      oldest,
+    };
+  },
+
+  /** Hides the owner's floor price from members without properties:view_floor_price. */
+  redact<T extends { minimumPrice?: number }>(canSeeFloor: boolean, p: T): T {
+    if (canSeeFloor || p.minimumPrice === undefined) return p;
+    const { minimumPrice: _m, ...rest } = p;
+    return rest as T;
   },
 
   async setCover(ctx: TenantContext, id: string, url?: string, thumbnailUrl?: string) {

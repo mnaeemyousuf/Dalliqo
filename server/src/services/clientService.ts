@@ -1,5 +1,8 @@
 import { Types } from 'mongoose';
 import {
+  type BuyingTimeline,
+  type LeadTemperature,
+  type LostReason,
   ERROR_CODES,
   SOCKET_EVENTS,
   type ClientPurpose,
@@ -19,7 +22,9 @@ import { escapeRegex, searchBlob } from '../utils/text';
 import { activityService } from './activityService';
 import { auditService } from './auditService';
 import { categoryService } from './categoryService';
+import { leadService } from './leadService';
 import { matchingService } from './matching/matchingService';
+import { notificationService } from './notificationService';
 import { publishChange } from './publish';
 import { settingsService, type EffectiveSettings } from './settingsService';
 
@@ -74,6 +79,12 @@ export interface ClientInput extends FlatRequirementInput {
   assignedTo?: string;
   notes?: string;
   requirements?: RequirementInput[];
+  campaign?: string;
+  buyingTimeline?: BuyingTimeline;
+  /** null clears a manual temperature (back to score-based). */
+  temperatureOverride?: LeadTemperature | null;
+  lostReason?: LostReason;
+  lostNote?: string;
 }
 
 export interface ClientQuery {
@@ -82,6 +93,13 @@ export interface ClientQuery {
   status?: ClientStatus;
   priority?: Priority;
   assignedTo?: string;
+  /** Leads nobody owns yet (the unassigned inbox). */
+  unassigned?: boolean;
+  source?: string;
+  temperature?: LeadTemperature;
+  minScore?: number;
+  /** Active leads with no contact for this many days (or never contacted). */
+  staleDays?: number;
   area?: string;
   society?: string;
   block?: string;
@@ -100,7 +118,7 @@ export interface ClientQuery {
 
 const AUDITED_FIELDS = [
   'branchId', 'fullName', 'mobileNumber', 'alternateNumber', 'whatsappNumber', 'email', 'address', 'categoryId',
-  'status', 'priority', 'source', 'assignedTo', 'notes', 'requirements',
+  'status', 'priority', 'source', 'assignedTo', 'notes', 'requirements', 'campaign', 'buyingTimeline', 'temperatureOverride', 'lostReason',
 ] as const;
 
 const SORTS: Record<string, Record<string, 1 | -1>> = {
@@ -109,6 +127,8 @@ const SORTS: Record<string, Record<string, 1 | -1>> = {
   fullName: { fullName: 1, _id: 1 },
   '-matchCount': { matchCount: -1, _id: -1 },
   '-maxBudget': { maxBudget: -1, _id: -1 },
+  '-leadScore': { leadScore: -1, _id: -1 },
+  createdAt: { createdAt: 1, _id: 1 },
 };
 
 const has = (o: object, k: string) => Object.prototype.hasOwnProperty.call(o, k) && (o as Record<string, unknown>)[k] !== undefined;
@@ -280,6 +300,15 @@ export const clientService = {
       source: input.source,
       assignedTo: input.assignedTo,
       notes: input.notes,
+      campaign: input.campaign,
+      buyingTimeline: input.buyingTimeline,
+      temperatureOverride: input.temperatureOverride ?? null,
+      ...(input.temperatureOverride ? { temperature: input.temperatureOverride } : {}),
+      lostReason: input.status === 'CLOSED_LOST' ? input.lostReason : undefined,
+      lostNote: input.status === 'CLOSED_LOST' ? input.lostNote : undefined,
+      ...(input.status === 'CLOSED_WON' ? { convertedAt: new Date() } : {}),
+      statusHistory: [{ status: input.status ?? 'ACTIVE', at: new Date(), by: auth.userId }],
+      assignmentHistory: input.assignedTo ? [{ from: null, to: input.assignedTo, at: new Date(), by: auth.userId }] : [],
       requirements,
       ...set,
       searchText: searchBlob(input.fullName, input.mobileNumber, input.whatsappNumber, input.alternateNumber, input.email),
@@ -291,6 +320,17 @@ export const clientService = {
     await auditService.record(auth, { action: 'client.created', entityType: 'client', entityId: client._id, entityLabel: client.fullName, ip: meta.ip });
     publishChange(auth, SOCKET_EVENTS.CLIENT_CREATED, 'client', client);
     await matchingService.safeRecalcForClient(auth, client);
+    await leadService.safeRescore(auth, client._id.toString());
+    if (input.assignedTo && input.assignedTo !== auth.userId) {
+      await notificationService.notify(auth, {
+        userIds: [input.assignedTo],
+        category: 'LEAD',
+        title: 'New lead assigned to you',
+        body: `${client.fullName} (${client.mobileNumber})`,
+        deepLink: `/clients/${client._id}`,
+        data: { clientId: client._id.toString() },
+      });
+    }
     return (await clientRepository.findById(auth, client._id.toString())) ?? client;
   },
 
@@ -310,6 +350,14 @@ export const clientService = {
     if (q.status) filter.status = q.status;
     if (q.priority) filter.priority = q.priority;
     if (q.assignedTo) filter.assignedTo = q.assignedTo;
+    if (q.unassigned) filter.assignedTo = null;
+    if (q.source) filter.source = q.source;
+    if (q.temperature) filter.temperature = q.temperature;
+    if (q.minScore !== undefined) filter.leadScore = { $gte: q.minScore };
+    if (q.staleDays !== undefined) {
+      filter.status = q.status ?? 'ACTIVE';
+      and.push({ $or: [{ lastContactedAt: null }, { lastContactedAt: { $lt: new Date(Date.now() - q.staleDays * 86_400_000) } }] });
+    }
     if (q.propertyType) filter.propertyTypeRequired = q.propertyType;
     if (q.purpose) filter.purchaseOrRental = q.purpose;
     if (q.area) filter['requirements.areas'] = new RegExp(escapeRegex(q.area), 'i');
@@ -350,9 +398,25 @@ export const clientService = {
     if (input.assignedTo) await assertAssignee(auth, input.assignedTo);
 
     const set: Record<string, unknown> = {};
-    for (const k of ['branchId', 'fullName', 'mobileNumber', 'alternateNumber', 'whatsappNumber', 'email', 'address', 'categoryId', 'status', 'priority', 'source', 'assignedTo', 'notes'] as const) {
+    for (const k of ['branchId', 'fullName', 'mobileNumber', 'alternateNumber', 'whatsappNumber', 'email', 'address', 'categoryId', 'status', 'priority', 'source', 'assignedTo', 'notes', 'campaign', 'buyingTimeline', 'lostReason', 'lostNote'] as const) {
       if (has(input, k)) set[k] = input[k];
     }
+    if (Object.prototype.hasOwnProperty.call(input, 'temperatureOverride')) {
+      set.temperatureOverride = input.temperatureOverride ?? null;
+      if (input.temperatureOverride) set.temperature = input.temperatureOverride;
+    }
+    const push: Record<string, unknown> = {};
+    const statusChanged = has(set, 'status') && set.status !== before.status;
+    if (statusChanged) {
+      push.statusHistory = { status: set.status, at: new Date(), by: auth.userId, note: set.status === 'CLOSED_LOST' ? (input.lostNote ?? input.lostReason) : undefined };
+      if (set.status === 'CLOSED_WON') set.convertedAt = new Date();
+      if (set.status !== 'CLOSED_LOST') {
+        set.lostReason = null;
+        set.lostNote = null;
+      }
+    }
+    const assigneeChanged = has(set, 'assignedTo') && String(set.assignedTo ?? '') !== String(before.assignedTo ?? '');
+    if (assigneeChanged) push.assignmentHistory = { from: before.assignedTo ?? null, to: set.assignedTo ?? null, at: new Date(), by: auth.userId };
     const primary = before.requirements.find((r) => r.isPrimary);
     const flat = input.requirements ? null : mergeFlatIntoRequirement(primary, input);
     let requirementsChanged = false;
@@ -371,7 +435,7 @@ export const clientService = {
     set.searchText = searchBlob(merged.fullName, merged.mobileNumber, merged.whatsappNumber, merged.alternateNumber, merged.email);
 
     const { set: $set, unset } = stripNulls(set);
-    const updated = await clientRepository.update(auth, id, $set, { baseVersion: opts.baseVersion, unset });
+    const updated = await clientRepository.update(auth, id, $set, { baseVersion: opts.baseVersion, unset, push });
 
     const changes = diffFields(before as unknown as Record<string, unknown>, set, AUDITED_FIELDS);
     if (changes.length) {
@@ -381,11 +445,27 @@ export const clientService = {
         { entityType: 'client', entityId: updated._id, label: updated.fullName },
       ], { fields: changes.map((c) => c.field) });
     }
+    if (statusChanged) {
+      await activityService.record(auth, 'LEAD_STATUS_CHANGED', `Lead ${updated.fullName}: ${before.status} → ${updated.status}`, [
+        { entityType: 'client', entityId: updated._id, label: updated.fullName },
+      ], { from: before.status, to: updated.status });
+    }
+    if (assigneeChanged && updated.assignedTo && updated.assignedTo.toString() !== auth.userId) {
+      await notificationService.notify(auth, {
+        userIds: [updated.assignedTo.toString()],
+        category: 'LEAD',
+        title: 'New lead assigned to you',
+        body: `${updated.fullName} (${updated.mobileNumber})`,
+        deepLink: `/clients/${updated._id}`,
+        data: { clientId: updated._id.toString() },
+      });
+    }
     publishChange(auth, SOCKET_EVENTS.CLIENT_UPDATED, 'client', updated);
     if (requirementsChanged || has(set, 'status')) {
       if (updated.status === 'ACTIVE') await matchingService.safeRecalcForClient(auth, updated);
       else await matchingService.removeForClient(auth, updated._id);
     }
+    await leadService.safeRescore(auth, id);
     return (await clientRepository.findById(auth, id)) ?? updated;
   },
 
@@ -403,12 +483,14 @@ export const clientService = {
   /** One-tap call / WhatsApp / SMS / email from the app, recorded on the timeline. */
   async logCommunication(auth: AuthContext, id: string, channel: CommunicationChannel, note?: string) {
     const client = await clientRepository.getById(auth, id, 'Client not found');
+    await leadService.markContacted(auth, id);
     const updated = await clientRepository.update(auth, id, { lastContactedAt: new Date() });
     const verb: Record<CommunicationChannel, string> = { CALL: 'Called', WHATSAPP: 'WhatsApp message to', SMS: 'SMS to', EMAIL: 'Emailed' };
     await activityService.record(auth, 'CLIENT_CONTACTED', `${verb[channel]} ${client.fullName}${note ? `: ${note}` : ''}`, [
       { entityType: 'client', entityId: client._id, label: client.fullName },
     ], { channel });
+    await leadService.safeRescore(auth, id);
     publishChange(auth, SOCKET_EVENTS.CLIENT_UPDATED, 'client', updated);
-    return updated;
+    return (await clientRepository.findById(auth, id)) ?? updated;
   },
 };

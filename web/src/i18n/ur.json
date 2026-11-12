@@ -81,7 +81,10 @@
     "date": "تاریخ",
     "archive": "محفوظ کریں",
     "restore": "بحال کریں",
-    "moreFilters": "مزید فلٹر"
+    "moreFilters": "مزید فلٹر",
+    "hide": "چھپائیں",
+    "show": "دکھائیں",
+    "saved": "محفوظ ہو گیا"
   },
   "nav": {
     "dashboard": "ڈیش بورڈ",
@@ -107,7 +110,8 @@
       "workspace": "کام",
       "business": "کاروبار",
       "admin": "انتظامیہ"
-    }
+    },
+    "platform": "پلیٹ فارم ایڈمن"
   },
   "topbar": {
     "searchPlaceholder": "کلائنٹس، پراپرٹیز، مالکان تلاش کریں…",
@@ -377,7 +381,38 @@
     "verifyHint": "مالک سے تصدیق کریں کہ یہ پراپرٹی اب بھی درج قیمت پر دستیاب ہے، پھر یہاں درج کریں۔",
     "verification": "تصدیق",
     "recentlyVerified": "حال ہی میں تصدیق شدہ",
-    "matches_one": "{{count}} میچز"
+    "matches_one": "{{count}} میچز",
+    "pk": {
+      "title": "پاکستانی تفصیلات",
+      "phase": "فیز",
+      "sector": "سیکٹر",
+      "unitNumber": "مکان / یونٹ / فائل نمبر",
+      "possession": "قبضہ",
+      "development": "ترقی",
+      "construction": "تعمیر",
+      "furnishing": "فرنیچر",
+      "facing": "رخ",
+      "expires": "دستیابی کی آخری تاریخ",
+      "expiresHint": "اس تاریخ کے بعد لسٹنگ میعاد ختم ہو جائے گی",
+      "corner": "کارنر",
+      "parkFacing": "پارک فیسنگ",
+      "mainRoad": "مین روڈ",
+      "priceHistory": "قیمت کی تاریخ",
+      "duplicateConfirm": "یہ پلاٹ پہلے سے {{id}} کے طور پر درج ہے۔ پھر بھی الگ لسٹنگ محفوظ کریں؟"
+    },
+    "inventory": {
+      "title": "انوینٹری کی عمر",
+      "onMarket": "مارکیٹ میں",
+      "avgDays": "اوسط دن",
+      "buckets": {
+        "0_30": "0–30 دن",
+        "31_60": "31–60 دن",
+        "61_90": "61–90 دن",
+        "90_PLUS": "90+ دن سے نہیں بکی"
+      },
+      "oldest": "سب سے زیادہ دیر سے مارکیٹ میں",
+      "days": "{{n}} دن"
+    }
   },
   "owner": {
     "title": "مالکان",
@@ -587,7 +622,9 @@
     "version": "ورژن {{version}}",
     "aboutText": "Dalliqo آپ کے کلائنٹس، پراپرٹیز، مالکان، میچز اور فالو اپس ایک جگہ رکھتا ہے۔ ڈیٹا کلاؤڈ میں محفوظ رہتا ہے اور آپ کے تمام آلات میں ہم آہنگ ہوتا ہے۔",
     "clientCount_one": "{{count}} کلائنٹس",
-    "branches": "برانچیں"
+    "branches": "برانچیں",
+    "automation": "آٹومیشن اور اسکورنگ",
+    "subscription": "سبسکرپشن"
   },
   "enums": {
     "propertyType": {
@@ -599,7 +636,15 @@
       "SHOP": "دکان",
       "OFFICE": "دفتر",
       "COMMERCIAL": "کمرشل",
-      "OTHER": "دیگر"
+      "OTHER": "دیگر",
+      "FARMHOUSE": "فارم ہاؤس",
+      "FILE": "پلاٹ فائل",
+      "COMMERCIAL_PLOT": "کمرشل پلاٹ",
+      "BUILDING": "عمارت",
+      "WAREHOUSE": "گودام",
+      "FACTORY": "فیکٹری",
+      "INDUSTRIAL_PLOT": "صنعتی پلاٹ",
+      "AGRICULTURAL_LAND": "زرعی زمین"
     },
     "propertyStatus": {
       "AVAILABLE": "دستیاب",
@@ -607,7 +652,10 @@
       "SOLD": "فروخت شدہ",
       "RENTED": "کرایہ پر",
       "WITHDRAWN": "واپس لی گئی",
-      "INACTIVE": "غیر فعال"
+      "INACTIVE": "غیر فعال",
+      "UNDER_NEGOTIATION": "بات چیت جاری",
+      "ON_HOLD": "روکا ہوا",
+      "EXPIRED": "میعاد ختم"
     },
     "listingPurpose": {
       "SALE": "فروخت",
@@ -638,14 +686,20 @@
       "SOCIAL_MEDIA": "سوشل میڈیا",
       "PORTAL": "پراپرٹی پورٹل",
       "OTHER": "دیگر",
-      "UNKNOWN": "درج نہیں"
+      "UNKNOWN": "درج نہیں",
+      "FACEBOOK": "فیس بک",
+      "INSTAGRAM": "انسٹاگرام",
+      "ZAMEEN": "زمین ڈاٹ کام",
+      "OLX": "او ایل ایکس",
+      "WEBSITE": "ویب سائٹ"
     },
     "sizeUnit": {
       "SQ_FT": "مربع فٹ",
       "SQ_YARD": "مربع گز",
       "SQ_METER": "مربع میٹر",
       "MARLA": "مرلہ",
-      "KANAL": "کنال"
+      "KANAL": "کنال",
+      "ACRE": "ایکڑ"
     },
     "followUpType": {
       "CALL": "کال",
@@ -789,12 +843,15 @@
     "dealStage": {
       "INQUIRY": "انکوائری",
       "SITE_VISIT": "سائٹ وزٹ",
-      "OFFER": "آفر",
+      "OFFER": "آفر منظور",
       "TOKEN": "ٹوکن / بیعانہ",
       "AGREEMENT": "معاہدہ",
       "TRANSFER": "ٹرانسفر",
       "CLOSED_WON": "مکمل (کامیاب)",
-      "CLOSED_LOST": "ناکام"
+      "CLOSED_LOST": "ناکام",
+      "QUALIFIED": "اہل",
+      "NEGOTIATION": "بات چیت",
+      "PAYMENT": "ادائیگی"
     },
     "commissionStatus": {
       "PENDING": "زیرِ التوا",
@@ -837,6 +894,61 @@
       "SIGNED": "دستخط شدہ",
       "EXPIRED": "میعاد ختم",
       "CANCELLED": "منسوخ"
+    },
+    "leadTemperature": {
+      "HOT": "گرم",
+      "WARM": "معتدل",
+      "COLD": "ٹھنڈا"
+    },
+    "buyingTimeline": {
+      "IMMEDIATE": "ابھی خریدنا ہے",
+      "ONE_MONTH": "ایک ماہ میں",
+      "THREE_MONTHS": "3 ماہ میں",
+      "SIX_MONTHS": "6 ماہ میں",
+      "EXPLORING": "صرف دیکھ رہے ہیں"
+    },
+    "lostReason": {
+      "BUDGET": "بجٹ",
+      "BOUGHT_ELSEWHERE": "کہیں اور سے خرید لیا",
+      "NOT_RESPONDING": "جواب نہیں دے رہے",
+      "NOT_INTERESTED": "دلچسپی نہیں",
+      "REQUIREMENT_CHANGED": "ضرورت بدل گئی",
+      "INVALID_CONTACT": "غلط نمبر",
+      "DUPLICATE": "ڈپلیکیٹ",
+      "OTHER": "دیگر"
+    },
+    "possessionStatus": {
+      "POSSESSION": "قبضہ",
+      "NON_POSSESSION": "بغیر قبضہ",
+      "BALLOTED": "بیلٹ شدہ",
+      "UNBALLOTED": "غیر بیلٹ شدہ"
+    },
+    "developmentStatus": {
+      "DEVELOPED": "ترقی یافتہ",
+      "UNDER_DEVELOPMENT": "زیر ترقی",
+      "UNDEVELOPED": "غیر ترقی یافتہ"
+    },
+    "constructionStatus": {
+      "EMPTY_PLOT": "خالی پلاٹ",
+      "GREY_STRUCTURE": "گرے اسٹرکچر",
+      "UNDER_CONSTRUCTION": "زیر تعمیر",
+      "READY": "تیار",
+      "NEEDS_RENOVATION": "مرمت درکار"
+    },
+    "furnishing": {
+      "UNFURNISHED": "بغیر فرنیچر",
+      "SEMI_FURNISHED": "جزوی فرنیچر",
+      "FURNISHED": "فرنیچر کے ساتھ"
+    },
+    "facing": {
+      "NORTH": "شمال",
+      "SOUTH": "جنوب",
+      "EAST": "مشرق",
+      "WEST": "مغرب",
+      "NORTH_EAST": "شمال مشرق",
+      "NORTH_WEST": "شمال مغرب",
+      "SOUTH_EAST": "جنوب مشرق",
+      "SOUTH_WEST": "جنوب مغرب"
     }
   },
   "errors": {
@@ -860,7 +972,12 @@
     "BRANCH_IS_DEFAULT": "مرکزی برانچ محفوظ نہیں کی جا سکتی",
     "DEAL_NOT_FOUND": "ڈیل نہیں ملی",
     "INVALID_AGENT_SHARES": "ایجنٹس کے حصے کل 100% ہونے چاہئیں",
-    "PAYMENT_NOT_FOUND": "ادائیگی نہیں ملی"
+    "PAYMENT_NOT_FOUND": "ادائیگی نہیں ملی",
+    "PROPERTY_DUPLICATE": "یہ پلاٹ پہلے سے درج ہے۔",
+    "OFFER_NOT_FOUND": "آفر نہیں ملی۔",
+    "SUBSCRIPTION_EXPIRED": "آپ کی سبسکرپشن ختم ہو گئی ہے۔ ریکارڈ شامل یا تبدیل کرنے کے لیے تجدید کریں — آپ کا ڈیٹا محفوظ ہے اور دیکھا جا سکتا ہے۔",
+    "MODULE_NOT_IN_PLAN": "یہ فیچر آپ کے پلان میں شامل نہیں۔",
+    "PLAN_LIMIT_REACHED": "پلان کی حد پوری ہو گئی ہے۔ مزید کے لیے اپ گریڈ کریں۔"
   },
   "branch": {
     "branch": "برانچ",
@@ -950,7 +1067,44 @@
     "paymentsCount": "ادائیگیاں",
     "outstandingDeals": "جن ڈیلز کا کمیشن باقی ہے",
     "defaultBuyerPct": "خریدار کی جانب سے ڈیفالٹ کمیشن",
-    "defaultSellerPct": "فروخت کنندہ کی جانب سے ڈیفالٹ کمیشن"
+    "defaultSellerPct": "فروخت کنندہ کی جانب سے ڈیفالٹ کمیشن",
+    "negotiation": {
+      "title": "بات چیت",
+      "asking": "مالک کی مانگ",
+      "gap": "مانگ سے کم",
+      "party": "آفر دینے والا",
+      "BUYER": "خریدار",
+      "SELLER": "فروخت کنندہ",
+      "amount": "رقم (روپے)",
+      "record": "آفر درج کریں",
+      "empty": "ابھی کوئی آفر نہیں۔ بات چیت شروع کرنے کے لیے خریدار کی پہلی آفر درج کریں۔",
+      "accept": "منظور",
+      "reject": "مسترد",
+      "withdraw": "واپس لی",
+      "status": {
+        "OPEN": "کھلی",
+        "ACCEPTED": "منظور",
+        "REJECTED": "مسترد",
+        "COUNTERED": "جوابی آفر",
+        "WITHDRAWN": "واپس لی"
+      }
+    },
+    "checklist": {
+      "title": "ڈیل بند کرنے کی چیک لسٹ",
+      "add": "اپنا آئٹم شامل کریں…",
+      "items": {
+        "DOCUMENTS_COLLECTED": "دستاویزات جمع",
+        "BUYER_VERIFIED": "خریدار کی تصدیق",
+        "SELLER_VERIFIED": "فروخت کنندہ کی تصدیق",
+        "TOKEN_RECEIVED": "ٹوکن (بیعانہ) وصول",
+        "AGREEMENT_SIGNED": "معاہدہ دستخط شدہ",
+        "DUES_CHECKED": "واجبات چیک کیے",
+        "TRANSFER_DOCS_READY": "ٹرانسفر کے کاغذات تیار",
+        "PAYMENT_COMPLETED": "ادائیگی مکمل",
+        "COMMISSION_RECEIVED": "کمیشن وصول",
+        "DEAL_CLOSED": "ڈیل بند"
+      }
+    }
   },
   "finance": {
     "title": "آمدنی و اخراجات",
@@ -1075,5 +1229,203 @@
     "needsInternet": "بروشر بنانے کے لیے انٹرنیٹ چاہیے۔",
     "share": "شیئر کریں",
     "generating": "بروشر تیار ہو رہا ہے…"
+  },
+  "lead": {
+    "title": "لیڈ اسکور",
+    "manual": "(دستی طور پر)",
+    "responseTime": "پہلا رابطہ {{time}} میں",
+    "notContactedYet": "ابھی رابطہ نہیں ہوا",
+    "assigned": "لیڈ سونپ دی گئی",
+    "assignTo": "سونپیں",
+    "assignedTo": "ذمہ دار",
+    "unassigned": "کسی کو نہیں سونپا",
+    "unassignedInbox": "صرف غیر تفویض شدہ لیڈز",
+    "assign": "سونپیں",
+    "history": "حالت اور تفویض کی تاریخ",
+    "campaign": "مہم",
+    "campaignHint": "اشتہار، لسٹنگ یا مہم جس سے لیڈ آئی",
+    "timeline": "خریداری کا وقت",
+    "lostReason": "ہاتھ سے جانے کی وجہ",
+    "lostNote": "نوٹ",
+    "temperature": "درجہ",
+    "score": "لیڈ اسکور",
+    "reasons": {
+      "BUDGET_MATCHES_INVENTORY": "بجٹ موجود لسٹنگز کے مطابق ہے",
+      "BUDGET_NO_MATCHES": "بجٹ معلوم ہے مگر ابھی کوئی میچ نہیں",
+      "BUDGET_MISSING": "بجٹ درج نہیں",
+      "LOCATION_PRECISE": "جگہ واضح ہے (سوسائٹی / بلاک)",
+      "LOCATION_AREA_ONLY": "صرف علاقہ معلوم ہے",
+      "LOCATION_MISSING": "پسندیدہ جگہ درج نہیں",
+      "CATEGORY_SET": "پراپرٹی کی قسم معلوم ہے",
+      "CATEGORY_MISSING": "پراپرٹی کی قسم درج نہیں",
+      "INTENT_ACTIVE": "فعال طور پر تلاش میں",
+      "INTENT_ON_HOLD": "تلاش روکی ہوئی ہے",
+      "INTENT_CLOSED": "لیڈ بند",
+      "CONTACTED_RECENTLY": "پچھلے 3 دن میں رابطہ",
+      "CONTACTED_THIS_WEEK": "اس ہفتے رابطہ",
+      "CONTACTED_THIS_MONTH": "اس مہینے رابطہ",
+      "NOT_CONTACTED_LONG": "ایک ماہ سے زیادہ رابطہ نہیں",
+      "NEW_LEAD": "نئی لیڈ (ایک دن سے کم)",
+      "NEVER_CONTACTED": "کبھی رابطہ نہیں ہوا",
+      "FOLLOWUPS_DONE": "کئی فالو اپ مکمل",
+      "FOLLOWUP_DONE": "ایک فالو اپ مکمل",
+      "FOLLOWUP_SCHEDULED": "فالو اپ طے ہے",
+      "NO_FOLLOWUPS": "ابھی کوئی فالو اپ نہیں",
+      "FOLLOWUPS_OVERDUE": "فالو اپ زائد المیعاد ہیں",
+      "TIMELINE_IMMEDIATE": "ابھی خریدنا چاہتے ہیں",
+      "TIMELINE_ONE_MONTH": "ایک ماہ میں خریداری",
+      "TIMELINE_THREE_MONTHS": "3 ماہ میں خریداری",
+      "TIMELINE_SIX_MONTHS": "6 ماہ میں خریداری",
+      "TIMELINE_EXPLORING": "صرف دیکھ رہے ہیں",
+      "TIMELINE_UNKNOWN": "خریداری کا وقت معلوم نہیں"
+    },
+    "factors": {
+      "budget": "بجٹ",
+      "location": "جگہ",
+      "category": "پراپرٹی کی قسم",
+      "intent": "ارادہ",
+      "engagement": "رابطہ",
+      "followUps": "فالو اپ",
+      "timeline": "وقت"
+    },
+    "scoring": {
+      "title": "لیڈ اسکورنگ",
+      "hint": "ہر عنصر 0–100 اسکور میں کتنا شمار ہو، اور کس اسکور پر لیڈ گرم یا معتدل ہو۔",
+      "hot": "گرم (اسکور سے)",
+      "warm": "معتدل (اسکور سے)"
+    },
+    "import": {
+      "button": "امپورٹ",
+      "title": "ایکسل سے لیڈز امپورٹ کریں",
+      "hint": "ٹیمپلیٹ استعمال کریں (نام اور موبائل ضروری ہیں)۔ ہر قطار عام اندراج کی طرح چیک ہوتی ہے: ڈپلیکیٹ اور غلط نمبر چھوڑ کر فہرست میں دکھائے جاتے ہیں۔",
+      "template": "ٹیمپلیٹ ڈاؤن لوڈ کریں",
+      "fromSheet": "شیٹ کے مطابق",
+      "choose": ".xlsx فائل منتخب کریں",
+      "created": "امپورٹ ہوئیں",
+      "duplicates": "ڈپلیکیٹ چھوڑی گئیں",
+      "errors": "غلطی والی قطاریں",
+      "row": "قطار",
+      "existing": "پہلے سے {{name}} کے نام سے محفوظ"
+    },
+    "report": {
+      "title": "لیڈز",
+      "leads": "لیڈز",
+      "conversion": "کامیابی کی شرح",
+      "unassigned": "غیر تفویض شدہ",
+      "response": "اوسط پہلا رابطہ",
+      "won": "کامیاب",
+      "aging": "کھلی لیڈز عمر کے لحاظ سے",
+      "agingBuckets": {
+        "0_7": "0–7 دن",
+        "8_30": "8–30 دن",
+        "31_90": "31–90 دن",
+        "90_PLUS": "90+ دن"
+      },
+      "lostReasons": "ہاتھ سے جانے کی وجوہات"
+    }
+  },
+  "subscription": {
+    "current": "موجودہ پلان",
+    "plan": "پلان",
+    "billing": "بلنگ",
+    "requested": "درخواست بھیج دی گئی — ہماری ٹیم تبدیلی کی تصدیق کرے گی۔",
+    "daysLeft": "{{n}} دن باقی",
+    "ended": "{{date}} کو ختم ہوئی",
+    "users": "صارفین",
+    "branches": "برانچز",
+    "storage": "اسٹوریج (MB)",
+    "unlimited": "لامحدود",
+    "readOnly": "آپ کی سبسکرپشن ختم ہو گئی ہے، اس لیے اکاؤنٹ صرف دیکھنے کے لیے ہے۔ ریکارڈ شامل یا تبدیل کرنے کے لیے تجدید کریں۔",
+    "compare": "پلانز",
+    "request": "یہ پلان لیں",
+    "yourPlan": "آپ کا پلان",
+    "billingNote": "ادائیگی ملنے پر (بینک ٹرانسفر، جاز کیش یا ایزی پیسہ) Dalliqo ٹیم پلان فعال کرتی ہے۔",
+    "history": "بلنگ کی تاریخ",
+    "limitsLine": "{{users}} صارفین · {{branches}} برانچز",
+    "plans": {
+      "STARTER": "اسٹارٹر",
+      "PROFESSIONAL": "پروفیشنل",
+      "BUSINESS": "بزنس",
+      "ENTERPRISE": "انٹرپرائز"
+    },
+    "status": {
+      "TRIAL": "آزمائشی",
+      "ACTIVE": "فعال",
+      "PAST_DUE": "ادائیگی واجب",
+      "EXPIRED": "میعاد ختم",
+      "CANCELLED": "منسوخ"
+    },
+    "cycle": {
+      "MONTHLY": "ماہانہ",
+      "ANNUAL": "سالانہ"
+    },
+    "per": {
+      "MONTHLY": "ماہ",
+      "ANNUAL": "سال"
+    },
+    "modules": {
+      "crm": "کلائنٹس، پراپرٹیز اور فالو اپ",
+      "matching": "خودکار میچنگ",
+      "deals": "ڈیلز اور کمیشن",
+      "reports": "رپورٹس اور ایکسپورٹ",
+      "agreements": "معاہدے",
+      "finance": "آمدنی اور اخراجات",
+      "branches": "متعدد برانچز",
+      "automation": "آٹومیشن قوانین",
+      "marketing": "مارکیٹنگ",
+      "rentals": "کرایہ داری",
+      "ai": "AI اسسٹنٹ",
+      "api": "API رسائی"
+    },
+    "events": {
+      "TRIAL_STARTED": "آزمائش شروع",
+      "UPGRADE_REQUESTED": "تبدیلی کی درخواست",
+      "PLAN_CHANGED": "پلان تبدیل",
+      "PAYMENT_RECORDED": "ادائیگی درج",
+      "CANCELLED": "منسوخ"
+    }
+  },
+  "automation": {
+    "title": "آٹومیشن قوانین",
+    "hint": "Dalliqo ہر چند منٹ میں یہ چیک کرتا ہے اور ہر صورتحال پر ایک بار متعلقہ لوگوں کو اطلاع دیتا ہے۔",
+    "unit": {
+      "minutes": "منٹ",
+      "days": "دن"
+    },
+    "rules": {
+      "HOT_LEAD_UNCONTACTED": {
+        "title": "گرم لیڈ سے رابطہ نہیں ہوا",
+        "hint": "اگر اس وقت میں گرم لیڈ کو کال نہ کی جائے تو ایجنٹ اور مینیجرز کو اطلاع۔"
+      },
+      "LEAD_INACTIVE": {
+        "title": "لیڈ ٹھنڈی پڑ رہی ہے",
+        "hint": "اتنے دن رابطہ نہ ہونے پر ذمہ دار ایجنٹ کو یاد دہانی۔"
+      },
+      "PROPERTY_REVERIFY": {
+        "title": "لسٹنگ کی دوبارہ تصدیق",
+        "hint": "اتنے دن بعد ایجنٹ مالک سے دستیابی کی دوبارہ تصدیق کرے۔"
+      },
+      "LISTING_EXPIRY": {
+        "title": "لسٹنگ کی میعاد کی وارننگ",
+        "hint": "دستیابی کی تاریخ سے اتنے دن پہلے خبردار کریں (لسٹنگ تاریخ پر لازماً ختم ہوتی ہے)۔"
+      },
+      "DEAL_STUCK_NEGOTIATION": {
+        "title": "ڈیل بات چیت میں اٹکی ہے",
+        "hint": "اتنی دیر بات چیت میں رہنے پر ایجنٹس اور مینیجرز کو اطلاع۔"
+      },
+      "AGREEMENT_EXPIRING": {
+        "title": "معاہدہ ختم ہونے والا ہے",
+        "hint": "کرایہ یا فروخت کا معاہدہ ختم ہونے سے پہلے اطلاع۔"
+      }
+    }
+  },
+  "platform": {
+    "title": "پلیٹ فارم ایڈمن",
+    "subtitle": "Dalliqo پر ہر کاروبار کی سبسکرپشن",
+    "only": "یہ صفحہ صرف Dalliqo پلیٹ فارم ایڈمنز کھول سکتے ہیں۔",
+    "manage": "انتظام",
+    "paidUntil": "ادائیگی تک",
+    "amount": "وصول شدہ رقم (روپے)",
+    "reference": "ادائیگی کا حوالہ"
   }
 }

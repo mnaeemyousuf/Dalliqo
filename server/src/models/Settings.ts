@@ -1,5 +1,17 @@
 import { Schema, model, type Types } from 'mongoose';
-import { DEFAULT_COMMISSION_SETTINGS, DEFAULT_MATCHING_SETTINGS, DEFAULT_SQFT_PER_UNIT, type CommissionDefaults, type MatchingSettings, type SizeUnit } from '@recrm/shared';
+import {
+  AUTOMATION_RULE_KEYS,
+  DEFAULT_COMMISSION_SETTINGS,
+  DEFAULT_LEAD_SCORING,
+  DEFAULT_MATCHING_SETTINGS,
+  DEFAULT_SQFT_PER_UNIT,
+  LEAD_SCORE_FACTORS,
+  type AutomationSettings,
+  type CommissionDefaults,
+  type LeadScoringSettings,
+  type MatchingSettings,
+  type SizeUnit,
+} from '@recrm/shared';
 import { tenantGuardPlugin } from './plugins/tenant';
 
 /** One document per business. Missing values fall back to the defaults. */
@@ -10,6 +22,8 @@ export interface SettingsDoc {
   sqftPerUnit: Record<SizeUnit, number>;
   reminders: { defaultMinutesBefore: number };
   commission: CommissionDefaults;
+  leadScoring?: Partial<LeadScoringSettings>;
+  automation?: Partial<AutomationSettings>;
   updatedBy?: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -37,6 +51,7 @@ const schema = new Schema<SettingsDoc>(
       SQ_METER: { type: Number, default: DEFAULT_SQFT_PER_UNIT.SQ_METER },
       MARLA: { type: Number, default: DEFAULT_SQFT_PER_UNIT.MARLA },
       KANAL: { type: Number, default: DEFAULT_SQFT_PER_UNIT.KANAL },
+      ACRE: { type: Number, default: DEFAULT_SQFT_PER_UNIT.ACRE },
     },
     reminders: { defaultMinutesBefore: { type: Number, default: 30 } },
     commission: {
@@ -44,6 +59,13 @@ const schema = new Schema<SettingsDoc>(
       defaultSellerPct: { type: Number, default: DEFAULT_COMMISSION_SETTINGS.defaultSellerPct },
       autoCreateIncome: { type: Boolean, default: DEFAULT_COMMISSION_SETTINGS.autoCreateIncome },
     },
+    // Missing values fall back to DEFAULT_LEAD_SCORING / DEFAULT_AUTOMATION_SETTINGS (see settingsService).
+    leadScoring: {
+      weights: Object.fromEntries(LEAD_SCORE_FACTORS.map((f) => [f, { type: Number }])),
+      hotThreshold: { type: Number, default: DEFAULT_LEAD_SCORING.hotThreshold },
+      warmThreshold: { type: Number, default: DEFAULT_LEAD_SCORING.warmThreshold },
+    },
+    automation: Object.fromEntries(AUTOMATION_RULE_KEYS.map((k) => [k, { enabled: Boolean, threshold: Number }])),
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true, versionKey: false },

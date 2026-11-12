@@ -81,7 +81,10 @@
     "date": "Date",
     "archive": "Archive",
     "restore": "Restore",
-    "moreFilters": "More filters"
+    "moreFilters": "More filters",
+    "hide": "Hide",
+    "show": "Show",
+    "saved": "Saved"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -107,7 +110,8 @@
       "workspace": "Workspace",
       "business": "Business",
       "admin": "Administration"
-    }
+    },
+    "platform": "Platform admin"
   },
   "topbar": {
     "searchPlaceholder": "Search clients, properties, owners…",
@@ -377,7 +381,38 @@
     "verifyHint": "Confirm with the owner that this property is still on offer at the listed price, then record it here.",
     "verification": "Verification",
     "recentlyVerified": "Recently verified",
-    "matches_one": "{{count}} match"
+    "matches_one": "{{count}} match",
+    "pk": {
+      "title": "Pakistan details",
+      "phase": "Phase",
+      "sector": "Sector",
+      "unitNumber": "House / unit / file no.",
+      "possession": "Possession",
+      "development": "Development",
+      "construction": "Construction",
+      "furnishing": "Furnishing",
+      "facing": "Facing",
+      "expires": "Available until",
+      "expiresHint": "The listing becomes Expired after this date",
+      "corner": "Corner",
+      "parkFacing": "Park facing",
+      "mainRoad": "Main road",
+      "priceHistory": "Price history",
+      "duplicateConfirm": "This plot is already listed as {{id}}. Save it as a separate listing anyway?"
+    },
+    "inventory": {
+      "title": "Inventory aging",
+      "onMarket": "On the market",
+      "avgDays": "Avg. days listed",
+      "buckets": {
+        "0_30": "0–30 days",
+        "31_60": "31–60 days",
+        "61_90": "61–90 days",
+        "90_PLUS": "Unsold 90+ days"
+      },
+      "oldest": "Longest on the market",
+      "days": "{{n}} days"
+    }
   },
   "owner": {
     "title": "Owners",
@@ -587,7 +622,9 @@
     "version": "Version {{version}}",
     "aboutText": "Dalliqo keeps your clients, properties, owners, matches and follow-ups in one place. Data is stored securely in the cloud and syncs between all your devices.",
     "clientCount_one": "{{count}} client",
-    "branches": "Branches"
+    "branches": "Branches",
+    "automation": "Automation & scoring",
+    "subscription": "Subscription"
   },
   "enums": {
     "propertyType": {
@@ -599,7 +636,15 @@
       "SHOP": "Shop",
       "OFFICE": "Office",
       "COMMERCIAL": "Commercial",
-      "OTHER": "Other"
+      "OTHER": "Other",
+      "FARMHOUSE": "Farmhouse",
+      "FILE": "Plot file",
+      "COMMERCIAL_PLOT": "Commercial plot",
+      "BUILDING": "Building",
+      "WAREHOUSE": "Warehouse",
+      "FACTORY": "Factory",
+      "INDUSTRIAL_PLOT": "Industrial plot",
+      "AGRICULTURAL_LAND": "Agricultural land"
     },
     "propertyStatus": {
       "AVAILABLE": "Available",
@@ -607,7 +652,10 @@
       "SOLD": "Sold",
       "RENTED": "Rented",
       "WITHDRAWN": "Withdrawn",
-      "INACTIVE": "Inactive"
+      "INACTIVE": "Inactive",
+      "UNDER_NEGOTIATION": "Under negotiation",
+      "ON_HOLD": "On hold",
+      "EXPIRED": "Expired"
     },
     "listingPurpose": {
       "SALE": "Sale",
@@ -638,14 +686,20 @@
       "SOCIAL_MEDIA": "Social media",
       "PORTAL": "Property portal",
       "OTHER": "Other",
-      "UNKNOWN": "Not recorded"
+      "UNKNOWN": "Not recorded",
+      "FACEBOOK": "Facebook",
+      "INSTAGRAM": "Instagram",
+      "ZAMEEN": "Zameen.com",
+      "OLX": "OLX",
+      "WEBSITE": "Website"
     },
     "sizeUnit": {
       "SQ_FT": "Sq. ft",
       "SQ_YARD": "Sq. yard",
       "SQ_METER": "Sq. metre",
       "MARLA": "Marla",
-      "KANAL": "Kanal"
+      "KANAL": "Kanal",
+      "ACRE": "Acre"
     },
     "followUpType": {
       "CALL": "Call",
@@ -789,12 +843,15 @@
     "dealStage": {
       "INQUIRY": "Inquiry",
       "SITE_VISIT": "Site visit",
-      "OFFER": "Offer",
+      "OFFER": "Offer accepted",
       "TOKEN": "Token / bayana",
       "AGREEMENT": "Agreement",
       "TRANSFER": "Transfer",
       "CLOSED_WON": "Closed (won)",
-      "CLOSED_LOST": "Lost"
+      "CLOSED_LOST": "Lost",
+      "QUALIFIED": "Qualified",
+      "NEGOTIATION": "Negotiation",
+      "PAYMENT": "Payment"
     },
     "commissionStatus": {
       "PENDING": "Pending",
@@ -837,6 +894,61 @@
       "SIGNED": "Signed",
       "EXPIRED": "Expired",
       "CANCELLED": "Cancelled"
+    },
+    "leadTemperature": {
+      "HOT": "Hot",
+      "WARM": "Warm",
+      "COLD": "Cold"
+    },
+    "buyingTimeline": {
+      "IMMEDIATE": "Buying now",
+      "ONE_MONTH": "Within a month",
+      "THREE_MONTHS": "Within 3 months",
+      "SIX_MONTHS": "Within 6 months",
+      "EXPLORING": "Just exploring"
+    },
+    "lostReason": {
+      "BUDGET": "Budget",
+      "BOUGHT_ELSEWHERE": "Bought elsewhere",
+      "NOT_RESPONDING": "Not responding",
+      "NOT_INTERESTED": "Not interested",
+      "REQUIREMENT_CHANGED": "Requirement changed",
+      "INVALID_CONTACT": "Invalid contact",
+      "DUPLICATE": "Duplicate",
+      "OTHER": "Other"
+    },
+    "possessionStatus": {
+      "POSSESSION": "Possession",
+      "NON_POSSESSION": "Non-possession",
+      "BALLOTED": "Balloted",
+      "UNBALLOTED": "Un-balloted"
+    },
+    "developmentStatus": {
+      "DEVELOPED": "Developed",
+      "UNDER_DEVELOPMENT": "Under development",
+      "UNDEVELOPED": "Undeveloped"
+    },
+    "constructionStatus": {
+      "EMPTY_PLOT": "Empty plot",
+      "GREY_STRUCTURE": "Grey structure",
+      "UNDER_CONSTRUCTION": "Under construction",
+      "READY": "Ready",
+      "NEEDS_RENOVATION": "Needs renovation"
+    },
+    "furnishing": {
+      "UNFURNISHED": "Unfurnished",
+      "SEMI_FURNISHED": "Semi-furnished",
+      "FURNISHED": "Furnished"
+    },
+    "facing": {
+      "NORTH": "North",
+      "SOUTH": "South",
+      "EAST": "East",
+      "WEST": "West",
+      "NORTH_EAST": "North-east",
+      "NORTH_WEST": "North-west",
+      "SOUTH_EAST": "South-east",
+      "SOUTH_WEST": "South-west"
     }
   },
   "errors": {
@@ -860,7 +972,12 @@
     "BRANCH_IS_DEFAULT": "The main branch cannot be archived",
     "DEAL_NOT_FOUND": "Deal not found",
     "INVALID_AGENT_SHARES": "Agent shares must add up to 100%",
-    "PAYMENT_NOT_FOUND": "Payment not found"
+    "PAYMENT_NOT_FOUND": "Payment not found",
+    "PROPERTY_DUPLICATE": "This plot is already listed.",
+    "OFFER_NOT_FOUND": "Offer not found.",
+    "SUBSCRIPTION_EXPIRED": "Your subscription has ended. Renew it to add or change records — your data is safe and still readable.",
+    "MODULE_NOT_IN_PLAN": "This feature is not included in your plan.",
+    "PLAN_LIMIT_REACHED": "Your plan limit has been reached. Upgrade to add more."
   },
   "branch": {
     "branch": "Branch",
@@ -950,7 +1067,44 @@
     "paymentsCount": "Payments",
     "outstandingDeals": "Deals with commission still due",
     "defaultBuyerPct": "Default buyer-side commission",
-    "defaultSellerPct": "Default seller-side commission"
+    "defaultSellerPct": "Default seller-side commission",
+    "negotiation": {
+      "title": "Negotiation",
+      "asking": "Owner asked",
+      "gap": "Below asking",
+      "party": "Offer from",
+      "BUYER": "Buyer",
+      "SELLER": "Seller",
+      "amount": "Amount (PKR)",
+      "record": "Record offer",
+      "empty": "No offers yet. Record the buyer’s first offer to start the negotiation.",
+      "accept": "Accept",
+      "reject": "Reject",
+      "withdraw": "Withdrawn",
+      "status": {
+        "OPEN": "Open",
+        "ACCEPTED": "Accepted",
+        "REJECTED": "Rejected",
+        "COUNTERED": "Countered",
+        "WITHDRAWN": "Withdrawn"
+      }
+    },
+    "checklist": {
+      "title": "Closing checklist",
+      "add": "Add your own item…",
+      "items": {
+        "DOCUMENTS_COLLECTED": "Documents collected",
+        "BUYER_VERIFIED": "Buyer verified",
+        "SELLER_VERIFIED": "Seller verified",
+        "TOKEN_RECEIVED": "Token (bayana) received",
+        "AGREEMENT_SIGNED": "Agreement signed",
+        "DUES_CHECKED": "Outstanding dues checked",
+        "TRANSFER_DOCS_READY": "Transfer documents prepared",
+        "PAYMENT_COMPLETED": "Payment completed",
+        "COMMISSION_RECEIVED": "Commission received",
+        "DEAL_CLOSED": "Deal closed"
+      }
+    }
   },
   "finance": {
     "title": "Income & expense",
@@ -1075,5 +1229,203 @@
     "needsInternet": "Making a brochure needs an internet connection.",
     "share": "Share",
     "generating": "Preparing brochure…"
+  },
+  "lead": {
+    "title": "Lead score",
+    "manual": "(set manually)",
+    "responseTime": "First response in {{time}}",
+    "notContactedYet": "Not contacted yet",
+    "assigned": "Lead assigned",
+    "assignTo": "Assign to",
+    "assignedTo": "Assigned to",
+    "unassigned": "Unassigned",
+    "unassignedInbox": "Unassigned leads only",
+    "assign": "Assign",
+    "history": "Status & assignment history",
+    "campaign": "Campaign",
+    "campaignHint": "Ad, listing or campaign the lead came from",
+    "timeline": "Buying timeline",
+    "lostReason": "Lost reason",
+    "lostNote": "Lost note",
+    "temperature": "Temperature",
+    "score": "Lead score",
+    "reasons": {
+      "BUDGET_MATCHES_INVENTORY": "Budget fits listings in stock",
+      "BUDGET_NO_MATCHES": "Budget known, but no matching listings yet",
+      "BUDGET_MISSING": "No budget recorded",
+      "LOCATION_PRECISE": "Precise location (society / block)",
+      "LOCATION_AREA_ONLY": "Only a general area is known",
+      "LOCATION_MISSING": "No preferred location",
+      "CATEGORY_SET": "Property type is known",
+      "CATEGORY_MISSING": "Property type not recorded",
+      "INTENT_ACTIVE": "Actively looking",
+      "INTENT_ON_HOLD": "Search on hold",
+      "INTENT_CLOSED": "Lead closed",
+      "CONTACTED_RECENTLY": "Contacted in the last 3 days",
+      "CONTACTED_THIS_WEEK": "Contacted this week",
+      "CONTACTED_THIS_MONTH": "Contacted this month",
+      "NOT_CONTACTED_LONG": "No contact for over a month",
+      "NEW_LEAD": "New lead (less than a day old)",
+      "NEVER_CONTACTED": "Never contacted",
+      "FOLLOWUPS_DONE": "Several follow-ups completed",
+      "FOLLOWUP_DONE": "One follow-up completed",
+      "FOLLOWUP_SCHEDULED": "Follow-up scheduled",
+      "NO_FOLLOWUPS": "No follow-ups yet",
+      "FOLLOWUPS_OVERDUE": "Follow-ups are overdue",
+      "TIMELINE_IMMEDIATE": "Wants to buy now",
+      "TIMELINE_ONE_MONTH": "Buying within a month",
+      "TIMELINE_THREE_MONTHS": "Buying within 3 months",
+      "TIMELINE_SIX_MONTHS": "Buying within 6 months",
+      "TIMELINE_EXPLORING": "Only exploring",
+      "TIMELINE_UNKNOWN": "Buying timeline unknown"
+    },
+    "factors": {
+      "budget": "Budget fit",
+      "location": "Location",
+      "category": "Property type",
+      "intent": "Intent",
+      "engagement": "Engagement",
+      "followUps": "Follow-ups",
+      "timeline": "Timeline"
+    },
+    "scoring": {
+      "title": "Lead scoring",
+      "hint": "How much each factor counts towards the 0–100 score, and the scores at which a lead becomes hot or warm.",
+      "hot": "Hot from score",
+      "warm": "Warm from score"
+    },
+    "import": {
+      "button": "Import",
+      "title": "Import leads from Excel",
+      "hint": "Use the template (Name and Mobile are required). Every row is checked like a normal entry: duplicates and invalid numbers are skipped and listed.",
+      "template": "Download template",
+      "fromSheet": "From the sheet",
+      "choose": "Choose .xlsx file",
+      "created": "Imported",
+      "duplicates": "Duplicates skipped",
+      "errors": "Rows with errors",
+      "row": "Row",
+      "existing": "already saved as {{name}}"
+    },
+    "report": {
+      "title": "Leads",
+      "leads": "Leads",
+      "conversion": "Conversion",
+      "unassigned": "Unassigned",
+      "response": "Avg. first response",
+      "won": "Won",
+      "aging": "Open leads by age",
+      "agingBuckets": {
+        "0_7": "0–7 days",
+        "8_30": "8–30 days",
+        "31_90": "31–90 days",
+        "90_PLUS": "90+ days"
+      },
+      "lostReasons": "Lost reasons"
+    }
+  },
+  "subscription": {
+    "current": "Current plan",
+    "plan": "Plan",
+    "billing": "Billing",
+    "requested": "Request sent — our team will confirm the change.",
+    "daysLeft": "{{n}} days left",
+    "ended": "Ended on {{date}}",
+    "users": "Users",
+    "branches": "Branches",
+    "storage": "Storage (MB)",
+    "unlimited": "unlimited",
+    "readOnly": "Your subscription has ended, so the account is read-only. Renew to add or change records.",
+    "compare": "Plans",
+    "request": "Request this plan",
+    "yourPlan": "Your plan",
+    "billingNote": "Plans are activated by the Dalliqo team once payment is received (bank transfer, JazzCash or EasyPaisa).",
+    "history": "Billing history",
+    "limitsLine": "{{users}} users · {{branches}} branches",
+    "plans": {
+      "STARTER": "Starter",
+      "PROFESSIONAL": "Professional",
+      "BUSINESS": "Business",
+      "ENTERPRISE": "Enterprise"
+    },
+    "status": {
+      "TRIAL": "Trial",
+      "ACTIVE": "Active",
+      "PAST_DUE": "Payment due",
+      "EXPIRED": "Expired",
+      "CANCELLED": "Cancelled"
+    },
+    "cycle": {
+      "MONTHLY": "Monthly",
+      "ANNUAL": "Annual"
+    },
+    "per": {
+      "MONTHLY": "month",
+      "ANNUAL": "year"
+    },
+    "modules": {
+      "crm": "Clients, properties & follow-ups",
+      "matching": "Automatic matching",
+      "deals": "Deals & commission",
+      "reports": "Reports & exports",
+      "agreements": "Agreements",
+      "finance": "Income & expense",
+      "branches": "Multiple branches",
+      "automation": "Automation rules",
+      "marketing": "Marketing",
+      "rentals": "Rental management",
+      "ai": "AI assistant",
+      "api": "API access"
+    },
+    "events": {
+      "TRIAL_STARTED": "Trial started",
+      "UPGRADE_REQUESTED": "Change requested",
+      "PLAN_CHANGED": "Plan changed",
+      "PAYMENT_RECORDED": "Payment recorded",
+      "CANCELLED": "Cancelled"
+    }
+  },
+  "automation": {
+    "title": "Automation rules",
+    "hint": "Dalliqo checks these every few minutes and notifies the right people once per situation.",
+    "unit": {
+      "minutes": "minutes",
+      "days": "days"
+    },
+    "rules": {
+      "HOT_LEAD_UNCONTACTED": {
+        "title": "Hot lead not contacted",
+        "hint": "Alert the agent and managers when a hot lead is not called within this time."
+      },
+      "LEAD_INACTIVE": {
+        "title": "Lead going cold",
+        "hint": "Remind the assigned agent when a lead has had no contact for this many days."
+      },
+      "PROPERTY_REVERIFY": {
+        "title": "Re-confirm listings",
+        "hint": "Ask the listing agent to re-confirm availability with the owner after this many days."
+      },
+      "LISTING_EXPIRY": {
+        "title": "Listing expiry warning",
+        "hint": "Warn this many days before a listing’s availability date (listings always expire on the date)."
+      },
+      "DEAL_STUCK_NEGOTIATION": {
+        "title": "Deal stuck in negotiation",
+        "hint": "Notify the agents and managers when a deal stays in negotiation this long."
+      },
+      "AGREEMENT_EXPIRING": {
+        "title": "Agreement expiring",
+        "hint": "Notify before a rental or sale agreement reaches its end date."
+      }
+    }
+  },
+  "platform": {
+    "title": "Platform admin",
+    "subtitle": "Subscriptions of every business on Dalliqo",
+    "only": "Only Dalliqo platform administrators can open this page.",
+    "manage": "Manage",
+    "paidUntil": "Paid until",
+    "amount": "Payment received (PKR)",
+    "reference": "Payment reference"
   }
 }

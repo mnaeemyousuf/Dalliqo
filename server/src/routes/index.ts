@@ -13,6 +13,8 @@ import businessRoutes from './businessRoutes';
 import memberRoutes from './memberRoutes';
 import crmRoutes from './crmRoutes';
 import fileRoutes from './fileRoutes';
+import { platformRoutes, subscriptionRoutes } from './subscriptionRoutes';
+import { entitlementGuard } from '../middleware/entitlements';
 
 const api = Router();
 
@@ -30,7 +32,9 @@ api.use('/files', fileRoutes);
 // Mounted per path so unknown routes still fall through to a 404.
 const secured = [authenticate, requirePasswordCurrent];
 api.use('/business', ...secured, businessRoutes);
-api.use('/members', ...secured, memberRoutes);
+api.use('/members', ...secured, entitlementGuard, memberRoutes);
+api.use('/subscription', ...secured, subscriptionRoutes);
+api.use('/platform', ...secured, platformRoutes);
 api.get('/audit-logs', ...secured, requirePermission(PERMISSIONS.AUDIT_READ), validate({ query: listAuditQuery }), asyncHandler(auditController.list));
 api.get('/meta/permissions', ...secured, metaController.permissions);
 
@@ -40,7 +44,7 @@ const CRM_PREFIXES = [
   '/documents', '/uploads', '/notes', '/activities', '/matches', '/settings', '/followups', '/notifications',
   '/devices', '/exports', '/sync', '/deals', '/reports', '/transactions', '/transaction-categories', '/agreements', '/agreement-templates',
 ];
-api.use(CRM_PREFIXES, ...secured);
+api.use(CRM_PREFIXES, ...secured, entitlementGuard);
 api.use(crmRoutes);
 
 export default api;

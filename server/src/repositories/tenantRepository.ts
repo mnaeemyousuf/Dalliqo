@@ -18,6 +18,8 @@ export interface UpdateOptions {
   /** If given, the write only succeeds when the stored version still equals it. */
   baseVersion?: number;
   unset?: string[];
+  /** Array appends applied in the same atomic write (e.g. history entries). */
+  push?: Record<string, unknown>;
   session?: ClientSession;
 }
 
@@ -127,6 +129,7 @@ export function createTenantRepository<T extends { _id: unknown }>(model: Model<
       const filter = scope(ctx, { _id: id, ...(opts.baseVersion !== undefined ? { version: opts.baseVersion } : {}) });
       const update: Filter = { $set: { ...set, updatedBy: ctx.userId }, $inc: { version: 1 } };
       if (opts.unset?.length) update.$unset = Object.fromEntries(opts.unset.map((f) => [f, 1]));
+      if (opts.push && Object.keys(opts.push).length) update.$push = opts.push;
       const doc = await model
         .findOneAndUpdate(filter, update, { new: true, runValidators: true, session: opts.session })
         .lean<T>();

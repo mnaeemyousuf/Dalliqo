@@ -11,18 +11,21 @@ import {
   type CommissionStatus,
   type DealSide,
   type DealStage,
+  DEAL_CHECKLIST_ITEMS,
+  type OfferParty,
+  type OfferStatus,
   type PaymentMethod,
   type PayoutStatus,
 } from '@recrm/shared';
 import { nextSequence } from '../models/Counter';
-import { Deal, type DealDoc, type DealPayment, type DealPayout } from '../models/Deal';
+import { Deal, type DealChecklistEntry, type DealDoc, type DealOffer, type DealPayment, type DealPayout } from '../models/Deal';
 import { clientRepository, propertyRepository } from '../repositories/entityRepositories';
 import { memberRepository } from '../repositories/memberRepository';
 import { createTenantRepository, type Filter } from '../repositories/tenantRepository';
 import type { AuthContext, RequestMeta, TenantContext } from '../types/context';
 import { AppError, badRequest, forbidden, notFound } from '../utils/AppError';
 import { diffFields } from '../utils/diff';
-import { escapeRegex, searchBlob } from '../utils/text';
+import { escapeRegex, formatPkr, searchBlob } from '../utils/text';
 import { withTransaction } from '../utils/transaction';
 import { activityService, type ActivityRef } from './activityService';
 import { auditService } from './auditService';
@@ -36,6 +39,22 @@ export const formatDealNo = (n: number) => `DL-${String(n).padStart(6, '0')}`;
 interface Term {
   mode: CommissionMode;
   value: number;
+}
+
+export interface OfferInput {
+  id?: string;
+  _id?: string;
+  party: OfferParty;
+  amount: number;
+  status?: OfferStatus;
+  note?: string;
+  at?: Date;
+}
+
+export interface ChecklistInput {
+  key: string;
+  label?: string;
+  done: boolean;
 }
 
 export interface DealInput {
@@ -55,6 +74,9 @@ export interface DealInput {
   /** Full lists, used by offline sync (each item keeps its id, so replays never duplicate). */
   payments?: PaymentInput[];
   payouts?: PayoutInput[];
+  offers?: OfferInput[];
+  checklist?: ChecklistInput[];
+  tokenAmount?: number;
 }
 
 export interface PaymentInput {
@@ -102,7 +124,44 @@ const SORTS: Record<string, Record<string, 1 | -1>> = {
   dealNo: { dealNo: 1 },
 };
 
-const EDITABLE = ['branchId', 'title', 'clientId', 'propertyId', 'agents', 'agreedPrice', 'finalPrice', 'expectedCloseDate', 'notes', 'commission'] as const;
+const EDITABLE = ['branchId', 'title', 'clientId', 'propertyId', 'agents', 'agreedPrice', 'finalPrice', 'expectedCloseDate', 'notes', 'commission', 'tokenAmount'] as const;
+
+/** Stages before negotiation: recording an offer moves the deal into NEGOTIATION. */
+const PRE_NEGOTIATION: DealStage[] = ['INQUIRY', 'QUALIFIED', 'SITE_VISIT'];
+
+const defaultChecklist = (): DealChecklistEntry[] => DEAL_CHECKLIST_ITEMS.map((key) => ({ key, done: false, doneAt: null, doneBy: null }));
+
+function normalizeOffers(list: OfferInput[], auth: AuthContext, existing: DealOffer[] = []): DealOffer[] {
+  const byId = new Map(existing.map((o) => [o._id, o]));
+  return list.map((o) => {
+    const id = o._id ?? o.id ?? randomUUID();
+    const prev = byId.get(id);
+    return {
+      _id: id,
+      party: o.party,
+      amount: o.amount,
+      status: o.status ?? prev?.status ?? 'OPEN',
+      note: o.note,
+      at: prev?.at ?? (o.at ? new Date(o.at) : new Date()),
+      by: prev?.by ?? new Types.ObjectId(auth.userId),
+    };
+  });
+}
+
+function normalizeChecklist(list: ChecklistInput[], auth: AuthContext, existing: DealChecklistEntry[] = []): DealChecklistEntry[] {
+  const byKey = new Map(existing.map((c) => [c.key, c]));
+  return list.map((c) => {
+    const prev = byKey.get(c.key);
+    const same = prev && prev.done === c.done;
+    return {
+      key: c.key,
+      label: c.label ?? prev?.label,
+      done: c.done,
+      doneAt: same ? (prev!.doneAt ?? null) : c.done ? new Date() : null,
+      doneBy: same ? (prev!.doneBy ?? null) : c.done ? new Types.ObjectId(auth.userId) : null,
+    };
+  });
+}
 
 /** Without deals:read_all a member only sees (and changes) deals they are an agent on. */
 export function ownDealsFilter(auth: { permissions?: readonly string[]; userId: string }): Filter {
@@ -177,7 +236,8 @@ export const dealService = {
     }
     const client = await clientRepository.findById(auth, input.clientId);
     if (!client) throw badRequest(ERROR_CODES.CLIENT_NOT_FOUND, 'Client not found');
-    if (input.propertyId && !(await propertyRepository.findById(auth, input.propertyId))) throw badRequest(ERROR_CODES.PROPERTY_NOT_FOUND, 'Property not found');
+    const property = input.propertyId ? await propertyRepository.findById(auth, input.propertyId) : null;
+    if (input.propertyId && !property) throw badRequest(ERROR_CODES.PROPERTY_NOT_FOUND, 'Property not found');
     const agents = input.agents?.length ? input.agents : [{ userId: auth.userId, sharePct: 100 }];
     await assertAgents(auth, agents);
     if (!auth.permissions.includes(PERMISSIONS.DEALS_READ_ALL) && !agents.some((a) => a.userId === auth.userId)) {
@@ -211,6 +271,10 @@ export const dealService = {
           stageHistory: [{ stage, at: now, by: auth.userId }],
           agreedPrice: input.agreedPrice,
           finalPrice: input.finalPrice,
+          initialAskingPrice: property?.askingPrice,
+          tokenAmount: input.tokenAmount,
+          offers: input.offers?.length ? normalizeOffers(input.offers, auth) : [],
+          checklist: input.checklist?.length ? normalizeChecklist(input.checklist, auth) : defaultChecklist(),
           expectedCloseDate: input.expectedCloseDate ?? null,
           closedAt: stage === 'CLOSED_WON' || stage === 'CLOSED_LOST' ? now : null,
           notes: input.notes,
@@ -310,6 +374,8 @@ export const dealService = {
       }
       if (input.payouts) set.payouts = normalizePayouts(input.payouts);
     }
+    if (input.offers) set.offers = normalizeOffers(input.offers, auth, before.offers ?? []);
+    if (input.checklist) set.checklist = normalizeChecklist(input.checklist, auth, before.checklist?.length ? before.checklist : defaultChecklist());
     const merged = { ...before, ...set } as DealDoc;
     Object.assign(set, moneyFields(merged));
     if (set.clientId || set.title) {
@@ -317,7 +383,7 @@ export const dealService = {
       set.searchText = searchBlob(before.dealNo, merged.title, client?.fullName);
     }
     const updated = await dealRepository.update(auth, id, set, { baseVersion: opts.baseVersion });
-    const changes = diffFields(before as unknown as Record<string, unknown>, set, [...EDITABLE, 'payments', 'payouts']);
+    const changes = diffFields(before as unknown as Record<string, unknown>, set, [...EDITABLE, 'payments', 'payouts', 'offers', 'checklist']);
     if (changes.length) {
       await auditService.record(auth, { action: 'deal.updated', entityType: 'deal', entityId: updated._id, entityLabel: updated.dealNo, changes, ip: opts.meta?.ip });
       await activityService.record(auth, 'DEAL_UPDATED', `Deal ${updated.dealNo} updated (${changes.map((c) => c.field).join(', ')})`, refs(updated));
@@ -346,6 +412,70 @@ export const dealService = {
     await auditService.record(auth, { action: 'deal.stage_changed', entityType: 'deal', entityId: updated._id, entityLabel: updated.dealNo, changes: [{ field: 'stage', oldValue: before.stage, newValue: stage }], ip: opts.meta?.ip });
     publishChange(auth, SOCKET_EVENTS.DEAL_UPDATED, 'deal', updated);
     return updated;
+  },
+
+  /**
+   * Records an offer or counter-offer. Earlier open offers from the other party become COUNTERED;
+   * a deal still before negotiation moves to NEGOTIATION.
+   */
+  async addOffer(auth: AuthContext, id: string, input: OfferInput, meta: RequestMeta = {}) {
+    let before = await this.load(auth, id);
+    const offer = normalizeOffers([input], auth)[0];
+    if ((before.offers ?? []).some((o) => o._id === offer._id)) return before; // replay
+    if (PRE_NEGOTIATION.includes(before.stage)) {
+      before = await this.changeStage(auth, id, 'NEGOTIATION', { note: 'Offer recorded' });
+    }
+    const offers = [
+      ...(before.offers ?? []).map((o) => (o.status === 'OPEN' && o.party !== offer.party ? { ...o, status: 'COUNTERED' as const } : o)),
+      offer,
+    ];
+    const updated = await dealRepository.update(auth, id, { offers });
+    const who = offer.party === 'BUYER' ? 'Buyer offered' : 'Seller countered with';
+    await activityService.record(auth, 'DEAL_OFFER_RECORDED', `${updated.dealNo}: ${who} ${formatPkr(offer.amount)}${offer.note ? ` (${offer.note})` : ''}`, refs(updated), { party: offer.party, amount: offer.amount });
+    await auditService.record(auth, { action: 'deal.offer_added', entityType: 'deal', entityId: updated._id, entityLabel: updated.dealNo, meta: { offerId: offer._id, party: offer.party, amount: offer.amount }, ip: meta.ip });
+    publishChange(auth, SOCKET_EVENTS.DEAL_UPDATED, 'deal', updated);
+    return (await dealRepository.findById(auth, id)) ?? updated;
+  },
+
+  /** Accepting an offer fixes the agreed price, closes the other open offers and moves the deal to OFFER. */
+  async respondToOffer(auth: AuthContext, id: string, offerId: string, status: 'ACCEPTED' | 'REJECTED' | 'WITHDRAWN', meta: RequestMeta = {}) {
+    let before = await this.load(auth, id);
+    const offer = (before.offers ?? []).find((o) => o._id === offerId);
+    if (!offer) throw notFound(ERROR_CODES.OFFER_NOT_FOUND, 'Offer not found');
+    if (offer.status === status) return before;
+    if (status === 'ACCEPTED' && [...PRE_NEGOTIATION, 'NEGOTIATION'].includes(before.stage)) {
+      before = await this.changeStage(auth, id, 'OFFER', { note: `Offer of ${formatPkr(offer.amount)} accepted` });
+    }
+    const offers = (before.offers ?? []).map((o) =>
+      o._id === offerId ? { ...o, status } : status === 'ACCEPTED' && o.status === 'OPEN' ? { ...o, status: 'REJECTED' as const } : o,
+    );
+    const set: Filter = { offers };
+    if (status === 'ACCEPTED') set.agreedPrice = offer.amount;
+    const merged = { ...before, ...set } as DealDoc;
+    Object.assign(set, moneyFields(merged));
+    const updated = await dealRepository.update(auth, id, set);
+    await activityService.record(auth, 'DEAL_OFFER_RECORDED', `${updated.dealNo}: offer of ${formatPkr(offer.amount)} ${status.toLowerCase()}`, refs(updated), { offerId, status, amount: offer.amount });
+    await auditService.record(auth, { action: 'deal.offer_' + status.toLowerCase(), entityType: 'deal', entityId: updated._id, entityLabel: updated.dealNo, changes: [{ field: 'offer', oldValue: offer.status, newValue: status }, ...(status === 'ACCEPTED' ? [{ field: 'agreedPrice', oldValue: before.agreedPrice ?? null, newValue: offer.amount }] : [])], ip: meta.ip });
+    publishChange(auth, SOCKET_EVENTS.DEAL_UPDATED, 'deal', updated);
+    return (await dealRepository.findById(auth, id)) ?? updated;
+  },
+
+  /** Ticks (or un-ticks) a closing-checklist item; unknown keys become custom items. */
+  async setChecklistItem(auth: AuthContext, id: string, key: string, done: boolean, label?: string, meta: RequestMeta = {}) {
+    const before = await this.load(auth, id);
+    const current = before.checklist?.length ? before.checklist : defaultChecklist();
+    const exists = current.some((c) => c.key === key);
+    const next = normalizeChecklist(
+      [...current.map((c) => ({ key: c.key, label: c.label, done: c.key === key ? done : c.done })), ...(exists ? [] : [{ key, label: label ?? key, done }])],
+      auth,
+      current,
+    );
+    const updated = await dealRepository.update(auth, id, { checklist: next });
+    const doneCount = next.filter((c) => c.done).length;
+    await activityService.record(auth, 'DEAL_CHECKLIST_UPDATED', `${updated.dealNo}: ${label ?? key} ${done ? 'done' : 'reopened'} (${doneCount}/${next.length})`, refs(updated), { key, done });
+    await auditService.record(auth, { action: 'deal.checklist_updated', entityType: 'deal', entityId: updated._id, entityLabel: updated.dealNo, changes: [{ field: `checklist.${key}`, oldValue: !done, newValue: done }], ip: meta.ip });
+    publishChange(auth, SOCKET_EVENTS.DEAL_UPDATED, 'deal', updated);
+    return (await dealRepository.findById(auth, id)) ?? updated;
   },
 
   async addPayment(auth: AuthContext, id: string, p: PaymentInput, meta: RequestMeta = {}) {

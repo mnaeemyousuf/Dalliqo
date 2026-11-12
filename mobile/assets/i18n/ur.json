@@ -566,7 +566,15 @@
       "SHOP": "دکان",
       "OFFICE": "دفتر",
       "COMMERCIAL": "کمرشل",
-      "OTHER": "دیگر"
+      "OTHER": "دیگر",
+      "FARMHOUSE": "فارم ہاؤس",
+      "FILE": "پلاٹ فائل",
+      "COMMERCIAL_PLOT": "کمرشل پلاٹ",
+      "BUILDING": "عمارت",
+      "WAREHOUSE": "گودام",
+      "FACTORY": "فیکٹری",
+      "INDUSTRIAL_PLOT": "صنعتی پلاٹ",
+      "AGRICULTURAL_LAND": "زرعی زمین"
     },
     "propertyStatus": {
       "AVAILABLE": "دستیاب",
@@ -574,7 +582,10 @@
       "SOLD": "فروخت شدہ",
       "RENTED": "کرایہ پر",
       "WITHDRAWN": "واپس لی گئی",
-      "INACTIVE": "غیر فعال"
+      "INACTIVE": "غیر فعال",
+      "UNDER_NEGOTIATION": "بات چیت جاری",
+      "ON_HOLD": "روکا ہوا",
+      "EXPIRED": "میعاد ختم"
     },
     "listingPurpose": {
       "SALE": "فروخت",
@@ -605,14 +616,20 @@
       "SOCIAL_MEDIA": "سوشل میڈیا",
       "PORTAL": "پراپرٹی پورٹل",
       "OTHER": "دیگر",
-      "UNKNOWN": "درج نہیں"
+      "UNKNOWN": "درج نہیں",
+      "FACEBOOK": "فیس بک",
+      "INSTAGRAM": "انسٹاگرام",
+      "ZAMEEN": "زمین ڈاٹ کام",
+      "OLX": "او ایل ایکس",
+      "WEBSITE": "ویب سائٹ"
     },
     "sizeUnit": {
       "SQ_FT": "مربع فٹ",
       "SQ_YARD": "مربع گز",
       "SQ_METER": "مربع میٹر",
       "MARLA": "مرلہ",
-      "KANAL": "کنال"
+      "KANAL": "کنال",
+      "ACRE": "ایکڑ"
     },
     "followUpType": {
       "CALL": "کال",
@@ -755,12 +772,15 @@
     "dealStage": {
       "INQUIRY": "انکوائری",
       "SITE_VISIT": "سائٹ وزٹ",
-      "OFFER": "آفر",
+      "OFFER": "آفر منظور",
       "TOKEN": "ٹوکن / بیعانہ",
       "AGREEMENT": "معاہدہ",
       "TRANSFER": "ٹرانسفر",
       "CLOSED_WON": "مکمل (کامیاب)",
-      "CLOSED_LOST": "ناکام"
+      "CLOSED_LOST": "ناکام",
+      "QUALIFIED": "اہل",
+      "NEGOTIATION": "بات چیت",
+      "PAYMENT": "ادائیگی"
     },
     "commissionStatus": {
       "PENDING": "زیرِ التوا",
@@ -803,6 +823,61 @@
       "SIGNED": "دستخط شدہ",
       "EXPIRED": "میعاد ختم",
       "CANCELLED": "منسوخ"
+    },
+    "leadTemperature": {
+      "HOT": "گرم",
+      "WARM": "معتدل",
+      "COLD": "ٹھنڈا"
+    },
+    "buyingTimeline": {
+      "IMMEDIATE": "ابھی خریدنا ہے",
+      "ONE_MONTH": "ایک ماہ میں",
+      "THREE_MONTHS": "3 ماہ میں",
+      "SIX_MONTHS": "6 ماہ میں",
+      "EXPLORING": "صرف دیکھ رہے ہیں"
+    },
+    "lostReason": {
+      "BUDGET": "بجٹ",
+      "BOUGHT_ELSEWHERE": "کہیں اور سے خرید لیا",
+      "NOT_RESPONDING": "جواب نہیں دے رہے",
+      "NOT_INTERESTED": "دلچسپی نہیں",
+      "REQUIREMENT_CHANGED": "ضرورت بدل گئی",
+      "INVALID_CONTACT": "غلط نمبر",
+      "DUPLICATE": "ڈپلیکیٹ",
+      "OTHER": "دیگر"
+    },
+    "possessionStatus": {
+      "POSSESSION": "قبضہ",
+      "NON_POSSESSION": "بغیر قبضہ",
+      "BALLOTED": "بیلٹ شدہ",
+      "UNBALLOTED": "غیر بیلٹ شدہ"
+    },
+    "developmentStatus": {
+      "DEVELOPED": "ترقی یافتہ",
+      "UNDER_DEVELOPMENT": "زیر ترقی",
+      "UNDEVELOPED": "غیر ترقی یافتہ"
+    },
+    "constructionStatus": {
+      "EMPTY_PLOT": "خالی پلاٹ",
+      "GREY_STRUCTURE": "گرے اسٹرکچر",
+      "UNDER_CONSTRUCTION": "زیر تعمیر",
+      "READY": "تیار",
+      "NEEDS_RENOVATION": "مرمت درکار"
+    },
+    "furnishing": {
+      "UNFURNISHED": "بغیر فرنیچر",
+      "SEMI_FURNISHED": "جزوی فرنیچر",
+      "FURNISHED": "فرنیچر کے ساتھ"
+    },
+    "facing": {
+      "NORTH": "شمال",
+      "SOUTH": "جنوب",
+      "EAST": "مشرق",
+      "WEST": "مغرب",
+      "NORTH_EAST": "شمال مشرق",
+      "NORTH_WEST": "شمال مغرب",
+      "SOUTH_EAST": "جنوب مشرق",
+      "SOUTH_WEST": "جنوب مغرب"
     }
   },
   "errors": {
@@ -826,7 +901,12 @@
     "BRANCH_IS_DEFAULT": "مرکزی برانچ محفوظ نہیں کی جا سکتی",
     "DEAL_NOT_FOUND": "ڈیل نہیں ملی",
     "INVALID_AGENT_SHARES": "ایجنٹس کے حصے کل 100% ہونے چاہئیں",
-    "PAYMENT_NOT_FOUND": "ادائیگی نہیں ملی"
+    "PAYMENT_NOT_FOUND": "ادائیگی نہیں ملی",
+    "PROPERTY_DUPLICATE": "یہ پلاٹ پہلے سے درج ہے۔",
+    "OFFER_NOT_FOUND": "آفر نہیں ملی۔",
+    "SUBSCRIPTION_EXPIRED": "آپ کی سبسکرپشن ختم ہو گئی ہے۔ ریکارڈ شامل یا تبدیل کرنے کے لیے تجدید کریں — آپ کا ڈیٹا محفوظ ہے اور دیکھا جا سکتا ہے۔",
+    "MODULE_NOT_IN_PLAN": "یہ فیچر آپ کے پلان میں شامل نہیں۔",
+    "PLAN_LIMIT_REACHED": "پلان کی حد پوری ہو گئی ہے۔ مزید کے لیے اپ گریڈ کریں۔"
   },
   "mobile": {
     "tabs": {
@@ -1053,7 +1133,44 @@
     "paymentsCount": "ادائیگیاں",
     "outstandingDeals": "جن ڈیلز کا کمیشن باقی ہے",
     "defaultBuyerPct": "خریدار کی جانب سے ڈیفالٹ کمیشن",
-    "defaultSellerPct": "فروخت کنندہ کی جانب سے ڈیفالٹ کمیشن"
+    "defaultSellerPct": "فروخت کنندہ کی جانب سے ڈیفالٹ کمیشن",
+    "negotiation": {
+      "title": "بات چیت",
+      "asking": "مالک کی مانگ",
+      "gap": "مانگ سے کم",
+      "party": "آفر دینے والا",
+      "BUYER": "خریدار",
+      "SELLER": "فروخت کنندہ",
+      "amount": "رقم (روپے)",
+      "record": "آفر درج کریں",
+      "empty": "ابھی کوئی آفر نہیں۔ بات چیت شروع کرنے کے لیے خریدار کی پہلی آفر درج کریں۔",
+      "accept": "منظور",
+      "reject": "مسترد",
+      "withdraw": "واپس لی",
+      "status": {
+        "OPEN": "کھلی",
+        "ACCEPTED": "منظور",
+        "REJECTED": "مسترد",
+        "COUNTERED": "جوابی آفر",
+        "WITHDRAWN": "واپس لی"
+      }
+    },
+    "checklist": {
+      "title": "ڈیل بند کرنے کی چیک لسٹ",
+      "add": "اپنا آئٹم شامل کریں…",
+      "items": {
+        "DOCUMENTS_COLLECTED": "دستاویزات جمع",
+        "BUYER_VERIFIED": "خریدار کی تصدیق",
+        "SELLER_VERIFIED": "فروخت کنندہ کی تصدیق",
+        "TOKEN_RECEIVED": "ٹوکن (بیعانہ) وصول",
+        "AGREEMENT_SIGNED": "معاہدہ دستخط شدہ",
+        "DUES_CHECKED": "واجبات چیک کیے",
+        "TRANSFER_DOCS_READY": "ٹرانسفر کے کاغذات تیار",
+        "PAYMENT_COMPLETED": "ادائیگی مکمل",
+        "COMMISSION_RECEIVED": "کمیشن وصول",
+        "DEAL_CLOSED": "ڈیل بند"
+      }
+    }
   },
   "finance": {
     "title": "آمدنی و اخراجات",
@@ -1178,5 +1295,43 @@
   },
   "category": {
     "add": "زمرہ شامل کریں"
+  },
+  "lead": {
+    "title": "لیڈ اسکور",
+    "responseTime": "پہلا رابطہ {{time}} میں",
+    "notContactedYet": "ابھی رابطہ نہیں ہوا",
+    "timeline": "خریداری کا وقت",
+    "reasons": {
+      "BUDGET_MATCHES_INVENTORY": "بجٹ موجود لسٹنگز کے مطابق ہے",
+      "BUDGET_NO_MATCHES": "بجٹ معلوم ہے مگر ابھی کوئی میچ نہیں",
+      "BUDGET_MISSING": "بجٹ درج نہیں",
+      "LOCATION_PRECISE": "جگہ واضح ہے (سوسائٹی / بلاک)",
+      "LOCATION_AREA_ONLY": "صرف علاقہ معلوم ہے",
+      "LOCATION_MISSING": "پسندیدہ جگہ درج نہیں",
+      "CATEGORY_SET": "پراپرٹی کی قسم معلوم ہے",
+      "CATEGORY_MISSING": "پراپرٹی کی قسم درج نہیں",
+      "INTENT_ACTIVE": "فعال طور پر تلاش میں",
+      "INTENT_ON_HOLD": "تلاش روکی ہوئی ہے",
+      "INTENT_CLOSED": "لیڈ بند",
+      "CONTACTED_RECENTLY": "پچھلے 3 دن میں رابطہ",
+      "CONTACTED_THIS_WEEK": "اس ہفتے رابطہ",
+      "CONTACTED_THIS_MONTH": "اس مہینے رابطہ",
+      "NOT_CONTACTED_LONG": "ایک ماہ سے زیادہ رابطہ نہیں",
+      "NEW_LEAD": "نئی لیڈ (ایک دن سے کم)",
+      "NEVER_CONTACTED": "کبھی رابطہ نہیں ہوا",
+      "FOLLOWUPS_DONE": "کئی فالو اپ مکمل",
+      "FOLLOWUP_DONE": "ایک فالو اپ مکمل",
+      "FOLLOWUP_SCHEDULED": "فالو اپ طے ہے",
+      "NO_FOLLOWUPS": "ابھی کوئی فالو اپ نہیں",
+      "FOLLOWUPS_OVERDUE": "فالو اپ زائد المیعاد ہیں",
+      "TIMELINE_IMMEDIATE": "ابھی خریدنا چاہتے ہیں",
+      "TIMELINE_ONE_MONTH": "ایک ماہ میں خریداری",
+      "TIMELINE_THREE_MONTHS": "3 ماہ میں خریداری",
+      "TIMELINE_SIX_MONTHS": "6 ماہ میں خریداری",
+      "TIMELINE_EXPLORING": "صرف دیکھ رہے ہیں",
+      "TIMELINE_UNKNOWN": "خریداری کا وقت معلوم نہیں"
+    },
+    "temperature": "درجہ",
+    "score": "لیڈ اسکور"
   }
 }

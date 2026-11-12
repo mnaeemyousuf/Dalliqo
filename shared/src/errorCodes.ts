@@ -73,6 +73,15 @@ export const ERROR_CODES = {
   FILE_TOO_LARGE: 'FILE_TOO_LARGE',
   INVALID_SIGNATURE: 'INVALID_SIGNATURE',
   EXPORT_TOO_LARGE: 'EXPORT_TOO_LARGE',
+  /** Another listing has the same society, block and plot number; resend with allowDuplicate to save anyway. */
+  PROPERTY_DUPLICATE: 'PROPERTY_DUPLICATE',
+  OFFER_NOT_FOUND: 'OFFER_NOT_FOUND',
+  /** The trial or paid period has ended; the account is read-only until renewed. */
+  SUBSCRIPTION_EXPIRED: 'SUBSCRIPTION_EXPIRED',
+  /** The feature is not part of the business's plan. */
+  MODULE_NOT_IN_PLAN: 'MODULE_NOT_IN_PLAN',
+  /** Users / branches / storage limit of the plan reached. */
+  PLAN_LIMIT_REACHED: 'PLAN_LIMIT_REACHED',
 } as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];

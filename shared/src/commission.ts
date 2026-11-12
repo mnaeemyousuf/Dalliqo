@@ -3,11 +3,32 @@
  * lib/core/commission/commission.dart, tested against the same cases). Amounts are whole rupees.
  */
 
-export const DEAL_STAGES = ['INQUIRY', 'SITE_VISIT', 'OFFER', 'TOKEN', 'AGREEMENT', 'TRANSFER', 'CLOSED_WON', 'CLOSED_LOST'] as const;
+export const DEAL_STAGES = ['INQUIRY', 'QUALIFIED', 'SITE_VISIT', 'NEGOTIATION', 'OFFER', 'TOKEN', 'AGREEMENT', 'PAYMENT', 'TRANSFER', 'CLOSED_WON', 'CLOSED_LOST'] as const;
 export type DealStage = (typeof DEAL_STAGES)[number];
 
 /** Stages of a deal still in progress (the pipeline columns before won/lost). */
-export const OPEN_DEAL_STAGES: readonly DealStage[] = ['INQUIRY', 'SITE_VISIT', 'OFFER', 'TOKEN', 'AGREEMENT', 'TRANSFER'];
+export const OPEN_DEAL_STAGES: readonly DealStage[] = ['INQUIRY', 'QUALIFIED', 'SITE_VISIT', 'NEGOTIATION', 'OFFER', 'TOKEN', 'AGREEMENT', 'PAYMENT', 'TRANSFER'];
+
+/** Who made an offer in a negotiation, and where the offer stands. */
+export const OFFER_PARTIES = ['BUYER', 'SELLER'] as const;
+export type OfferParty = (typeof OFFER_PARTIES)[number];
+export const OFFER_STATUSES = ['OPEN', 'ACCEPTED', 'REJECTED', 'COUNTERED', 'WITHDRAWN'] as const;
+export type OfferStatus = (typeof OFFER_STATUSES)[number];
+
+/** Default deal-closing checklist. */
+export const DEAL_CHECKLIST_ITEMS = [
+  'DOCUMENTS_COLLECTED',
+  'BUYER_VERIFIED',
+  'SELLER_VERIFIED',
+  'TOKEN_RECEIVED',
+  'AGREEMENT_SIGNED',
+  'DUES_CHECKED',
+  'TRANSFER_DOCS_READY',
+  'PAYMENT_COMPLETED',
+  'COMMISSION_RECEIVED',
+  'DEAL_CLOSED',
+] as const;
+export type DealChecklistItem = (typeof DEAL_CHECKLIST_ITEMS)[number];
 
 export const COMMISSION_MODES = ['PERCENT', 'FIXED'] as const;
 export type CommissionMode = (typeof COMMISSION_MODES)[number];

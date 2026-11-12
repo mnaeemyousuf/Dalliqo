@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CalendarPlus, LayoutGrid, Mail, MessageCircle, MessageSquare, Pencil, Phone, Plus, Rows3, Trash2, X } from 'lucide-react';
+import { CalendarPlus, FileUp, LayoutGrid, Mail, MessageCircle, MessageSquare, Pencil, Phone, Plus, Rows3, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { CLIENT_PURPOSES, CLIENT_SOURCES, CLIENT_STATUSES, PERMISSIONS, PRIORITIES, PROPERTY_TYPES, SIZE_UNITS } from '@recrm/shared';
+import { BUYING_TIMELINES, CLIENT_PURPOSES, CLIENT_SOURCES, CLIENT_STATUSES, LEAD_TEMPERATURES, LOST_REASONS, PERMISSIONS, PRIORITIES, PROPERTY_TYPES, SIZE_UNITS } from '@recrm/shared';
+import { LeadImportModal, LeadPanel, TemperatureBadge } from '@/pages/Phase3Pages';
 import { toApiError } from '@/api/client';
 import { clientApi } from '@/api/endpoints';
 import type { Client, Requirement } from '@/api/types';
@@ -129,7 +130,13 @@ export function ClientFormDrawer({ open, onClose, client }: { open: boolean; onC
     source: client?.source ?? '',
     assignedTo: client?.assignedTo ?? '',
     notes: client?.notes ?? '',
+    campaign: client?.campaign ?? '',
+    buyingTimeline: client?.buyingTimeline ?? '',
+    lostReason: client?.lostReason ?? '',
+    lostNote: client?.lostNote ?? '',
   });
+  const timelines = useEnumOptions('buyingTimeline', BUYING_TIMELINES);
+  const lostReasons = useEnumOptions('lostReason', LOST_REASONS);
   const [reqs, setReqs] = useState<ReqDraft[]>(client?.requirements.length ? client.requirements.map(toDraft) : [toDraft()]);
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -137,7 +144,11 @@ export function ClientFormDrawer({ open, onClose, client }: { open: boolean; onC
     mutationFn: (allowDuplicate: boolean = false) => {
       const body = {
         ...(allowDuplicate ? { allowDuplicate: true } : {}),
-        ...Object.fromEntries(Object.entries(form).map(([k, v]) => [k, v === '' ? undefined : v])),
+        ...Object.fromEntries(
+          Object.entries(form)
+            .filter(([k]) => form.status === 'CLOSED_LOST' || (k !== 'lostReason' && k !== 'lostNote'))
+            .map(([k, v]) => [k, v === '' ? undefined : v]),
+        ),
         requirements: reqs.map((r, i) => ({
           ...(r._id ? { _id: r._id } : {}),
           isPrimary: i === 0,
@@ -221,6 +232,14 @@ export function ClientFormDrawer({ open, onClose, client }: { open: boolean; onC
           <Select label={t('common.status')} options={statuses} value={form.status} onChange={set('status')} />
           <Select label={t('client.priority')} options={priorities} value={form.priority} onChange={set('priority')} />
           <Select label={t('client.source')} placeholder="—" options={sources} value={form.source} onChange={set('source')} />
+          <Input label={t('lead.campaign')} value={form.campaign} onChange={set('campaign')} hint={t('lead.campaignHint')} />
+          <Select label={t('lead.timeline')} placeholder="—" options={timelines} value={form.buyingTimeline} onChange={set('buyingTimeline')} />
+          {form.status === 'CLOSED_LOST' && (
+            <>
+              <Select label={t('lead.lostReason')} placeholder="—" options={lostReasons} value={form.lostReason} onChange={set('lostReason')} />
+              <Input label={t('lead.lostNote')} value={form.lostNote} onChange={set('lostNote')} />
+            </>
+          )}
           {members.options.length > 0 && <Select label={t('client.assignedTo')} placeholder={t('client.unassigned')} options={members.options} value={form.assignedTo} onChange={set('assignedTo')} />}
           <Input label={t('common.address')} value={form.address} onChange={set('address')} wrapperClassName="sm:col-span-2" />
         </div>
@@ -253,7 +272,10 @@ export function ClientsPage() {
   const cats = useCategories();
   const members = useMembers();
   const canCreate = useCan(PERMISSIONS.CLIENTS_CREATE);
-  const [filters, setFilters] = useUrlState({ q: '', categoryId: '', status: '', purpose: '', propertyType: '', assignedTo: '', area: '', block: '', minBudget: '', maxBudget: '', minSize: '', maxSize: '', sizeUnit: 'SQ_YARD', sort: '-updatedAt', page: '1', view: isNarrowScreen() ? 'cards' : 'table' });
+  const [importOpen, setImportOpen] = useState(false);
+  const temps = useEnumOptions('leadTemperature', LEAD_TEMPERATURES);
+  const sourceOpts = useEnumOptions('source', CLIENT_SOURCES);
+  const [filters, setFilters] = useUrlState({ q: '', categoryId: '', status: '', purpose: '', propertyType: '', assignedTo: '', source: '', temperature: '', unassigned: '', area: '', block: '', minBudget: '', maxBudget: '', minSize: '', maxSize: '', sizeUnit: 'SQ_YARD', sort: '-updatedAt', page: '1', view: isNarrowScreen() ? 'cards' : 'table' });
   const [formOpen, setFormOpen] = useState(false);
   const [followUpFor, setFollowUpFor] = useState<string | null>(null);
   useOpenOnNew(() => setFormOpen(true));
@@ -276,6 +298,7 @@ export function ClientsPage() {
     { key: 'category', header: t('client.category'), render: (c) => cats.name(c.categoryId) ?? '—' },
     { key: 'location', header: t('property.society'), render: (c) => c.preferredSociety ?? c.preferredArea ?? '—' },
     { key: 'budget', header: t('client.budget'), render: (c) => <span className="ltr-nums whitespace-nowrap font-medium text-ink">{formatRange(c.minBudget, c.maxBudget)}</span> },
+    { key: 'lead', header: t('lead.title'), render: (c) => <TemperatureBadge value={c.temperature} score={c.leadScore} /> },
     { key: 'priority', header: t('client.priority'), render: (c) => <PriorityBadge priority={c.priority} /> },
     { key: 'matches', header: t('nav.matches'), render: (c) => (c.matchCount ? <span className="ltr-nums inline-flex min-w-[1.75rem] justify-center rounded-full bg-brand-50 px-2 py-0.5 text-xs font-bold text-brand-600">{c.matchCount}</span> : <span className="text-subtle">—</span>) },
     {
@@ -304,6 +327,11 @@ export function ClientsPage() {
               ]}
             />
             {canCreate && (
+              <Button variant="secondary" icon={<FileUp className="h-4 w-4" />} onClick={() => setImportOpen(true)}>
+                {t('lead.import.button')}
+              </Button>
+            )}
+            {canCreate && (
               <Button icon={<Plus className="h-4 w-4" />} onClick={() => setFormOpen(true)}>
                 {t('client.add')}
               </Button>
@@ -311,10 +339,13 @@ export function ClientsPage() {
           </>
         }
       />
+      <LeadImportModal open={importOpen} onClose={() => setImportOpen(false)} />
       <FilterBar
-        activeAdvanced={[filters.area, filters.block, filters.minSize, filters.maxSize, filters.minBudget, filters.maxBudget, filters.assignedTo].filter(Boolean).length}
+        activeAdvanced={[filters.area, filters.block, filters.minSize, filters.maxSize, filters.minBudget, filters.maxBudget, filters.assignedTo, filters.source, filters.unassigned].filter(Boolean).length}
         advanced={
           <>
+            <Select options={sourceOpts} placeholder={`${t('client.source')}: ${t('common.all')}`} value={filters.source} onChange={f('source')} />
+            <Select options={[{ value: 'true', label: t('lead.unassignedInbox') }]} placeholder={`${t('client.assignedTo')}: ${t('common.all')}`} value={filters.unassigned} onChange={f('unassigned')} />
             <Input placeholder={t('property.area')} value={filters.area} onChange={f('area')} aria-label={t('property.area')} />
             <Input placeholder={t('property.block')} value={filters.block} onChange={f('block')} aria-label={t('property.block')} />
             <Input type="number" min={0} placeholder={t('client.minSize')} value={filters.minSize} onChange={f('minSize')} aria-label={t('client.minSize')} />
@@ -331,8 +362,10 @@ export function ClientsPage() {
         <Select options={statuses} placeholder={`${t('common.status')}: ${t('common.all')}`} value={filters.status} onChange={f('status')} />
         <Select options={purposes} placeholder={`${t('client.purpose')}: ${t('common.all')}`} value={filters.purpose} onChange={f('purpose')} />
         <Select options={types} placeholder={`${t('common.type')}: ${t('common.all')}`} value={filters.propertyType} onChange={f('propertyType')} />
+        <Select options={temps} placeholder={`${t('lead.temperature')}: ${t('common.all')}`} value={filters.temperature} onChange={f('temperature')} />
         <Select
           options={[
+            { value: '-leadScore', label: t('lead.score') },
             { value: '-updatedAt', label: t('common.updatedAt') },
             { value: '-createdAt', label: t('common.createdAt') },
             { value: 'fullName', label: t('common.name') },
@@ -518,6 +551,7 @@ export function ClientDetailPage() {
             </dl>
           </Card>
           <div className="space-y-4 lg:col-span-2">
+            <LeadPanel client={c} />
             <Card title={t('client.requirements')}>
               <div className="space-y-2">{c.requirements.length ? c.requirements.map((r) => <RequirementSummary key={r._id} r={r} />) : <p className="text-sm text-muted">—</p>}</div>
             </Card>

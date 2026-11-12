@@ -16,7 +16,8 @@ const CANDIDATES = [
 export function launch() {
   const executablePath = CANDIDATES.find((p) => existsSync(p));
   if (!executablePath) throw new Error('No Chrome/Edge found. Set BROWSER_PATH to a Chromium-based browser.');
-  return chromium.launch({ executablePath, headless: true });
+  // Current Edge/Chrome builds dropped the old headless mode Playwright asks for; use the new one.
+  return chromium.launch({ executablePath, headless: false, args: ['--headless=new'] });
 }
 
 export const BASE = (process.env.WEB_URL ?? 'http://localhost:5173').replace(/\/$/, '');

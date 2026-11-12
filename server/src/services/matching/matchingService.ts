@@ -19,7 +19,7 @@ import { scoreMatch, type ScoreResult, type ScoringRequirement } from './scoring
 
 const ALGORITHM_VERSION = 1;
 const OPEN_STATUSES: MatchStatus[] = ['NEW', 'VIEWED', 'SHORTLISTED', 'CONTACTED'];
-const UNIT_LABELS: Record<string, string> = { SQ_FT: 'Sq. Ft', SQ_YARD: 'Sq. Yard', SQ_METER: 'Sq. M', MARLA: 'Marla', KANAL: 'Kanal' };
+const UNIT_LABELS: Record<string, string> = { SQ_FT: 'Sq. Ft', SQ_YARD: 'Sq. Yard', SQ_METER: 'Sq. M', MARLA: 'Marla', KANAL: 'Kanal', ACRE: 'Acre' };
 const PROPERTY_LABELS: Record<PropertyType, string> = {
   RESIDENTIAL_PLOT: 'Plot',
   HOUSE: 'House',
@@ -29,6 +29,14 @@ const PROPERTY_LABELS: Record<PropertyType, string> = {
   SHOP: 'Shop',
   OFFICE: 'Office',
   COMMERCIAL: 'Commercial',
+  FARMHOUSE: 'Farmhouse',
+  FILE: 'Plot file',
+  COMMERCIAL_PLOT: 'Commercial plot',
+  BUILDING: 'Building',
+  WAREHOUSE: 'Warehouse',
+  FACTORY: 'Factory',
+  INDUSTRIAL_PLOT: 'Industrial plot',
+  AGRICULTURAL_LAND: 'Agricultural land',
   OTHER: 'Property',
 };
 

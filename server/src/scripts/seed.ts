@@ -129,6 +129,11 @@ export async function seed(opts: { reset?: boolean } = {}): Promise<Record<strin
     meta,
   );
   const father = await contextFor(DEMO.ownerEmail);
+  // The demo shows every module without a trial countdown.
+  await Business.updateOne(
+    { _id: father.businessId },
+    { $set: { 'subscription.plan': 'ENTERPRISE', 'subscription.status': 'ACTIVE', 'subscription.cycle': 'ANNUAL', 'subscription.currentPeriodEnd': new Date(Date.now() + 365 * 86_400_000) } },
+  );
   // One account per access level the manuals describe (all are MEMBERs with a permission template).
   const team = [
     { fullName: 'Ahmed Yousuf', email: DEMO.sonEmail, mobileNumber: '+923217654321', permissions: ROLE_PRESETS.MEMBER },
@@ -159,7 +164,7 @@ export async function seed(opts: { reset?: boolean } = {}): Promise<Record<strin
     const loc = spec.type === 'OFFICE' || spec.type === 'SHOP' ? pick([LOCATIONS[1], LOCATIONS[2], LOCATIONS[4]]) : pick(LOCATIONS);
     const [size, unit] = pick(spec.sizes);
     // Rough Karachi price-per-yard multipliers by type (built houses above land value; flats/portions below).
-    const builtFactor = { RESIDENTIAL_PLOT: 1, HOUSE: 1.4, FLAT: 0.55, APARTMENT: 0.65, PORTION: 0.4, SHOP: 1.1, OFFICE: 0.8, COMMERCIAL: 1, OTHER: 1 }[spec.type];
+    const builtFactor = ({ RESIDENTIAL_PLOT: 1, HOUSE: 1.4, FLAT: 0.55, APARTMENT: 0.65, PORTION: 0.4, SHOP: 1.1, OFFICE: 0.8, COMMERCIAL: 1, OTHER: 1 } as Record<string, number>)[spec.type] ?? 1;
     const sale = roundTo(sqyd(size, unit) * loc.pricePerSqYd * builtFactor * (0.9 + rand() * 0.25), 100_000);
     const asking = spec.rent ? roundTo(sale * 0.004, 5_000) : sale;
     const residential = ['HOUSE', 'FLAT', 'APARTMENT', 'PORTION'].includes(spec.type);

@@ -25,14 +25,17 @@ import '../clients/client_screens.dart' show propertyTypes, sizeUnits;
 import '../common/record_panels.dart';
 import 'brochure_sheet.dart';
 
-const propertyStatuses = ['AVAILABLE', 'RESERVED', 'SOLD', 'RENTED', 'WITHDRAWN', 'INACTIVE'];
+const propertyStatuses = ['AVAILABLE', 'RESERVED', 'UNDER_NEGOTIATION', 'ON_HOLD', 'SOLD', 'RENTED', 'EXPIRED', 'WITHDRAWN', 'INACTIVE'];
 
 /// Mirrors shared PROPERTY_STATUS_TRANSITIONS (the server enforces it).
 const statusTransitions = {
-  'AVAILABLE': ['RESERVED', 'SOLD', 'RENTED', 'WITHDRAWN', 'INACTIVE'],
-  'RESERVED': ['AVAILABLE', 'SOLD', 'RENTED', 'WITHDRAWN', 'INACTIVE'],
+  'AVAILABLE': ['RESERVED', 'UNDER_NEGOTIATION', 'ON_HOLD', 'SOLD', 'RENTED', 'EXPIRED', 'WITHDRAWN', 'INACTIVE'],
+  'RESERVED': ['AVAILABLE', 'UNDER_NEGOTIATION', 'ON_HOLD', 'SOLD', 'RENTED', 'WITHDRAWN', 'INACTIVE'],
+  'UNDER_NEGOTIATION': ['AVAILABLE', 'RESERVED', 'ON_HOLD', 'SOLD', 'RENTED', 'WITHDRAWN', 'INACTIVE'],
+  'ON_HOLD': ['AVAILABLE', 'RESERVED', 'UNDER_NEGOTIATION', 'WITHDRAWN', 'INACTIVE'],
   'SOLD': ['AVAILABLE', 'INACTIVE'],
   'RENTED': ['AVAILABLE', 'INACTIVE'],
+  'EXPIRED': ['AVAILABLE', 'WITHDRAWN', 'INACTIVE'],
   'WITHDRAWN': ['AVAILABLE', 'INACTIVE'],
   'INACTIVE': ['AVAILABLE'],
 };

@@ -90,6 +90,13 @@ class Client extends JsonModel {
   String? get purpose => os('purchaseOrRental');
   int get matchCount => n('matchCount')?.toInt() ?? 0;
   DateTime? get lastContactedAt => parseDate(json['lastContactedAt']);
+  String? get buyingTimeline => os('buyingTimeline');
+  String? get campaign => os('campaign');
+  String? get temperature => os('temperature');
+  int? get leadScore => n('leadScore')?.toInt();
+  int? get responseMinutes => n('responseMinutes')?.toInt();
+  List<Map<String, dynamic>> get leadScoreReasons =>
+      ((json['leadScoreReasons'] as List?) ?? const []).map((r) => Map<String, dynamic>.from(r as Map)).toList();
   List<Requirement> get requirements =>
       ((json['requirements'] as List?) ?? const []).map((r) => Requirement(Map<String, dynamic>.from(r as Map))).toList();
   String get whatsapp => whatsappNumber ?? mobileNumber;
@@ -183,6 +190,9 @@ class Deal extends JsonModel {
   List<Map<String, dynamic>> get agents => ((json['agents'] as List?) ?? const []).map((a) => Map<String, dynamic>.from(a as Map)).toList();
   List<Map<String, dynamic>> get payments => ((json['payments'] as List?) ?? const []).map((a) => Map<String, dynamic>.from(a as Map)).toList();
   List<Map<String, dynamic>> get payouts => ((json['payouts'] as List?) ?? const []).map((a) => Map<String, dynamic>.from(a as Map)).toList();
+  List<Map<String, dynamic>> get offers => ((json['offers'] as List?) ?? const []).map((a) => Map<String, dynamic>.from(a as Map)).toList();
+  List<Map<String, dynamic>> get checklist => ((json['checklist'] as List?) ?? const []).map((a) => Map<String, dynamic>.from(a as Map)).toList();
+  num? get initialAskingPrice => n('initialAskingPrice');
   List<Map<String, dynamic>> get stageHistory => ((json['stageHistory'] as List?) ?? const []).map((a) => Map<String, dynamic>.from(a as Map)).toList();
   Map<String, dynamic> term(String side) => Map<String, dynamic>.from(((json['commission'] as Map?)?[side] as Map?) ?? {'mode': 'PERCENT', 'value': 0});
   bool hasAgent(String? userId) => agents.any((a) => JsonModel.refId(a['userId']) == userId);

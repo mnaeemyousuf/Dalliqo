@@ -2,8 +2,12 @@
 /// app shows correct figures for deals edited offline. Amounts are whole rupees.
 library;
 
-const dealStages = ['INQUIRY', 'SITE_VISIT', 'OFFER', 'TOKEN', 'AGREEMENT', 'TRANSFER', 'CLOSED_WON', 'CLOSED_LOST'];
-const openDealStages = ['INQUIRY', 'SITE_VISIT', 'OFFER', 'TOKEN', 'AGREEMENT', 'TRANSFER'];
+const dealStages = ['INQUIRY', 'QUALIFIED', 'SITE_VISIT', 'NEGOTIATION', 'OFFER', 'TOKEN', 'AGREEMENT', 'PAYMENT', 'TRANSFER', 'CLOSED_WON', 'CLOSED_LOST'];
+const openDealStages = ['INQUIRY', 'QUALIFIED', 'SITE_VISIT', 'NEGOTIATION', 'OFFER', 'TOKEN', 'AGREEMENT', 'PAYMENT', 'TRANSFER'];
+const dealChecklistItems = [
+  'DOCUMENTS_COLLECTED', 'BUYER_VERIFIED', 'SELLER_VERIFIED', 'TOKEN_RECEIVED', 'AGREEMENT_SIGNED',
+  'DUES_CHECKED', 'TRANSFER_DOCS_READY', 'PAYMENT_COMPLETED', 'COMMISSION_RECEIVED', 'DEAL_CLOSED',
+];
 const paymentMethods = ['CASH', 'BANK_TRANSFER', 'CHEQUE', 'JAZZCASH', 'EASYPAISA', 'OTHER'];
 
 class AgentShareSummary {

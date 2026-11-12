@@ -7,6 +7,8 @@ import {
   branchController,
   categoryController,
   clientController,
+  leadController,
+  negotiationController,
   dealController,
   transactionController,
   agreementController,
@@ -59,6 +61,11 @@ r.patch('/client-categories/:id', can(P.SETTINGS_MANAGE), validate({ params: idP
 r.get('/clients', can(P.CLIENTS_READ), validate({ query: s.clientListQuery }), h(clientController.list));
 r.post('/clients', can(P.CLIENTS_CREATE), validate({ body: s.clientCreateSchema }), h(clientController.create));
 r.get('/clients/duplicates', can(P.CLIENTS_READ), validate({ query: s.duplicateClientQuery }), h(clientController.duplicates));
+r.get('/clients/import/template', can(P.CLIENTS_CREATE), h(leadController.template));
+r.post('/clients/import', can(P.CLIENTS_CREATE), upload.single('file'), h(leadController.importExcel));
+r.post('/clients/:id/assign', can(P.CLIENTS_UPDATE), validate({ params: idParams, body: s.leadAssignSchema }), h(leadController.assign));
+r.get('/reports/leads', can(P.CLIENTS_READ, P.REPORTS_READ), validate({ query: s.leadReportQuery }), h(leadController.report));
+r.get('/reports/inventory', can(P.PROPERTIES_READ, P.REPORTS_READ), h(propertyController.inventoryReport));
 r.get('/clients/:id', can(P.CLIENTS_READ), id, h(clientController.get));
 r.patch('/clients/:id', can(P.CLIENTS_UPDATE), validate({ params: idParams, body: s.clientUpdateSchema }), h(clientController.update));
 r.delete('/clients/:id', can(P.CLIENTS_DELETE), id, h(clientController.remove));
@@ -70,6 +77,9 @@ r.get('/deals', can(P.DEALS_READ), validate({ query: s.dealListQuery }), h(dealC
 r.post('/deals', can(P.DEALS_CREATE), validate({ body: s.dealCreateSchema }), h(dealController.create));
 r.get('/deals/:id', can(P.DEALS_READ), id, h(dealController.get));
 r.patch('/deals/:id', can(P.DEALS_UPDATE), validate({ params: idParams, body: s.dealUpdateSchema }), h(dealController.update));
+r.post('/deals/:id/offers', can(P.DEALS_UPDATE), validate({ params: idParams, body: s.offerSchema }), h(negotiationController.addOffer));
+r.post('/deals/:id/offers/:subId/respond', can(P.DEALS_UPDATE), validate({ params: s.subIdParams, body: s.offerRespondSchema }), h(negotiationController.respond));
+r.post('/deals/:id/checklist', can(P.DEALS_UPDATE), validate({ params: idParams, body: s.checklistItemSchema }), h(negotiationController.checklist));
 r.post('/deals/:id/stage', can(P.DEALS_UPDATE), validate({ params: idParams, body: s.dealStageSchema }), h(dealController.stage));
 r.post('/deals/:id/payments', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), validate({ params: idParams, body: s.dealPaymentSchema }), h(dealController.addPayment));
 r.delete('/deals/:id/payments/:subId', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), validate({ params: s.subIdParams }), h(dealController.removePayment));
@@ -111,6 +121,7 @@ r.delete('/owners/:id', can(P.OWNERS_DELETE), id, h(ownerController.remove));
 
 // Properties
 r.get('/properties', can(P.PROPERTIES_READ), validate({ query: s.propertyListQuery }), h(propertyController.list));
+r.get('/properties/duplicates', can(P.PROPERTIES_READ), validate({ query: s.duplicatePropertyQuery }), h(propertyController.duplicates));
 r.post('/properties', can(P.PROPERTIES_CREATE), validate({ body: s.propertyCreateSchema }), h(propertyController.create));
 r.get('/properties/:id', can(P.PROPERTIES_READ), id, h(propertyController.get));
 r.get('/properties/:id/brochure', can(P.PROPERTIES_READ, P.EXPORTS_CREATE), validate({ params: idParams, query: s.brochureQuery }), h(propertyController.brochure));

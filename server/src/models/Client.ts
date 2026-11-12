@@ -1,5 +1,12 @@
 import { Schema, model, type Types } from 'mongoose';
 import {
+  BUYING_TIMELINES,
+  LEAD_TEMPERATURES,
+  LOST_REASONS,
+  type BuyingTimeline,
+  type LeadScoreReason,
+  type LeadTemperature,
+  type LostReason,
   CLIENT_PURPOSES,
   CLIENT_SOURCES,
   CLIENT_STATUSES,
@@ -71,6 +78,25 @@ export interface ClientDoc extends SyncDoc {
   purchaseOrRental?: ClientPurpose;
   matchCount: number;
   lastContactedAt?: Date;
+  // ── Lead management ──
+  /** Campaign / ad / listing the lead came from (free text, used for attribution). */
+  campaign?: string;
+  buyingTimeline?: BuyingTimeline;
+  /** HOT/WARM/COLD set by a person; when empty the score decides. */
+  temperatureOverride?: LeadTemperature | null;
+  /** Effective temperature (override, else from the score). */
+  temperature: LeadTemperature;
+  leadScore: number;
+  leadScoreReasons: LeadScoreReason[];
+  leadScoredAt?: Date;
+  /** First call/WhatsApp/completed follow-up, and minutes from creation to it. */
+  firstContactedAt?: Date;
+  responseMinutes?: number;
+  lostReason?: LostReason;
+  lostNote?: string;
+  convertedAt?: Date;
+  statusHistory: { status: ClientStatus; at: Date; by?: Types.ObjectId; note?: string }[];
+  assignmentHistory: { from?: Types.ObjectId | null; to?: Types.ObjectId | null; at: Date; by?: Types.ObjectId; note?: string }[];
   searchText: string;
   createdBy: Types.ObjectId;
   updatedBy: Types.ObjectId;
@@ -130,6 +156,29 @@ const schema = new Schema<ClientDoc>(
     purchaseOrRental: { type: String, enum: CLIENT_PURPOSES },
     matchCount: { type: Number, default: 0 },
     lastContactedAt: Date,
+    campaign: { type: String, trim: true, maxlength: 120 },
+    buyingTimeline: { type: String, enum: BUYING_TIMELINES },
+    temperatureOverride: { type: String, enum: [...LEAD_TEMPERATURES, null], default: null },
+    temperature: { type: String, enum: LEAD_TEMPERATURES, default: 'WARM' },
+    leadScore: { type: Number, default: 0, min: 0, max: 100 },
+    leadScoreReasons: {
+      type: [{ _id: false, factor: String, code: String, points: Number, max: Number, positive: Boolean }] as never,
+      default: [],
+    },
+    leadScoredAt: Date,
+    firstContactedAt: Date,
+    responseMinutes: Number,
+    lostReason: { type: String, enum: LOST_REASONS },
+    lostNote: { type: String, maxlength: 500 },
+    convertedAt: Date,
+    statusHistory: {
+      type: [{ _id: false, status: { type: String, enum: CLIENT_STATUSES }, at: Date, by: { type: Schema.Types.ObjectId, ref: 'User' }, note: String }],
+      default: [],
+    },
+    assignmentHistory: {
+      type: [{ _id: false, from: { type: Schema.Types.ObjectId, ref: 'User' }, to: { type: Schema.Types.ObjectId, ref: 'User' }, at: Date, by: { type: Schema.Types.ObjectId, ref: 'User' }, note: String }],
+      default: [],
+    },
     searchText: { type: String, default: '' },
   },
   { timestamps: true, versionKey: false },
@@ -142,6 +191,8 @@ schema.index({ businessId: 1, mobileNumber: 1 });
 schema.index({ businessId: 1, status: 1, updatedAt: -1 });
 schema.index({ businessId: 1, categoryId: 1 });
 schema.index({ businessId: 1, assignedTo: 1 });
+schema.index({ businessId: 1, deletedAt: 1, temperature: 1, leadScore: -1 });
+schema.index({ businessId: 1, source: 1, createdAt: -1 });
 schema.index({ businessId: 1, 'requirements.purpose': 1, 'requirements.active': 1 });
 schema.index({ businessId: 1, 'requirements.blocks': 1 });
 schema.index({ businessId: 1, searchText: 1 });

@@ -28,6 +28,8 @@ const schema = z
     TRUST_PROXY: z.coerce.number().int().min(0).default(0),
     RATE_LIMIT_ENABLED: bool.default('true'),
     APP_WEB_URL: z.string().url().default('http://localhost:5173'),
+    /** Comma-separated emails of Dalliqo staff who manage subscriptions (platform admin screen). */
+    PLATFORM_ADMIN_EMAILS: optional,
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 
     SMTP_HOST: optional,

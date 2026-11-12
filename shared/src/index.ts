@@ -7,3 +7,6 @@ export * from './brand';
 export * from './commission';
 export * from './finance';
 export * from './agreements';
+export * from './leads';
+export * from './plans';
+export * from './automation';

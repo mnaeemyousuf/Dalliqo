@@ -25,6 +25,22 @@ import type {
   AgreementKind,
   AgreementLanguage,
   AgreementStatus,
+  AutomationSettings,
+  Entitlements,
+  BuyingTimeline,
+  ConstructionStatus,
+  DevelopmentStatus,
+  FacingDirection,
+  FurnishingStatus,
+  LeadScoreReason,
+  LeadScoringSettings,
+  LeadTemperature,
+  LostReason,
+  OfferParty,
+  OfferStatus,
+  PlanDefinition,
+  PlanKey,
+  PossessionStatus,
 } from '@recrm/shared';
 
 export interface ApiSuccess<T> {
@@ -101,6 +117,9 @@ export interface Session {
   user: User;
   business: Business;
   membership: Membership;
+  /** Present on /auth/me (plan, modules, limits); sign-in responses fetch it right after. */
+  entitlements?: Entitlements;
+  platformAdmin?: boolean;
 }
 
 export interface Member {
@@ -179,6 +198,59 @@ export interface Client extends Versioned {
   purchaseOrRental?: ClientPurpose;
   matchCount: number;
   lastContactedAt?: string;
+  campaign?: string;
+  buyingTimeline?: BuyingTimeline;
+  temperatureOverride?: LeadTemperature | null;
+  temperature?: LeadTemperature;
+  leadScore?: number;
+  leadScoreReasons?: LeadScoreReason[];
+  leadScoredAt?: string;
+  firstContactedAt?: string;
+  responseMinutes?: number;
+  lostReason?: LostReason;
+  lostNote?: string;
+  convertedAt?: string;
+  statusHistory?: { status: ClientStatus; at: string; by?: string; note?: string }[];
+  assignmentHistory?: { from?: string | null; to?: string | null; at: string; by?: string; note?: string }[];
+}
+
+export interface LeadReport {
+  totals: { leads: number; converted: number; conversionRate: number; unassigned: number; neverContacted: number; avgResponseMinutes: number | null };
+  bySource: { source: string; leads: number; converted: number; lost: number; conversionRate: number; avgScore: number }[];
+  byTemperature: Record<LeadTemperature, number>;
+  aging: { key: string; count: number }[];
+  lostReasons: { reason: string; count: number }[];
+}
+
+export interface InventoryReport {
+  onMarket: number;
+  avgDaysOnMarket: number;
+  aging: { key: string; count: number; value: number }[];
+  byStatus: Record<string, { count: number; value: number }>;
+  byType: Record<string, number>;
+  byCategory: Record<string, number>;
+  oldest: { _id: string; propertyId: string; days: number; askingPrice: number; society?: string; block?: string; propertyType: PropertyType; status: PropertyStatus }[];
+}
+
+export interface ImportResult {
+  created: number;
+  duplicates: { row: number; name: string; existing: string }[];
+  errors: { row: number; message: string }[];
+}
+
+export interface SubscriptionInfo extends Entitlements {
+  cycle: 'MONTHLY' | 'ANNUAL' | null;
+  usage: { users: number; branches: number; storageMb: number };
+  history: { _id: string; type: string; plan: PlanKey; cycle?: string | null; amount?: number | null; reference?: string | null; note?: string | null; periodEnd?: string | null; at: string }[];
+  plans: Record<PlanKey, PlanDefinition>;
+}
+
+export interface PlatformBusiness extends Entitlements {
+  _id: string;
+  name: string;
+  city?: string;
+  createdAt: string;
+  cycle: 'MONTHLY' | 'ANNUAL' | null;
 }
 
 export interface Owner extends Versioned {
@@ -227,6 +299,22 @@ export interface Property extends Versioned {
   lastVerifiedAt?: string;
   lastVerifiedBy?: string;
   matchCount: number;
+  phase?: string;
+  sector?: string;
+  unitNumber?: string;
+  possessionStatus?: PossessionStatus;
+  developmentStatus?: DevelopmentStatus;
+  constructionStatus?: ConstructionStatus;
+  furnishing?: FurnishingStatus;
+  facing?: FacingDirection;
+  corner?: boolean;
+  mainRoad?: boolean;
+  parkFacing?: boolean;
+  amenities?: string[];
+  availabilityExpiresAt?: string | null;
+  coOwnerIds?: string[];
+  agentIds?: string[];
+  priceHistory?: { price: number; at: string; by?: string; note?: string }[];
 }
 
 export interface Match {
@@ -323,6 +411,10 @@ export interface Deal {
   stageHistory: { stage: DealStage; at: string; by?: string | { _id: string; fullName: string }; note?: string }[];
   agreedPrice?: number;
   finalPrice?: number;
+  initialAskingPrice?: number;
+  tokenAmount?: number;
+  offers?: { _id: string; party: OfferParty; amount: number; status: OfferStatus; note?: string; at: string; by?: string }[];
+  checklist?: { key: string; label?: string; done: boolean; doneAt?: string | null; doneBy?: string | null }[];
   expectedCloseDate?: string | null;
   closedAt?: string | null;
   notes?: string;
@@ -467,6 +559,8 @@ export interface Settings {
   commission: { defaultBuyerPct: number; defaultSellerPct: number; autoCreateIncome: boolean };
   sqftPerUnit: Record<SizeUnit, number>;
   reminders: { defaultMinutesBefore: number };
+  leadScoring: LeadScoringSettings;
+  automation: AutomationSettings;
 }
 
 export interface DeviceSession {

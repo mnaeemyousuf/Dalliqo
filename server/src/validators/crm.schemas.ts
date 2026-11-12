@@ -28,6 +28,20 @@ import {
   AGREEMENT_STATUSES,
 } from '@recrm/shared';
 import { email, objectId, pagination, personName, phone } from './common';
+import {
+  AUTOMATION_RULE_KEYS,
+  BUYING_TIMELINES,
+  CONSTRUCTION_STATUSES,
+  DEVELOPMENT_STATUSES,
+  FACING_DIRECTIONS,
+  FURNISHING_STATUSES,
+  LEAD_SCORE_FACTORS,
+  LEAD_TEMPERATURES,
+  LOST_REASONS,
+  OFFER_PARTIES,
+  POSSESSION_STATUSES,
+  PROPERTY_CATEGORIES,
+} from '@recrm/shared';
 
 const uuid = z.string().uuid();
 const money = z.coerce.number().int('Amounts are whole rupees').min(0).max(1e12);
@@ -73,7 +87,7 @@ export const requirementSchema = z
     isPrimary: z.boolean().optional(),
     active: z.boolean().optional(),
     purpose: z.enum(CLIENT_PURPOSES),
-    propertyTypes: z.array(z.enum(PROPERTY_TYPES)).max(9).optional(),
+    propertyTypes: z.array(z.enum(PROPERTY_TYPES)).max(20).optional(),
     areas: z.array(shortText(120)).max(10).optional(),
     societies: z.array(shortText(120)).max(10).optional(),
     blocks: z.array(shortText(60)).max(20).optional(),
@@ -113,6 +127,11 @@ const clientFields = {
   minBudget: money.optional(),
   maxBudget: money.optional(),
   purchaseOrRental: z.enum(CLIENT_PURPOSES).optional(),
+  campaign: optionalText(120),
+  buyingTimeline: z.enum(BUYING_TIMELINES).optional(),
+  temperatureOverride: z.enum(LEAD_TEMPERATURES).nullable().optional(),
+  lostReason: z.enum(LOST_REASONS).optional(),
+  lostNote: optionalText(500),
 };
 
 export const clientCreateSchema = z.object({ uuid: uuid.optional(), allowDuplicate: z.boolean().optional(), ...clientFields }).strict();
@@ -136,8 +155,16 @@ export const clientListQuery = pagination.extend({
   minSize: size.optional(),
   maxSize: size.optional(),
   sizeUnit: z.enum(SIZE_UNITS).optional(),
-  sort: z.enum(['-updatedAt', '-createdAt', 'fullName', '-matchCount', '-maxBudget']).optional(),
+  unassigned: bool.optional(),
+  source: z.enum(CLIENT_SOURCES).optional(),
+  temperature: z.enum(LEAD_TEMPERATURES).optional(),
+  minScore: z.coerce.number().int().min(0).max(100).optional(),
+  staleDays: z.coerce.number().int().min(1).max(365).optional(),
+  sort: z.enum(['-updatedAt', '-createdAt', 'createdAt', 'fullName', '-matchCount', '-maxBudget', '-leadScore']).optional(),
 });
+export const leadAssignSchema = z.object({ userId: objectId.nullable(), note: optionalText(300) }).strict();
+export const leadReportQuery = z.object({ from: z.coerce.date().optional(), to: z.coerce.date().optional(), assignedTo: objectId.optional() });
+export const leadImportFields = z.object({ assignedTo: objectId.optional(), source: z.enum(CLIENT_SOURCES).optional() });
 
 export const communicationSchema = z.object({ channel: z.enum(COMMUNICATION_CHANNELS), note: optionalText(300) }).strict();
 
@@ -185,12 +212,27 @@ const propertyFields = {
   bedrooms: z.number().int().min(0).max(50).optional(),
   bathrooms: z.number().int().min(0).max(50).optional(),
   floors: z.number().int().min(0).max(200).optional(),
+  phase: optionalText(60),
+  sector: optionalText(60),
+  unitNumber: optionalText(60),
+  possessionStatus: z.enum(POSSESSION_STATUSES).optional(),
+  developmentStatus: z.enum(DEVELOPMENT_STATUSES).optional(),
+  constructionStatus: z.enum(CONSTRUCTION_STATUSES).optional(),
+  furnishing: z.enum(FURNISHING_STATUSES).optional(),
+  facing: z.enum(FACING_DIRECTIONS).optional(),
+  corner: z.boolean().optional(),
+  mainRoad: z.boolean().optional(),
+  parkFacing: z.boolean().optional(),
+  amenities: z.array(shortText(60)).max(30).optional(),
+  availabilityExpiresAt: z.coerce.date().nullable().optional(),
+  coOwnerIds: z.array(objectId).max(10).optional(),
+  agentIds: z.array(objectId).max(10).optional(),
 };
 const coordsTogether = (v: { latitude?: number | null; longitude?: number | null }) =>
   (v.latitude === undefined) === (v.longitude === undefined) && (v.latitude === null) === (v.longitude === null);
 
 export const propertyCreateSchema = z
-  .object({ uuid: uuid.optional(), ...propertyFields })
+  .object({ uuid: uuid.optional(), allowDuplicate: z.boolean().optional(), ...propertyFields })
   .strict()
   .refine(coordsTogether, { message: 'latitude and longitude must be provided together', path: ['latitude'] });
 export const propertyUpdateSchema = z
@@ -221,6 +263,17 @@ export const propertyListQuery = pagination
     sizeUnit: z.enum(SIZE_UNITS).optional(),
     ownerId: objectId.optional(),
     verification: z.enum(['stale', 'fresh']).optional(),
+    category: z.enum(PROPERTY_CATEGORIES).optional(),
+    phase: optionalText(60),
+    agentId: objectId.optional(),
+    corner: bool.optional(),
+    parkFacing: bool.optional(),
+    mainRoad: bool.optional(),
+    possessionStatus: z.enum(POSSESSION_STATUSES).optional(),
+    constructionStatus: z.enum(CONSTRUCTION_STATUSES).optional(),
+    furnishing: z.enum(FURNISHING_STATUSES).optional(),
+    minBedrooms: z.coerce.number().int().min(0).max(50).optional(),
+    expiringDays: z.coerce.number().int().min(0).max(365).optional(),
     lat: lat.optional(),
     lng: lng.optional(),
     radiusKm: z.coerce.number().positive().max(100).optional(),
@@ -231,7 +284,21 @@ export const propertyListQuery = pagination
     ...(la !== undefined && lo !== undefined ? { near: { lat: la, lng: lo, radiusKm: radiusKm ?? 2 } } : {}),
   }));
 
+export const duplicatePropertyQuery = z.object({
+  society: optionalText(120),
+  block: optionalText(60),
+  phase: optionalText(60),
+  plotNumber: shortText(60).min(1),
+  unitNumber: optionalText(60),
+  excludeId: objectId.optional(),
+});
+
 // ── Deals & commission ──
+export const offerSchema = z
+  .object({ id: uuid.optional(), _id: uuid.optional(), party: z.enum(OFFER_PARTIES), amount: money.pipe(z.number().min(1)), note: optionalText(500), status: z.enum(['OPEN', 'ACCEPTED', 'REJECTED', 'COUNTERED', 'WITHDRAWN']).optional(), at: z.coerce.date().optional() })
+  .strict();
+export const offerRespondSchema = z.object({ status: z.enum(['ACCEPTED', 'REJECTED', 'WITHDRAWN']) }).strict();
+export const checklistItemSchema = z.object({ key: shortText(60).min(1), label: optionalText(120), done: z.boolean() }).strict();
 const commissionTerm = z.object({ mode: z.enum(COMMISSION_MODES), value: z.number().min(0).max(1e12) }).strict();
 const agentShare = z.object({ userId: objectId, sharePct: z.number().gt(0).max(100) }).strict();
 export const dealPaymentSchema = z
@@ -271,6 +338,9 @@ const dealFields = {
   expectedCloseDate: z.coerce.date().nullable().optional(),
   notes: optionalText(2000),
   commission: z.object({ buyer: commissionTerm.optional(), seller: commissionTerm.optional() }).strict().optional(),
+  tokenAmount: money.optional(),
+  offers: z.array(offerSchema).max(100).optional(),
+  checklist: z.array(checklistItemSchema).max(50).optional(),
 };
 export const dealCreateSchema = z
   .object({ uuid: uuid.optional(), stage: z.enum(DEAL_STAGES).optional(), lostReason: optionalText(500), ...dealFields, payments: z.array(dealPaymentSchema).max(100).optional(), payouts: z.array(dealPayoutSchema).max(100).optional() })
@@ -449,7 +519,20 @@ export const settingsUpdateSchema = z
       })
       .strict()
       .optional(),
-    sqftPerUnit: z.object({ MARLA: z.number().positive(), KANAL: z.number().positive() }).partial().strict().optional(),
+    sqftPerUnit: z.object({ MARLA: z.number().positive(), KANAL: z.number().positive(), ACRE: z.number().positive() }).partial().strict().optional(),
+    leadScoring: z
+      .object({
+        weights: z.object(Object.fromEntries(LEAD_SCORE_FACTORS.map((f) => [f, z.number().min(0).max(100)]))).partial().strict().optional(),
+        hotThreshold: z.number().int().min(1).max(100).optional(),
+        warmThreshold: z.number().int().min(0).max(99).optional(),
+      })
+      .strict()
+      .optional(),
+    automation: z
+      .object(Object.fromEntries(AUTOMATION_RULE_KEYS.map((k) => [k, z.object({ enabled: z.boolean().optional(), threshold: z.number().int().min(0).optional() }).strict()])))
+      .partial()
+      .strict()
+      .optional(),
     reminders: z.object({ defaultMinutesBefore: z.number().int().min(0).max(10080) }).strict().optional(),
     commission: z
       .object({ defaultBuyerPct: z.number().min(0).max(20).optional(), defaultSellerPct: z.number().min(0).max(20).optional(), autoCreateIncome: z.boolean().optional() })

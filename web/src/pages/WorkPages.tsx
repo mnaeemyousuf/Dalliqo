@@ -11,6 +11,7 @@ import { ActivityPanel, DocumentsPanel, FollowUpForm, FollowUpItem, NotesPanel, 
 import { BranchField } from '@/components/branches';
 import { CommissionReport, DealsPanel } from '@/pages/DealPages';
 import { FinanceReport } from '@/pages/FinancePages';
+import { InventoryReportCard, LeadReportCard } from '@/pages/Phase3Pages';
 import { Badge, Button, Card, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column, Avatar } from '@/components/ui';
 import { formatBytes, formatDate, formatPkr } from '@/lib/format';
 import { useDebounce, useEnumOptions, useErrorText, useMembers, useOnError, useUrlState, useOpenOnNew } from '@/lib/hooks';
@@ -448,8 +449,10 @@ export function ReportsPage() {
     }
   };
   return (
-    <div className="max-w-3xl space-y-4">
+    <div className="max-w-5xl space-y-4">
       <PageHeader title={t('report.title')} subtitle={t('report.subtitle')} />
+      <LeadReportCard />
+      <InventoryReportCard />
       {canDeals && <CommissionReport />}
       {canFinance && <FinanceReport />}
       <Card>

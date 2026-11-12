@@ -108,6 +108,26 @@ void main() {
       expect(jsonEncode(data), isNot(contains('transactionId')));
     });
 
+    test('offers, counter-offers and the closing checklist work offline', () async {
+      final d = await repo.saveDeal({'clientId': 'srv-c1', 'agents': [{'userId': 'u1', 'sharePct': 100}]});
+      await repo.addDealOffer(d.id, party: 'BUYER', amount: 14000000);
+      var deal = (await repo.deal(d.id))!;
+      expect(deal.stage, 'NEGOTIATION');
+      await repo.addDealOffer(d.id, party: 'SELLER', amount: 15000000, note: 'Final');
+      deal = (await repo.deal(d.id))!;
+      expect(deal.offers.map((o) => o['status']), ['COUNTERED', 'OPEN']);
+      await repo.respondDealOffer(d.id, deal.offers.last['_id'] as String, 'ACCEPTED');
+      deal = (await repo.deal(d.id))!;
+      expect(deal.agreedPrice, 15000000);
+      expect(deal.stage, 'OFFER');
+      await repo.setDealChecklistItem(d.id, 'TOKEN_RECEIVED', true);
+      deal = (await repo.deal(d.id))!;
+      expect(deal.checklist.length, dealChecklistItems.length);
+      expect(deal.checklist.firstWhere((c) => c['key'] == 'TOKEN_RECEIVED')['done'], true);
+      final q = await outbox();
+      expect(q.single['op'], 'create'); // edits before sync coalesce into the waiting create
+    });
+
     test('removing a payment updates the totals', () async {
       final d = await repo.saveDeal({'clientId': 'srv-c1', 'finalPrice': 10000000, 'agents': [{'userId': 'u1', 'sharePct': 100}]});
       await repo.addDealPayment(d.id, {'side': 'SELLER', 'amount': 100000, 'date': '2026-10-05T00:00:00Z'});

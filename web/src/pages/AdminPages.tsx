@@ -9,6 +9,7 @@ import type { Member, Settings } from '@/api/types';
 import { BrandLogo } from '@/components/BrandLogo';
 import { BranchAccessEditor, BranchSettings, useBranchName } from '@/components/branches';
 import { Badge, Button, Card, Checkbox, ConfirmDialog, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Tabs, Avatar } from '@/components/ui';
+import { AutomationSettings, SubscriptionSettings } from '@/pages/Phase3Pages';
 import { formatDate, relativeTime } from '@/lib/format';
 import { useEnumOptions, useOnError, useUrlState } from '@/lib/hooks';
 import { useAuth, useCan } from '@/store/auth';
@@ -295,7 +296,7 @@ export function AuditPage() {
 
 /* ═════════════ Settings ═════════════ */
 
-type SettingsTab = 'profile' | 'business' | 'branches' | 'categories' | 'matching' | 'security' | 'appearance' | 'about';
+type SettingsTab = 'profile' | 'business' | 'branches' | 'categories' | 'matching' | 'automation' | 'subscription' | 'security' | 'appearance' | 'about';
 
 function ProfileSettings() {
   const { t } = useTranslation();
@@ -488,16 +489,26 @@ function AppearanceSettings() {
   );
 }
 
+/** Automation rules and lead-scoring weights (loads the settings once, then edits locally). */
+function AutomationTab() {
+  const qc = useQueryClient();
+  const q = useQuery({ queryKey: ['settings'], queryFn: settingsApi.get });
+  if (q.isError) return <ErrorState onRetry={() => q.refetch()} />;
+  if (!q.data) return <PageLoader />;
+  return <AutomationSettings settings={q.data} onSaved={() => void qc.invalidateQueries({ queryKey: ['settings'] })} />;
+}
+
 export function SettingsPage() {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<SettingsTab>('profile');
+  const initial = new URLSearchParams(window.location.search).get('tab') as SettingsTab | null;
+  const [tab, setTab] = useState<SettingsTab>(initial ?? 'profile');
   return (
     <div>
       <PageHeader title={t('settings.title')} />
       <Tabs<SettingsTab>
         value={tab}
         onChange={setTab}
-        tabs={(['profile', 'business', 'branches', 'categories', 'matching', 'security', 'appearance', 'about'] as const).map((v) => ({ value: v, label: t(`settings.${v}`) }))}
+        tabs={(['profile', 'business', 'branches', 'categories', 'matching', 'automation', 'subscription', 'security', 'appearance', 'about'] as const).map((v) => ({ value: v, label: t(`settings.${v}`) }))}
       />
       <div className="mt-4">
         {tab === 'profile' && <ProfileSettings />}
@@ -505,6 +516,8 @@ export function SettingsPage() {
         {tab === 'branches' && <BranchSettings />}
         {tab === 'categories' && <CategorySettings />}
         {tab === 'matching' && <MatchingSettings />}
+        {tab === 'automation' && <AutomationTab />}
+        {tab === 'subscription' && <SubscriptionSettings />}
         {tab === 'security' && <SecuritySettings />}
         {tab === 'appearance' && <AppearanceSettings />}
         {tab === 'about' && (

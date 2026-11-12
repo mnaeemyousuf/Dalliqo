@@ -15,6 +15,7 @@ import '../auth/auth_controller.dart';
 import '../branches/branch_screens.dart';
 import '../agreements/agreement_screens.dart';
 import '../common/record_panels.dart';
+import 'negotiation_section.dart';
 
 final _dealSearchProvider = StateProvider<String>((ref) => '');
 final _dealOpenOnlyProvider = StateProvider<bool>((ref) => true);
@@ -295,6 +296,7 @@ class DealDetailScreen extends ConsumerWidget {
                   InfoRow('${l.t('deal.commission')} · ${l.enumLabel('dealSide', side.toUpperCase())}',
                       '${d.term(side)['mode'] == 'PERCENT' ? '${d.term(side)['value']}% = ' : ''}${formatPkr(side == 'buyer' ? s.expectedBuyer : s.expectedSeller, urdu: l.isRtl)}'),
                 InfoRow(l.t('common.notes'), d.notes),
+                NegotiationSection(deal: d, canEdit: canEdit),
                 SectionHeader(l.t('deal.agents')),
                 for (final a in s.agents)
                   ListTile(

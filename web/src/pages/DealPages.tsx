@@ -20,6 +20,7 @@ import type { Deal } from '@/api/types';
 import { BranchField } from '@/components/branches';
 import { ActivityPanel, DocumentsPanel, NotesPanel } from '@/components/domain/panels';
 import { AgreementsPanel } from '@/pages/AgreementPages';
+import { ChecklistPanel, NegotiationPanel } from '@/pages/Phase3Pages';
 import { Badge, Button, Card, ConfirmDialog, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Table, Tabs, Textarea, type BadgeColor, type Column, ViewToggle, MetricTile } from '@/components/ui';
 import { formatDate, formatPkr } from '@/lib/format';
 import { useDebounce, useEnumOptions, useErrorText, useMembers, useOnError, useUrlState, useOpenOnNew } from '@/lib/hooks';
@@ -27,7 +28,7 @@ import { useAuth, useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
 
 const STAGE_COLOR: Record<DealStage, BadgeColor> = {
-  INQUIRY: 'gray', SITE_VISIT: 'blue', OFFER: 'purple', TOKEN: 'amber', AGREEMENT: 'amber', TRANSFER: 'blue', CLOSED_WON: 'green', CLOSED_LOST: 'red',
+  INQUIRY: 'gray', QUALIFIED: 'blue', SITE_VISIT: 'blue', NEGOTIATION: 'purple', OFFER: 'purple', PAYMENT: 'amber', TOKEN: 'amber', AGREEMENT: 'amber', TRANSFER: 'blue', CLOSED_WON: 'green', CLOSED_LOST: 'red',
 };
 const STATUS_COLOR: Record<string, BadgeColor> = { PENDING: 'gray', PARTIALLY_RECEIVED: 'amber', RECEIVED: 'green' };
 
@@ -356,7 +357,7 @@ export function DealDetailPage() {
   const canMoney = useCan(PERMISSIONS.COMMISSIONS_MANAGE);
   const canAgreements = useCan(PERMISSIONS.AGREEMENTS_READ);
   const q = useQuery({ queryKey: ['deal', id], queryFn: () => dealApi.get(id) });
-  const [tab, setTab] = useState<'commission' | 'agreements' | 'documents' | 'notes' | 'activity'>('commission');
+  const [tab, setTab] = useState<'commission' | 'negotiation' | 'checklist' | 'agreements' | 'documents' | 'notes' | 'activity'>('commission');
   const [editing, setEditing] = useState(false);
   const [paying, setPaying] = useState(false);
   const [payout, setPayout] = useState(false);
@@ -418,6 +419,8 @@ export function DealDetailPage() {
         onChange={setTab}
         tabs={[
           { value: 'commission', label: t('deal.commission') },
+          { value: 'negotiation', label: t('deal.negotiation.title'), count: d.offers?.length || undefined },
+          { value: 'checklist', label: t('deal.checklist.title'), count: d.checklist?.filter((c) => !c.done).length || undefined },
           ...(canAgreements ? [{ value: 'agreements' as const, label: t('agreement.title') }] : []),
           { value: 'documents', label: t('document.title') },
           { value: 'notes', label: t('note.title') },
@@ -504,6 +507,8 @@ export function DealDetailPage() {
             defaults={{ clientId: refId(d.clientId), propertyId: refId(d.propertyId) || undefined, amount: d.finalPrice ?? d.agreedPrice, kind: d.stage === 'TOKEN' ? 'TOKEN_RECEIPT' : 'SALE' }}
           />
         )}
+        {tab === 'negotiation' && <NegotiationPanel deal={d} />}
+        {tab === 'checklist' && <ChecklistPanel deal={d} />}
         {tab === 'documents' && <DocumentsPanel entityType="deal" entityId={d._id} />}
         {tab === 'notes' && <NotesPanel entityType="deal" entityId={d._id} />}
         {tab === 'activity' && <ActivityPanel entityId={d._id} />}

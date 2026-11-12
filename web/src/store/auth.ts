@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Permission } from '@recrm/shared';
+import type { Entitlements, Module, Permission } from '@recrm/shared';
 import { authApi } from '@/api/endpoints';
 import { refreshAccessToken, tokenStore, branchSelection } from '@/api/client';
 import type { Business, Membership, Session, User } from '@/api/types';
@@ -12,6 +12,9 @@ interface AuthState {
   user: User | null;
   business: Business | null;
   membership: Membership | null;
+  entitlements: Entitlements | null;
+  platformAdmin: boolean;
+  refreshEntitlements(): Promise<void>;
   /** Restores the session on page load using the httpOnly refresh cookie. */
   bootstrap(): Promise<void>;
   signIn(session: Session & { accessToken: string }): void;
@@ -32,6 +35,17 @@ export const useAuth = create<AuthState>((set, get) => ({
   user: null,
   business: null,
   membership: null,
+  entitlements: null,
+  platformAdmin: false,
+
+  async refreshEntitlements() {
+    try {
+      const me = await authApi.me();
+      set({ entitlements: me.entitlements ?? null, platformAdmin: !!me.platformAdmin });
+    } catch {
+      /* the next page load retries */
+    }
+  },
 
   async bootstrap() {
     const token = await refreshAccessToken();
@@ -49,10 +63,17 @@ export const useAuth = create<AuthState>((set, get) => ({
     // A fresh sign-in adopts the profile's saved language/theme; a page reload keeps this device's choice.
     applyPreferences(session.user);
     get().setSession(session);
+    if (!session.entitlements) void get().refreshEntitlements();
   },
 
   setSession(session) {
-    set({ status: 'authenticated', user: session.user, business: session.business, membership: session.membership });
+    set({
+      status: 'authenticated',
+      user: session.user,
+      business: session.business,
+      membership: session.membership,
+      ...(session.entitlements ? { entitlements: session.entitlements, platformAdmin: !!session.platformAdmin } : {}),
+    });
   },
 
   patchUser(user) {
@@ -68,13 +89,19 @@ export const useAuth = create<AuthState>((set, get) => ({
     tokenStore.set(null);
     // The next person on this browser starts with all their branches, not this user's pick.
     branchSelection.set(null);
-    set({ status: 'anonymous', user: null, business: null, membership: null });
+    set({ status: 'anonymous', user: null, business: null, membership: null, entitlements: null, platformAdmin: false });
   },
 }));
 
 tokenStore.onSessionLost(() => {
   if (useAuth.getState().status === 'authenticated') void useAuth.getState().signOut(false);
 });
+
+/** Whether the plan includes a module (true until entitlements load, so nothing flickers away). */
+export function useModule(module: Module): boolean {
+  const e = useAuth((s) => s.entitlements);
+  return !e || e.modules.includes(module);
+}
 
 /** UI hint only — the API enforces every permission. */
 export function useCan(...perms: Permission[]): boolean {

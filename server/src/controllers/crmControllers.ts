@@ -22,7 +22,7 @@ import { transactionService } from '../services/transactionService';
 import { agreementService } from '../services/agreementService';
 import { brochureService, type BrochureOptions } from '../services/brochureService';
 import { clientRepository, propertyRepository } from '../repositories/entityRepositories';
-import { clientListQuery, dealListQuery, documentUploadFields, agreementListQuery, financeReportQuery, followUpListQuery, matchListQuery, ownerListQuery, propertyListQuery, transactionListQuery } from '../validators/crm.schemas';
+import { leadImportFields, clientListQuery, dealListQuery, documentUploadFields, agreementListQuery, financeReportQuery, followUpListQuery, matchListQuery, ownerListQuery, propertyListQuery, transactionListQuery } from '../validators/crm.schemas';
 import type { ZodTypeAny } from 'zod';
 
 const EXPORT_FILTERS: Record<ExportResource, ZodTypeAny> = {
@@ -37,7 +37,9 @@ const EXPORT_FILTERS: Record<ExportResource, ZodTypeAny> = {
   finance: financeReportQuery,
   agreements: agreementListQuery,
 };
-import { forbidden } from '../utils/AppError';
+import { badRequest, forbidden } from '../utils/AppError';
+import { ERROR_CODES, PERMISSIONS } from '@recrm/shared';
+import { leadService } from '../services/leadService';
 import { pageMeta, sendSuccess } from '../utils/http';
 import { requestMeta } from './authController';
 
@@ -155,6 +157,18 @@ export const transactionController = {
   },
 };
 
+export const negotiationController = {
+  async addOffer(req: Request, res: Response) {
+    sendSuccess(res, await dealService.addOffer(authOf(req), req.params.id, req.body, requestMeta(req)), { status: 201, message: 'Offer recorded' });
+  },
+  async respond(req: Request, res: Response) {
+    sendSuccess(res, await dealService.respondToOffer(authOf(req), req.params.id, req.params.subId, req.body.status, requestMeta(req)));
+  },
+  async checklist(req: Request, res: Response) {
+    sendSuccess(res, await dealService.setChecklistItem(authOf(req), req.params.id, req.body.key, req.body.done, req.body.label, requestMeta(req)));
+  },
+};
+
 export const dealController = {
   async list(req: Request, res: Response) {
     const q = query<Q>(req);
@@ -205,6 +219,26 @@ export const categoryController = {
   },
   async update(req: Request, res: Response) {
     sendSuccess(res, await categoryService.update(authOf(req), req.params.id, req.body), { message: 'Category updated successfully' });
+  },
+};
+
+export const leadController = {
+  async assign(req: Request, res: Response) {
+    sendSuccess(res, await leadService.assign(authOf(req), req.params.id, req.body.userId, req.body.note), { message: 'Lead assigned' });
+  },
+  async report(req: Request, res: Response) {
+    sendSuccess(res, await leadService.report(authOf(req), req.query as never));
+  },
+  async template(_req: Request, res: Response) {
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="dalliqo-leads-template.xlsx"');
+    res.end(await leadService.template());
+  },
+  async importExcel(req: Request, res: Response) {
+    const file = req.file as { buffer: Buffer } | undefined;
+    if (!file) throw badRequest(ERROR_CODES.INVALID_FILE, 'No file received');
+    const opts = leadImportFields.parse(req.body ?? {});
+    sendSuccess(res, await leadService.importExcel(authOf(req), file.buffer, opts), { message: 'Import finished' });
   },
 };
 
@@ -289,10 +323,21 @@ export const propertyController = {
   },
   async list(req: Request, res: Response) {
     const q = query<Q>(req);
-    list(res, q.page, q.limit, await propertyService.list(authOf(req), q));
+    const auth = authOf(req);
+    const floor = auth.permissions.includes(PERMISSIONS.PROPERTIES_VIEW_FLOOR);
+    const r = await propertyService.list(auth, q);
+    list(res, q.page, q.limit, { ...r, items: r.items.map((p) => propertyService.redact(floor, p)) });
   },
   async get(req: Request, res: Response) {
-    sendSuccess(res, await propertyService.get(authOf(req), req.params.id));
+    const auth = authOf(req);
+    sendSuccess(res, propertyService.redact(auth.permissions.includes(PERMISSIONS.PROPERTIES_VIEW_FLOOR), await propertyService.get(auth, req.params.id)));
+  },
+  async duplicates(req: Request, res: Response) {
+    const q = req.query as unknown as { excludeId?: string; plotNumber: string };
+    sendSuccess(res, await propertyService.findDuplicates(authOf(req), q, q.excludeId));
+  },
+  async inventoryReport(req: Request, res: Response) {
+    sendSuccess(res, await propertyService.inventoryReport(authOf(req)));
   },
   async create(req: Request, res: Response) {
     sendSuccess(res, await propertyService.create(authOf(req), req.body, requestMeta(req)), { status: 201, message: 'Property created successfully' });

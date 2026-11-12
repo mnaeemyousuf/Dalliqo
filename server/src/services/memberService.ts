@@ -23,6 +23,7 @@ import { withTransaction } from '../utils/transaction';
 import { auditService } from './auditService';
 import { branchService } from './branchService';
 import { passwordService } from './passwordService';
+import { subscriptionService } from './subscriptionService';
 
 function view(m: MemberWithUser) {
   return {
@@ -73,6 +74,7 @@ export const memberService = {
     input: { fullName: string; email: string; mobileNumber?: string; temporaryPassword: string; role?: Role; permissions?: Permission[]; branchAccess?: BranchAccess; branchIds?: string[] },
     meta: RequestMeta,
   ): Promise<MemberView> {
+    await subscriptionService.assertLimit(auth, 'users');
     const role = input.role ?? ROLES.MEMBER;
     if (!ASSIGNABLE_ROLES.includes(role)) throw forbidden(ERROR_CODES.ROLE_NOT_ASSIGNABLE, `Role ${role} cannot be assigned`);
     if (await userRepository.findByEmail(input.email)) {

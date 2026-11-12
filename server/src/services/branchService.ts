@@ -9,6 +9,7 @@ import { diffFields } from '../utils/diff';
 import { auditService } from './auditService';
 import { canSeeBranch, forgetDefaultBranch } from './branchScope';
 import { publishChange } from './publish';
+import { subscriptionService } from './subscriptionService';
 
 export const branchRepository = createTenantRepository<BranchDoc>(Branch, ERROR_CODES.BRANCH_NOT_FOUND);
 
@@ -57,6 +58,7 @@ export const branchService = {
       const existing = await branchRepository.findByUuid(auth, input.uuid);
       if (existing) return existing;
     }
+    await subscriptionService.assertLimit(auth, 'branches');
     await assertUniqueName(auth, input.name);
     const branch = await branchRepository.create(auth, { ...input, isDefault: false });
     await auditService.record(auth, { action: 'branch.created', entityType: 'branch', entityId: branch._id, entityLabel: branch.name, ip: meta.ip });

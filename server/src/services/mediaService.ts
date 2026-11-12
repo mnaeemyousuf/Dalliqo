@@ -13,6 +13,7 @@ import { branchFilter } from './branchScope';
 import { propertyService } from './propertyService';
 import { storage, type ResourceType } from './storage/storage';
 import { DOCUMENT_MIMES as DOC_MIMES, IMAGE_MIMES, VIDEO_MIMES } from '../constants';
+import { subscriptionService } from './subscriptionService';
 
 // file-type v16 is CommonJS.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -147,6 +148,7 @@ export const mediaService = {
   async uploadPropertyMedia(auth: AuthContext, propertyId: string, files: UploadedFile[]) {
     const property = await propertyRepository.getById(auth, propertyId, 'Property not found');
     if (!files.length) throw badRequest(ERROR_CODES.INVALID_FILE, 'No files received');
+    await subscriptionService.assertLimit(auth, 'storageMb', files.reduce((s, f) => s + f.size, 0) / 1_048_576);
     const detected = await Promise.all(files.map(sniff));
     detected.forEach((d, i) => {
       if (![...IMAGE_MIMES, ...VIDEO_MIMES].includes(d.mime)) {
@@ -225,6 +227,7 @@ export const mediaService = {
     file: UploadedFile | undefined,
   ) {
     if (!file) throw badRequest(ERROR_CODES.INVALID_FILE, 'No file received');
+    await subscriptionService.assertLimit(auth, 'storageMb', file.size / 1_048_576);
     const { label, branchId } = await entityInfo(auth, input.entityType, input.entityId);
     const detected = await sniff(file);
     if (!DOC_MIMES.includes(detected.mime)) {

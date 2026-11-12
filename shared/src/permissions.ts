@@ -13,6 +13,8 @@ export const PERMISSIONS = {
   PROPERTIES_CREATE: 'properties:create',
   PROPERTIES_UPDATE: 'properties:update',
   PROPERTIES_DELETE: 'properties:delete',
+  /** See the owner's minimum acceptable price (hidden from everyone else). */
+  PROPERTIES_VIEW_FLOOR: 'properties:view_floor_price',
 
   OWNERS_READ: 'owners:read',
   OWNERS_CREATE: 'owners:create',
@@ -89,6 +91,7 @@ export const PERMISSION_GROUPS: Record<string, readonly Permission[]> = {
     PERMISSIONS.PROPERTIES_CREATE,
     PERMISSIONS.PROPERTIES_UPDATE,
     PERMISSIONS.PROPERTIES_DELETE,
+    PERMISSIONS.PROPERTIES_VIEW_FLOOR,
   ],
   owners: [PERMISSIONS.OWNERS_READ, PERMISSIONS.OWNERS_CREATE, PERMISSIONS.OWNERS_UPDATE, PERMISSIONS.OWNERS_DELETE],
   matches: [PERMISSIONS.MATCHES_READ, PERMISSIONS.MATCHES_MANAGE],

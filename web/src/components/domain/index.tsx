@@ -13,6 +13,9 @@ import { formatPkr, formatRange, relativeTime, telHref, waHref } from '@/lib/for
 export const STATUS_COLOR: Record<PropertyStatus, BadgeColor> = {
   AVAILABLE: 'green',
   RESERVED: 'amber',
+  UNDER_NEGOTIATION: 'purple',
+  ON_HOLD: 'gray',
+  EXPIRED: 'red',
   SOLD: 'blue',
   RENTED: 'purple',
   WITHDRAWN: 'gray',

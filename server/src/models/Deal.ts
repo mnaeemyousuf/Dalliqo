@@ -1,6 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { Schema, model, type Types } from 'mongoose';
 import {
+  OFFER_PARTIES,
+  OFFER_STATUSES,
+  type OfferParty,
+  type OfferStatus,
   COMMISSION_MODES,
   COMMISSION_STATUSES,
   DEAL_SIDES,
@@ -31,6 +35,24 @@ export interface DealPayment {
   createdBy: Types.ObjectId;
 }
 
+export interface DealOffer {
+  _id: string;
+  party: OfferParty;
+  amount: number;
+  status: OfferStatus;
+  note?: string;
+  at: Date;
+  by?: Types.ObjectId;
+}
+
+export interface DealChecklistEntry {
+  key: string;
+  label?: string;
+  done: boolean;
+  doneAt?: Date | null;
+  doneBy?: Types.ObjectId | null;
+}
+
 export interface DealPayout {
   _id: string;
   userId: Types.ObjectId;
@@ -53,6 +75,11 @@ export interface DealDoc extends SyncDoc {
   stage: DealStage;
   lostReason?: string;
   stageHistory: { stage: DealStage; at: Date; by: Types.ObjectId; note?: string }[];
+  /** Owner's asking price when negotiation started (snapshot from the property). */
+  initialAskingPrice?: number;
+  offers: DealOffer[];
+  tokenAmount?: number;
+  checklist: DealChecklistEntry[];
   agreedPrice?: number;
   finalPrice?: number;
   expectedCloseDate?: Date | null;
@@ -95,6 +122,35 @@ const schema = new Schema<DealDoc>(
     lostReason: { type: String, maxlength: 500 },
     stageHistory: {
       type: [{ _id: false, stage: { type: String, enum: DEAL_STAGES, required: true }, at: { type: Date, required: true }, by: { type: Schema.Types.ObjectId, ref: 'User' }, note: String }],
+      default: [],
+    },
+    initialAskingPrice: { type: Number, min: 0 },
+    offers: {
+      type: [
+        {
+          _id: { type: String, default: () => randomUUID() },
+          party: { type: String, enum: OFFER_PARTIES, required: true },
+          amount: { type: Number, required: true, min: 1 },
+          status: { type: String, enum: OFFER_STATUSES, default: 'OPEN' },
+          note: { type: String, maxlength: 500 },
+          at: { type: Date, required: true },
+          by: { type: Schema.Types.ObjectId, ref: 'User' },
+        },
+      ],
+      default: [],
+    },
+    tokenAmount: { type: Number, min: 0 },
+    checklist: {
+      type: [
+        {
+          _id: false,
+          key: { type: String, required: true, maxlength: 60 },
+          label: { type: String, maxlength: 120 },
+          done: { type: Boolean, default: false },
+          doneAt: { type: Date, default: null },
+          doneBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+        },
+      ],
       default: [],
     },
     agreedPrice: { type: Number, min: 0 },

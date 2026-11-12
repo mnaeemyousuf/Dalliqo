@@ -13,6 +13,8 @@ export interface NewNotification {
   body: string;
   deepLink?: string;
   data?: Record<string, unknown>;
+  /** At most one notification per user with this key (automation alerts). */
+  dedupeKey?: string;
 }
 
 export const notificationService = {
@@ -20,9 +22,14 @@ export const notificationService = {
    * Stores one notification per recipient, notifies their open sockets and
    * sends an FCM push to their devices. Never throws into the caller.
    */
-  async notify(ctx: TenantContext, n: NewNotification): Promise<void> {
-    const userIds = Array.from(new Set(n.userIds));
-    if (!userIds.length) return;
+  async notify(ctx: TenantContext, n: NewNotification): Promise<number> {
+    let userIds = Array.from(new Set(n.userIds));
+    if (n.dedupeKey && userIds.length) {
+      const seen = await Notification.find({ businessId: ctx.businessId, userId: { $in: userIds }, dedupeKey: n.dedupeKey }).select('userId').lean();
+      const already = new Set(seen.map((s) => s.userId.toString()));
+      userIds = userIds.filter((u) => !already.has(u));
+    }
+    if (!userIds.length) return 0;
     // Lets phones that ring follow-up reminders themselves recognise this one as a duplicate.
     const followUpId = n.category === 'FOLLOWUP' && typeof n.data?.followUpId === 'string' ? n.data.followUpId : undefined;
     try {
@@ -35,7 +42,9 @@ export const notificationService = {
           body: n.body,
           deepLink: n.deepLink,
           data: n.data,
+          ...(n.dedupeKey ? { dedupeKey: n.dedupeKey } : {}),
         })),
+        { ordered: false },
       );
       for (const d of docs) {
         eventBus.publish({
@@ -57,8 +66,11 @@ export const notificationService = {
       if (delivered > 0) {
         await Notification.updateMany({ businessId: ctx.businessId, _id: { $in: docs.map((d) => d._id) } }, { $set: { pushedAt: new Date() } });
       }
+      return docs.length;
     } catch (err) {
-      logger.error({ err, category: n.category }, 'Failed to create notification');
+      // A concurrent run inserting the same de-duplicated alert is expected and harmless.
+      if ((err as { code?: number }).code !== 11000) logger.error({ err, category: n.category }, 'Failed to create notification');
+      return 0;
     }
   },
 

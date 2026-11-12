@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../core/branch/branch_scope.dart';
+import '../core/commission/commission.dart';
 import '../core/database/app_database.dart';
 import '../core/models/models.dart';
 import '../core/network/api_client.dart';
@@ -18,7 +19,7 @@ import '../core/sync/local_store.dart';
 const _keep = Object();
 
 /// Square feet per unit (the API's defaults), used to compare sizes across units offline.
-const sqftPerUnit = {'SQ_FT': 1.0, 'SQ_YARD': 9.0, 'SQ_METER': 10.7639, 'MARLA': 225.0, 'KANAL': 4500.0};
+const sqftPerUnit = {'SQ_FT': 1.0, 'SQ_YARD': 9.0, 'SQ_METER': 10.7639, 'MARLA': 225.0, 'KANAL': 4500.0, 'ACRE': 43560.0};
 
 bool _contains(Object? haystack, String needle) {
   final n = needle.toLowerCase();
@@ -640,6 +641,45 @@ class CrmRepository {
     final d = await deal(id);
     if (d == null) return;
     await store.update(Entities.deals, id, {'payments': _strip(d.payments.where((p) => p['_id'] != paymentId).toList(), _paymentKeys)});
+  }
+
+  static const _offerKeys = {'_id', 'party', 'amount', 'status', 'note', 'at'};
+
+  /// Records an offer; earlier open offers of the other party become COUNTERED.
+  Future<void> addDealOffer(String id, {required String party, required num amount, String? note}) async {
+    final d = await deal(id);
+    if (d == null) return;
+    final next = [
+      for (final o in d.offers) (o['status'] == 'OPEN' && o['party'] != party) ? {...o, 'status': 'COUNTERED'} : o,
+      {'_id': const Uuid().v4(), 'party': party, 'amount': amount, 'status': 'OPEN', 'note': ?note, 'at': DateTime.now().toUtc().toIso8601String()},
+    ];
+    final moveToNegotiation = const ['INQUIRY', 'QUALIFIED', 'SITE_VISIT'].contains(d.stage);
+    await store.update(Entities.deals, id, {'offers': _strip(next, _offerKeys), if (moveToNegotiation) 'stage': 'NEGOTIATION'});
+  }
+
+  /// Accepting fixes the agreed price and closes the other open offers.
+  Future<void> respondDealOffer(String id, String offerId, String status) async {
+    final d = await deal(id);
+    if (d == null) return;
+    final offer = d.offers.firstWhere((o) => o['_id'] == offerId, orElse: () => const {});
+    if (offer.isEmpty) return;
+    final next = [
+      for (final o in d.offers)
+        o['_id'] == offerId ? {...o, 'status': status} : (status == 'ACCEPTED' && o['status'] == 'OPEN') ? {...o, 'status': 'REJECTED'} : o,
+    ];
+    await store.update(Entities.deals, id, {
+      'offers': _strip(next, _offerKeys),
+      if (status == 'ACCEPTED') 'agreedPrice': offer['amount'],
+      if (status == 'ACCEPTED' && const ['INQUIRY', 'QUALIFIED', 'SITE_VISIT', 'NEGOTIATION'].contains(d.stage)) 'stage': 'OFFER',
+    });
+  }
+
+  Future<void> setDealChecklistItem(String id, String key, bool done) async {
+    final d = await deal(id);
+    if (d == null) return;
+    final current = d.checklist.isNotEmpty ? d.checklist : [for (final k in dealChecklistItems) {'key': k, 'done': false}];
+    final next = [for (final c in current) {'key': c['key'], if (c['label'] != null) 'label': c['label'], 'done': c['key'] == key ? done : c['done'] == true}];
+    await store.update(Entities.deals, id, {'checklist': next});
   }
 
   Future<void> addDealPayout(String id, Map<String, dynamic> payout) async {

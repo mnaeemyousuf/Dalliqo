@@ -10,6 +10,8 @@ import { MatchCard, PropertyCard, PropertyStatusBadge, locationLabel, useSizeLab
 import { ActivityPanel, DocumentsPanel, FollowUpForm, FollowUpsPanel, NotesPanel } from '@/components/domain/panels';
 import { BranchField, useBranchName, useBranches } from '@/components/branches';
 import { DealsPanel } from '@/pages/DealPages';
+import { PropertyExtraDetails, PropertyExtraFields } from '@/pages/Phase3Pages';
+import { toApiError } from '@/api/client';
 import { BrochureDialog } from '@/components/domain/BrochureDialog';
 import { Badge, Button, Card, Checkbox, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column, FilterBar, ViewToggle } from '@/components/ui';
 import { formatDate, formatPkr, waHref } from '@/lib/format';
@@ -68,6 +70,21 @@ export function PropertyFormDrawer({ open, onClose, property }: { open: boolean;
     floors: property?.floors?.toString() ?? '',
   });
   const [negotiable, setNegotiable] = useState(property?.negotiable ?? true);
+  // Pakistan-specific attributes (phase, possession, corner …), edited in PropertyExtraFields.
+  const [extra, setExtra] = useState<Record<string, unknown>>({
+    phase: property?.phase,
+    sector: property?.sector,
+    unitNumber: property?.unitNumber,
+    possessionStatus: property?.possessionStatus,
+    developmentStatus: property?.developmentStatus,
+    constructionStatus: property?.constructionStatus,
+    furnishing: property?.furnishing,
+    facing: property?.facing,
+    corner: property?.corner ?? false,
+    parkFacing: property?.parkFacing ?? false,
+    mainRoad: property?.mainRoad ?? false,
+    availabilityExpiresAt: property?.availabilityExpiresAt ?? null,
+  });
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const residential = ['HOUSE', 'FLAT', 'APARTMENT', 'PORTION'].includes(form.propertyType);
 
@@ -83,8 +100,10 @@ export function PropertyFormDrawer({ open, onClose, property }: { open: boolean;
     );
 
   const save = useMutation({
-    mutationFn: () => {
+    mutationFn: (allowDuplicate: boolean = false) => {
       const body: Record<string, unknown> = {
+        ...Object.fromEntries(Object.entries(extra).filter(([, v]) => v !== undefined && v !== '')),
+        ...(allowDuplicate ? { allowDuplicate: true } : {}),
         ...(form.branchId ? { branchId: form.branchId } : {}),
         propertyType: form.propertyType,
         listingPurpose: form.listingPurpose,
@@ -109,7 +128,15 @@ export function PropertyFormDrawer({ open, onClose, property }: { open: boolean;
       onClose();
       if (!property) navigate(`/properties/${saved._id}`);
     },
-    onError: (e) => setErrors(onError(e)),
+    onError: (e) => {
+      const err = toApiError(e);
+      if (err.code === 'PROPERTY_DUPLICATE') {
+        const first = (err.details as { duplicates?: { propertyId: string }[] } | undefined)?.duplicates?.[0];
+        if (window.confirm(t('property.pk.duplicateConfirm', { id: first?.propertyId ?? '' }))) save.mutate(true);
+        return;
+      }
+      setErrors(onError(e));
+    },
   });
 
   return (
@@ -122,13 +149,13 @@ export function PropertyFormDrawer({ open, onClose, property }: { open: boolean;
           <Button variant="secondary" onClick={onClose}>
             {t('common.cancel')}
           </Button>
-          <Button loading={save.isPending} onClick={() => save.mutate()}>
+          <Button loading={save.isPending} onClick={() => save.mutate(false)}>
             {t('common.save')}
           </Button>
         </>
       }
     >
-      <form className="space-y-4" onSubmit={(e) => (e.preventDefault(), save.mutate())}>
+      <form className="space-y-4" onSubmit={(e) => (e.preventDefault(), save.mutate(false))}>
         <BranchField value={form.branchId} onChange={(v) => setForm((f) => ({ ...f, branchId: v }))} />
         <div className="grid gap-3 sm:grid-cols-2">
           <Select label={t('property.type')} options={types} value={form.propertyType} onChange={set('propertyType')} />
@@ -150,6 +177,7 @@ export function PropertyFormDrawer({ open, onClose, property }: { open: boolean;
           <Input label={t('property.expectedFinalPrice')} type="number" min={0} step={1000} value={form.expectedFinalPrice} onChange={set('expectedFinalPrice')} />
         </div>
         <Checkbox label={t('property.negotiable')} checked={negotiable} onChange={setNegotiable} />
+        <PropertyExtraFields form={extra} set={(patch) => setExtra((x) => ({ ...x, ...patch }))} />
         {residential && (
           <div className="grid gap-3 sm:grid-cols-3">
             <Input label={t('property.bedrooms')} type="number" min={0} value={form.bedrooms} onChange={set('bedrooms')} />
@@ -655,6 +683,7 @@ export function PropertyDetailPage() {
             </Card>
           </div>
           <div className="space-y-4">
+            <PropertyExtraDetails property={p} />
             <Card title={t('property.owner')}>
               {owner ? (
                 <div className="space-y-1">

@@ -41,6 +41,7 @@ const UsersPage = page(admin, 'UsersPage');
 const NotificationsPage = page(admin, 'NotificationsPage');
 const AuditPage = page(admin, 'AuditPage');
 const SettingsPage = page(admin, 'SettingsPage');
+const PlatformPage = page(() => import('@/pages/Phase3Pages'), 'PlatformPage');
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -103,6 +104,7 @@ export function AppRoutes() {
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="audit" element={<AuditPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="platform" element={<PlatformPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

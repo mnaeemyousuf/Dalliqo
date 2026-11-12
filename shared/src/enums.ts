@@ -6,14 +6,58 @@ export const PROPERTY_TYPES = [
   'FLAT',
   'APARTMENT',
   'PORTION',
+  'FARMHOUSE',
+  'FILE',
   'SHOP',
   'OFFICE',
   'COMMERCIAL',
+  'COMMERCIAL_PLOT',
+  'BUILDING',
+  'WAREHOUSE',
+  'FACTORY',
+  'INDUSTRIAL_PLOT',
+  'AGRICULTURAL_LAND',
   'OTHER',
 ] as const;
 export type PropertyType = (typeof PROPERTY_TYPES)[number];
 
-export const PROPERTY_STATUSES = ['AVAILABLE', 'RESERVED', 'SOLD', 'RENTED', 'WITHDRAWN', 'INACTIVE'] as const;
+/** Broad category of each property type (filters, reports, public listings). */
+export const PROPERTY_CATEGORIES = ['RESIDENTIAL', 'COMMERCIAL', 'INDUSTRIAL', 'AGRICULTURAL'] as const;
+export type PropertyCategory = (typeof PROPERTY_CATEGORIES)[number];
+export const PROPERTY_CATEGORY_OF: Record<PropertyType, PropertyCategory> = {
+  RESIDENTIAL_PLOT: 'RESIDENTIAL',
+  HOUSE: 'RESIDENTIAL',
+  FLAT: 'RESIDENTIAL',
+  APARTMENT: 'RESIDENTIAL',
+  PORTION: 'RESIDENTIAL',
+  FARMHOUSE: 'RESIDENTIAL',
+  FILE: 'RESIDENTIAL',
+  SHOP: 'COMMERCIAL',
+  OFFICE: 'COMMERCIAL',
+  COMMERCIAL: 'COMMERCIAL',
+  COMMERCIAL_PLOT: 'COMMERCIAL',
+  BUILDING: 'COMMERCIAL',
+  WAREHOUSE: 'INDUSTRIAL',
+  FACTORY: 'INDUSTRIAL',
+  INDUSTRIAL_PLOT: 'INDUSTRIAL',
+  AGRICULTURAL_LAND: 'AGRICULTURAL',
+  OTHER: 'RESIDENTIAL',
+};
+export const propertyTypesInCategory = (c: PropertyCategory): PropertyType[] => PROPERTY_TYPES.filter((t) => PROPERTY_CATEGORY_OF[t] === c);
+
+/** Pakistan-specific listing attributes. */
+export const POSSESSION_STATUSES = ['POSSESSION', 'NON_POSSESSION', 'BALLOTED', 'UNBALLOTED'] as const;
+export type PossessionStatus = (typeof POSSESSION_STATUSES)[number];
+export const DEVELOPMENT_STATUSES = ['DEVELOPED', 'UNDER_DEVELOPMENT', 'UNDEVELOPED'] as const;
+export type DevelopmentStatus = (typeof DEVELOPMENT_STATUSES)[number];
+export const CONSTRUCTION_STATUSES = ['EMPTY_PLOT', 'GREY_STRUCTURE', 'UNDER_CONSTRUCTION', 'READY', 'NEEDS_RENOVATION'] as const;
+export type ConstructionStatus = (typeof CONSTRUCTION_STATUSES)[number];
+export const FURNISHING_STATUSES = ['UNFURNISHED', 'SEMI_FURNISHED', 'FURNISHED'] as const;
+export type FurnishingStatus = (typeof FURNISHING_STATUSES)[number];
+export const FACING_DIRECTIONS = ['NORTH', 'SOUTH', 'EAST', 'WEST', 'NORTH_EAST', 'NORTH_WEST', 'SOUTH_EAST', 'SOUTH_WEST'] as const;
+export type FacingDirection = (typeof FACING_DIRECTIONS)[number];
+
+export const PROPERTY_STATUSES = ['AVAILABLE', 'RESERVED', 'UNDER_NEGOTIATION', 'ON_HOLD', 'SOLD', 'RENTED', 'EXPIRED', 'WITHDRAWN', 'INACTIVE'] as const;
 export type PropertyStatus = (typeof PROPERTY_STATUSES)[number];
 
 /** What the property is listed for. Matching treats a purpose mismatch as disqualifying. */
@@ -24,7 +68,7 @@ export type ListingPurpose = (typeof LISTING_PURPOSES)[number];
 export const CLIENT_PURPOSES = ['PURCHASE', 'RENTAL'] as const;
 export type ClientPurpose = (typeof CLIENT_PURPOSES)[number];
 
-export const SIZE_UNITS = ['SQ_FT', 'SQ_YARD', 'SQ_METER', 'MARLA', 'KANAL'] as const;
+export const SIZE_UNITS = ['SQ_FT', 'SQ_YARD', 'SQ_METER', 'MARLA', 'KANAL', 'ACRE'] as const;
 export type SizeUnit = (typeof SIZE_UNITS)[number];
 
 /** Built-in client categories seeded for every new business; businesses may add custom ones. */
@@ -46,7 +90,9 @@ export type ClientStatus = (typeof CLIENT_STATUSES)[number];
 export const PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'] as const;
 export type Priority = (typeof PRIORITIES)[number];
 
-export const CLIENT_SOURCES = ['WALK_IN', 'PHONE', 'REFERRAL', 'WHATSAPP', 'SOCIAL_MEDIA', 'PORTAL', 'OTHER'] as const;
+/** Where a lead came from. SOCIAL_MEDIA and PORTAL are kept for records created before the specific channels existed. */
+export const CLIENT_SOURCES = ['WALK_IN', 'PHONE', 'REFERRAL', 'WHATSAPP', 'FACEBOOK', 'INSTAGRAM', 'ZAMEEN', 'OLX', 'WEBSITE', 'SOCIAL_MEDIA', 'PORTAL', 'OTHER'] as const;
+export type ClientSource = (typeof CLIENT_SOURCES)[number];
 
 export const FOLLOWUP_TYPES = ['CALL', 'MEETING', 'WHATSAPP', 'SMS', 'PROPERTY_VISIT', 'GENERAL'] as const;
 export type FollowUpType = (typeof FOLLOWUP_TYPES)[number];
@@ -96,6 +142,7 @@ export const DEFAULT_SQFT_PER_UNIT: Record<SizeUnit, number> = {
   SQ_METER: 10.7639,
   MARLA: 225,
   KANAL: 4500,
+  ACRE: 43560,
 };
 
 /**
@@ -142,6 +189,10 @@ export const ACTIVITY_TYPES = [
   'AGREEMENT_RENDERED',
   'AGREEMENT_STATUS_CHANGED',
   'AGREEMENT_DELETED',
+  'LEAD_ASSIGNED',
+  'LEAD_STATUS_CHANGED',
+  'DEAL_OFFER_RECORDED',
+  'DEAL_CHECKLIST_UPDATED',
 ] as const;
 export type ActivityType = (typeof ACTIVITY_TYPES)[number];
 
@@ -154,7 +205,7 @@ export type DocumentEntityType = (typeof DOCUMENT_ENTITY_TYPES)[number];
 export const COMMUNICATION_CHANNELS = ['CALL', 'WHATSAPP', 'SMS', 'EMAIL'] as const;
 export type CommunicationChannel = (typeof COMMUNICATION_CHANNELS)[number];
 
-export const NOTIFICATION_CATEGORIES = ['FOLLOWUP', 'MATCH', 'PROPERTY', 'SYSTEM'] as const;
+export const NOTIFICATION_CATEGORIES = ['FOLLOWUP', 'MATCH', 'PROPERTY', 'SYSTEM', 'LEAD', 'DEAL', 'AUTOMATION'] as const;
 export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 
 export const MEDIA_KINDS = ['image', 'video', 'pdf', 'other'] as const;
@@ -164,11 +215,18 @@ export type MediaKind = (typeof MEDIA_KINDS)[number];
 export const RELATED_PROPERTY_TYPES: Partial<Record<PropertyType, PropertyType[]>> = {
   FLAT: ['APARTMENT'],
   APARTMENT: ['FLAT'],
-  HOUSE: ['PORTION'],
+  HOUSE: ['PORTION', 'FARMHOUSE'],
   PORTION: ['HOUSE', 'FLAT'],
+  FARMHOUSE: ['HOUSE'],
+  RESIDENTIAL_PLOT: ['FILE'],
+  FILE: ['RESIDENTIAL_PLOT'],
   SHOP: ['COMMERCIAL', 'OFFICE'],
   OFFICE: ['COMMERCIAL', 'SHOP'],
-  COMMERCIAL: ['SHOP', 'OFFICE'],
+  COMMERCIAL: ['SHOP', 'OFFICE', 'BUILDING'],
+  COMMERCIAL_PLOT: ['COMMERCIAL'],
+  BUILDING: ['COMMERCIAL'],
+  WAREHOUSE: ['FACTORY'],
+  FACTORY: ['WAREHOUSE'],
 };
 
 export interface MatchingSettings {
@@ -209,13 +267,19 @@ export type MatchReasonCode = (typeof MATCH_REASON_CODES)[number];
 
 /** Allowed property status transitions (any status may move to INACTIVE or back to AVAILABLE). */
 export const PROPERTY_STATUS_TRANSITIONS: Record<PropertyStatus, PropertyStatus[]> = {
-  AVAILABLE: ['RESERVED', 'SOLD', 'RENTED', 'WITHDRAWN', 'INACTIVE'],
-  RESERVED: ['AVAILABLE', 'SOLD', 'RENTED', 'WITHDRAWN', 'INACTIVE'],
+  AVAILABLE: ['RESERVED', 'UNDER_NEGOTIATION', 'ON_HOLD', 'SOLD', 'RENTED', 'EXPIRED', 'WITHDRAWN', 'INACTIVE'],
+  RESERVED: ['AVAILABLE', 'UNDER_NEGOTIATION', 'ON_HOLD', 'SOLD', 'RENTED', 'WITHDRAWN', 'INACTIVE'],
+  UNDER_NEGOTIATION: ['AVAILABLE', 'RESERVED', 'ON_HOLD', 'SOLD', 'RENTED', 'WITHDRAWN', 'INACTIVE'],
+  ON_HOLD: ['AVAILABLE', 'RESERVED', 'UNDER_NEGOTIATION', 'WITHDRAWN', 'INACTIVE'],
   SOLD: ['AVAILABLE', 'INACTIVE'],
   RENTED: ['AVAILABLE', 'INACTIVE'],
+  EXPIRED: ['AVAILABLE', 'WITHDRAWN', 'INACTIVE'],
   WITHDRAWN: ['AVAILABLE', 'INACTIVE'],
   INACTIVE: ['AVAILABLE'],
 };
+
+/** Statuses in which a listing is still on the market (matching, inventory reports). */
+export const MARKETABLE_PROPERTY_STATUSES: readonly PropertyStatus[] = ['AVAILABLE', 'RESERVED', 'UNDER_NEGOTIATION'];
 
 /** Which branches a member can see: every branch, or only the ones on the membership. */
 export const BRANCH_ACCESS = ['ALL', 'SELECTED'] as const;

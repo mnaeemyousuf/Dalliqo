@@ -16,9 +16,15 @@ import '../auth/auth_controller.dart';
 import '../branches/branch_screens.dart';
 import '../deals/deal_screens.dart';
 import '../common/record_panels.dart';
+import 'lead_score_card.dart';
 
-const propertyTypes = ['RESIDENTIAL_PLOT', 'HOUSE', 'FLAT', 'APARTMENT', 'PORTION', 'SHOP', 'OFFICE', 'COMMERCIAL', 'OTHER'];
-const sizeUnits = ['SQ_YARD', 'SQ_FT', 'SQ_METER', 'MARLA', 'KANAL'];
+const propertyTypes = [
+  'RESIDENTIAL_PLOT', 'HOUSE', 'FLAT', 'APARTMENT', 'PORTION', 'FARMHOUSE', 'FILE', 'SHOP', 'OFFICE', 'COMMERCIAL', 'COMMERCIAL_PLOT',
+  'BUILDING', 'WAREHOUSE', 'FACTORY', 'INDUSTRIAL_PLOT', 'AGRICULTURAL_LAND', 'OTHER',
+];
+const sizeUnits = ['SQ_YARD', 'SQ_FT', 'SQ_METER', 'MARLA', 'KANAL', 'ACRE'];
+const clientSources = ['WALK_IN', 'PHONE', 'REFERRAL', 'WHATSAPP', 'FACEBOOK', 'INSTAGRAM', 'ZAMEEN', 'OLX', 'WEBSITE', 'SOCIAL_MEDIA', 'PORTAL', 'OTHER'];
+const buyingTimelines = ['IMMEDIATE', 'ONE_MONTH', 'THREE_MONTHS', 'SIX_MONTHS', 'EXPLORING'];
 
 final clientFilterProvider = StateProvider<ClientFilter>((ref) => const ClientFilter());
 
@@ -303,6 +309,7 @@ class ClientDetailScreen extends ConsumerWidget {
                 InfoRow(l.t('client.alternate'), c.alternateNumber, ltr: true),
                 InfoRow(l.t('common.email'), c.email, ltr: true),
                 InfoRow(l.t('common.address'), c.address),
+                if (c.leadScore != null) LeadScoreCard(client: c),
                 InfoRow(l.t('client.source'), c.source == null ? null : l.enumLabel('source', c.source)),
                 InfoRow(l.t('client.budget'), formatRange(c.minBudget, c.maxBudget, urdu: l.isRtl)),
                 InfoRow(l.t('client.lastContacted'), c.lastContactedAt == null ? null : formatDate(c.lastContactedAt, time: true, locale: l.locale.languageCode)),
@@ -442,6 +449,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
   String _status = 'ACTIVE';
   String _priority = 'MEDIUM';
   String? _source;
+  String? _timeline;
   String? _assignedTo;
   String? _branchId;
   List<_ReqDraft> _reqs = [_ReqDraft()];
@@ -475,6 +483,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
       _status = c.status;
       _priority = c.priority;
       _source = c.source;
+      _timeline = c.buyingTimeline;
       _assignedTo = c.assignedTo;
       _branchId = c.branchId;
       if (c.requirements.isNotEmpty) _reqs = c.requirements.map(_ReqDraft.new).toList();
@@ -495,6 +504,7 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
       'status': _status,
       'priority': _priority,
       if (_source != null) 'source': _source,
+      if (_timeline != null) 'buyingTimeline': _timeline,
       if (_assignedTo != null) 'assignedTo': _assignedTo,
       if (_branchId != null) 'branchId': _branchId,
       'requirements': [for (var i = 0; i < _reqs.length; i++) _reqs[i].toJson(i == 0)],
@@ -580,7 +590,9 @@ class _ClientFormScreenState extends ConsumerState<ClientFormScreen> {
             Expanded(child: AppDropdown<String>(label: l.t('client.priority'), value: _priority, items: {for (final s in const ['LOW', 'MEDIUM', 'HIGH', 'URGENT']) s: l.enumLabel('priority', s)}, onChanged: (v) => setState(() => _priority = v ?? 'MEDIUM'))),
           ]),
           const SizedBox(height: 12),
-          AppDropdown<String>(label: l.t('client.source'), value: _source, items: {for (final s in const ['WALK_IN', 'PHONE', 'REFERRAL', 'WHATSAPP', 'SOCIAL_MEDIA', 'PORTAL', 'OTHER']) s: l.enumLabel('source', s)}, onChanged: (v) => setState(() => _source = v)),
+          AppDropdown<String>(label: l.t('client.source'), value: _source, items: {for (final s in clientSources) s: l.enumLabel('source', s)}, onChanged: (v) => setState(() => _source = v)),
+          const SizedBox(height: 12),
+          AppDropdown<String>(label: l.t('lead.timeline'), value: _timeline, allowEmpty: true, items: {for (final s in buyingTimelines) s: l.enumLabel('buyingTimeline', s)}, onChanged: (v) => setState(() => _timeline = v)),
           if (_members.isNotEmpty) ...[
             const SizedBox(height: 12),
             AppDropdown<String>(label: l.t('client.assignedTo'), value: _assignedTo, items: {for (final m in _members) (m['user'] as Map)['_id'] as String: (m['user'] as Map)['fullName'] as String}, onChanged: (v) => setState(() => _assignedTo = v)),

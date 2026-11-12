@@ -35,7 +35,7 @@ import {
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { PERMISSIONS, type Permission } from '@recrm/shared';
+import { PERMISSIONS, type Module, type Permission } from '@recrm/shared';
 import { authApi, dashboardApi, notificationApi } from '@/api/endpoints';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { BrandLogo } from '@/components/BrandLogo';
@@ -52,6 +52,9 @@ interface NavItem {
   label: string;
   icon: ReactNode;
   perm?: Permission;
+  /** Plan module the page belongs to (hidden when the plan does not include it). */
+  module?: Module;
+  platformOnly?: boolean;
 }
 
 function useNav(): { label: string; items: NavItem[] }[] {
@@ -78,11 +81,11 @@ function useNav(): { label: string; items: NavItem[] }[] {
     {
       label: t('nav.section.business'),
       items: [
-        { to: '/deals', label: t('nav.deals'), icon: <HandCoins className={i} />, perm: PERMISSIONS.DEALS_READ },
-        { to: '/agreements', label: t('nav.agreements'), icon: <FileSignature className={i} />, perm: PERMISSIONS.AGREEMENTS_READ },
-        { to: '/finance', label: t('nav.finance'), icon: <Wallet className={i} />, perm: PERMISSIONS.FINANCE_READ },
+        { to: '/deals', label: t('nav.deals'), icon: <HandCoins className={i} />, perm: PERMISSIONS.DEALS_READ, module: 'deals' },
+        { to: '/agreements', label: t('nav.agreements'), icon: <FileSignature className={i} />, perm: PERMISSIONS.AGREEMENTS_READ, module: 'agreements' },
+        { to: '/finance', label: t('nav.finance'), icon: <Wallet className={i} />, perm: PERMISSIONS.FINANCE_READ, module: 'finance' },
         { to: '/documents', label: t('nav.documents'), icon: <FolderOpen className={i} />, perm: PERMISSIONS.DOCUMENTS_READ },
-        { to: '/reports', label: t('nav.reports'), icon: <FileText className={i} />, perm: PERMISSIONS.EXPORTS_CREATE },
+        { to: '/reports', label: t('nav.reports'), icon: <FileText className={i} />, perm: PERMISSIONS.REPORTS_READ, module: 'reports' },
       ],
     },
     {
@@ -92,6 +95,7 @@ function useNav(): { label: string; items: NavItem[] }[] {
         { to: '/notifications', label: t('nav.notifications'), icon: <Bell className={i} /> },
         { to: '/audit', label: t('nav.audit'), icon: <ShieldCheck className={i} />, perm: PERMISSIONS.AUDIT_READ },
         { to: '/settings', label: t('nav.settings'), icon: <Settings className={i} /> },
+        { to: '/platform', label: t('nav.platform'), icon: <ShieldCheck className={i} />, platformOnly: true },
       ],
     },
   ];
@@ -101,6 +105,8 @@ function Sidebar() {
   const { t } = useTranslation();
   const groups = useNav();
   const permissions = useAuth((s) => s.membership?.permissions ?? []);
+  const entitlements = useAuth((s) => s.entitlements);
+  const platformAdmin = useAuth((s) => s.platformAdmin);
   const business = useAuth((s) => s.business);
   const user = useAuth((s) => s.user);
   const role = useAuth((s) => s.membership?.role);
@@ -129,7 +135,9 @@ function Sidebar() {
         </div>
         <nav className="flex-1 space-y-5 overflow-y-auto overflow-x-hidden px-3 pb-4 pt-2">
           {groups.map((group) => {
-            const items = group.items.filter((n) => !n.perm || permissions.includes(n.perm));
+            const items = group.items.filter(
+              (n) => (!n.perm || permissions.includes(n.perm)) && (!n.module || !entitlements || entitlements.modules.includes(n.module)) && (!n.platformOnly || platformAdmin),
+            );
             if (!items.length) return null;
             return (
               <div key={group.label}>

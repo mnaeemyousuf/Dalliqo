@@ -25,6 +25,7 @@ import { settingsService } from './settingsService';
 import { mailService } from './mailService';
 import { passwordService } from './passwordService';
 import { pushService } from './pushService';
+import { subscriptionService } from './subscriptionService';
 import { tokenService } from './tokenService';
 
 export interface SessionMeta extends RequestMeta {
@@ -118,7 +119,7 @@ export const authService = {
           session,
         );
         const business = await businessRepository.create(
-          { _id: businessId, name: input.businessName, ownerUserId: userId, createdBy: userId, updatedBy: userId },
+          { _id: businessId, name: input.businessName, ownerUserId: userId, createdBy: userId, updatedBy: userId, subscription: subscriptionService.newTrial() },
           session,
         );
         const member = await memberRepository.create(ctx, { userId, role: ROLES.OWNER, permissions: [] }, session);
@@ -307,7 +308,12 @@ export const authService = {
   },
 
   async me(auth: AuthContext) {
-    const [user, business] = await Promise.all([userRepository.findById(auth.userId), businessRepository.findCurrent(auth)]);
+    const [user, business, entitlements, platformAdmin] = await Promise.all([
+      userRepository.findById(auth.userId),
+      businessRepository.findCurrent(auth),
+      subscriptionService.entitlements(auth),
+      subscriptionService.isPlatformAdmin(auth.userId),
+    ]);
     if (!user) throw unauthorized();
     if (!business) throw notFound(ERROR_CODES.BUSINESS_NOT_FOUND, 'Business not found');
     return {
@@ -320,6 +326,8 @@ export const authService = {
         branchAccess: auth.allowedBranchIds ? 'SELECTED' : 'ALL',
         branchIds: auth.allowedBranchIds ?? [],
       },
+      entitlements,
+      platformAdmin,
     };
   },
 

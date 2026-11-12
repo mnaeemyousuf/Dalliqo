@@ -1,5 +1,15 @@
 import { Schema, model, type Types } from 'mongoose';
 import {
+  CONSTRUCTION_STATUSES,
+  DEVELOPMENT_STATUSES,
+  FACING_DIRECTIONS,
+  FURNISHING_STATUSES,
+  POSSESSION_STATUSES,
+  type ConstructionStatus,
+  type DevelopmentStatus,
+  type FacingDirection,
+  type FurnishingStatus,
+  type PossessionStatus,
   LISTING_PURPOSES,
   PROPERTY_STATUSES,
   PROPERTY_TYPES,
@@ -25,9 +35,29 @@ export interface PropertyDoc extends SyncDoc {
   area?: string;
   society?: string;
   block?: string;
+  phase?: string;
+  sector?: string;
   street?: string;
   plotNumber?: string;
+  /** House / unit / file number where it differs from the plot number. */
+  unitNumber?: string;
   city?: string;
+  possessionStatus?: PossessionStatus;
+  developmentStatus?: DevelopmentStatus;
+  constructionStatus?: ConstructionStatus;
+  furnishing?: FurnishingStatus;
+  facing?: FacingDirection;
+  corner?: boolean;
+  mainRoad?: boolean;
+  parkFacing?: boolean;
+  amenities?: string[];
+  /** Listing availability lapses on this date (status becomes EXPIRED unless renewed). */
+  availabilityExpiresAt?: Date | null;
+  /** Further owners (joint ownership) besides ownerId. */
+  coOwnerIds?: Types.ObjectId[];
+  /** Agents handling the listing. */
+  agentIds?: Types.ObjectId[];
+  priceHistory?: { price: number; at: Date; by?: Types.ObjectId; note?: string }[];
   size: number;
   sizeUnit: SizeUnit;
   sizeSqft: number;
@@ -71,6 +101,25 @@ const schema = new Schema<PropertyDoc>(
     area: { type: String, trim: true, maxlength: 120 },
     society: { type: String, trim: true, maxlength: 120 },
     block: { type: String, trim: true, maxlength: 60 },
+    phase: { type: String, trim: true, maxlength: 60 },
+    sector: { type: String, trim: true, maxlength: 60 },
+    unitNumber: { type: String, trim: true, maxlength: 60 },
+    possessionStatus: { type: String, enum: POSSESSION_STATUSES },
+    developmentStatus: { type: String, enum: DEVELOPMENT_STATUSES },
+    constructionStatus: { type: String, enum: CONSTRUCTION_STATUSES },
+    furnishing: { type: String, enum: FURNISHING_STATUSES },
+    facing: { type: String, enum: FACING_DIRECTIONS },
+    corner: { type: Boolean, default: false },
+    mainRoad: { type: Boolean, default: false },
+    parkFacing: { type: Boolean, default: false },
+    amenities: { type: [String], default: [] },
+    availabilityExpiresAt: { type: Date, default: null },
+    coOwnerIds: { type: [{ type: Schema.Types.ObjectId, ref: 'PropertyOwner' }], default: [] },
+    agentIds: { type: [{ type: Schema.Types.ObjectId, ref: 'User' }], default: [] },
+    priceHistory: {
+      type: [{ _id: false, price: Number, at: Date, by: { type: Schema.Types.ObjectId, ref: 'User' }, note: String }],
+      default: [],
+    },
     street: { type: String, trim: true, maxlength: 120 },
     plotNumber: { type: String, trim: true, maxlength: 60 },
     city: { type: String, trim: true, maxlength: 80 },
@@ -111,6 +160,8 @@ schema.index({ businessId: 1, deletedAt: 1, updatedAt: -1 });
 schema.index({ businessId: 1, status: 1, listingPurpose: 1, propertyType: 1, askingPrice: 1 });
 schema.index({ businessId: 1, society: 1, block: 1 });
 schema.index({ businessId: 1, plotNumber: 1 });
+schema.index({ businessId: 1, status: 1, availabilityExpiresAt: 1 });
+schema.index({ businessId: 1, agentIds: 1 });
 schema.index({ businessId: 1, ownerId: 1 });
 schema.index({ businessId: 1, status: 1, lastVerifiedAt: 1 });
 schema.index({ businessId: 1, searchText: 1 });

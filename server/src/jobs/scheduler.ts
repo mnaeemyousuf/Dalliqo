@@ -2,6 +2,7 @@ import { hostname } from 'node:os';
 import { randomUUID } from 'node:crypto';
 import { logger } from '../config/logger';
 import { JobLock } from '../models/SyncRecord';
+import { automationService } from '../services/automationService';
 import { followUpService } from '../services/followUpService';
 
 const OWNER = `${hostname()}:${process.pid}:${randomUUID().slice(0, 8)}`;
@@ -35,6 +36,8 @@ interface Job {
 export const JOBS: Job[] = [
   { name: 'followup-reminders', everyMs: 60_000, run: () => followUpService.sendDueReminders() },
   { name: 'followup-overdue', everyMs: 5 * 60_000, run: () => followUpService.markOverdue() },
+  { name: 'automation-rules', everyMs: 10 * 60_000, run: () => automationService.runAll() },
+  { name: 'lead-rescore', everyMs: 30 * 60_000, run: () => automationService.rescoreStaleLeads() },
 ];
 
 export function startScheduler(): () => void {

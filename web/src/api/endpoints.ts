@@ -27,9 +27,15 @@ import type {
   Owner,
   Property,
   Session,
+  LeadReport,
+  InventoryReport,
+  ImportResult,
+  SubscriptionInfo,
+  PlatformBusiness,
   Settings,
   User,
 } from './types';
+import type { Entitlements } from '@recrm/shared';
 
 type Params = Record<string, unknown>;
 type Body = Record<string, unknown>;
@@ -80,6 +86,9 @@ export const dealApi = {
   addPayout: (id: string, body: Body) => api<Deal>({ method: 'POST', url: `/deals/${id}/payouts`, data: body }),
   updatePayout: (id: string, payoutId: string, body: Body) => api<Deal>({ method: 'PATCH', url: `/deals/${id}/payouts/${payoutId}`, data: body }),
   remove: (id: string) => api<null>({ method: 'DELETE', url: `/deals/${id}` }),
+  addOffer: (id: string, body: Body) => api<Deal>({ method: 'POST', url: `/deals/${id}/offers`, data: body }),
+  respondOffer: (id: string, offerId: string, status: 'ACCEPTED' | 'REJECTED' | 'WITHDRAWN') => api<Deal>({ method: 'POST', url: `/deals/${id}/offers/${offerId}/respond`, data: { status } }),
+  setChecklist: (id: string, key: string, done: boolean, label?: string) => api<Deal>({ method: 'POST', url: `/deals/${id}/checklist`, data: clean({ key, done, label }) }),
   report: (params: Params) => api<CommissionReport>({ url: '/reports/commissions', params: clean(params) }),
 };
 
@@ -166,6 +175,40 @@ export const clientApi = {
   remove: (id: string) => api<null>({ method: 'DELETE', url: `/clients/${id}` }),
   communicate: (id: string, channel: string, note?: string) => api<Client>({ method: 'POST', url: `/clients/${id}/communications`, data: clean({ channel, note }) }),
   matches: (id: string, params?: Params) => apiPage<Match>(`/clients/${id}/matches`, params),
+  assign: (id: string, userId: string | null, note?: string) => api<Client>({ method: 'POST', url: `/clients/${id}/assign`, data: { userId, ...(note ? { note } : {}) } }),
+  leadReport: (params: Params) => api<LeadReport>({ url: '/reports/leads', params: clean(params) }),
+  async importExcel(file: File, opts: { assignedTo?: string; source?: string } = {}) {
+    const form = new FormData();
+    form.append('file', file);
+    if (opts.assignedTo) form.append('assignedTo', opts.assignedTo);
+    if (opts.source) form.append('source', opts.source);
+    try {
+      const r = await http.post<{ data: ImportResult }>('/clients/import', form, { timeout: 5 * 60_000 });
+      return r.data.data;
+    } catch (e) {
+      throw toApiError(e);
+    }
+  },
+  async downloadTemplate() {
+    try {
+      const r = await http.get<Blob>('/clients/import/template', { responseType: 'blob' });
+      const url = URL.createObjectURL(r.data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'dalliqo-leads-template.xlsx';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (e) {
+      throw toApiError(e);
+    }
+  },
+};
+
+export const subscriptionApi = {
+  get: () => api<SubscriptionInfo>({ url: '/subscription' }),
+  request: (plan: string, cycle: string, note?: string) => api<SubscriptionInfo>({ method: 'POST', url: '/subscription/request', data: clean({ plan, cycle, note }) }),
+  businesses: (params: Params) => apiPage<PlatformBusiness>('/platform/businesses', params),
+  setSubscription: (id: string, body: Body) => api<Entitlements>({ method: 'PATCH', url: `/platform/businesses/${id}/subscription`, data: body }),
 };
 
 export const ownerApi = {
@@ -184,6 +227,8 @@ export const propertyApi = {
   setStatus: (id: string, status: string, reason?: string) => api<Property>({ method: 'POST', url: `/properties/${id}/status`, data: clean({ status, reason }) }),
   remove: (id: string) => api<null>({ method: 'DELETE', url: `/properties/${id}` }),
   verify: (id: string, note?: string) => api<Property>({ method: 'POST', url: `/properties/${id}/verify`, data: clean({ note }) }),
+  duplicates: (params: Params) => api<{ _id: string; propertyId: string; status: string; askingPrice: number }[]>({ url: '/properties/duplicates', params: clean(params) }),
+  inventoryReport: () => api<InventoryReport>({ url: '/reports/inventory' }),
   matches: (id: string, params?: Params) => apiPage<Match>(`/properties/${id}/matches`, params),
   media: (id: string) => api<FileAsset[]>({ url: `/properties/${id}/media` }),
   async uploadMedia(id: string, files: File[], onProgress?: (percent: number) => void) {

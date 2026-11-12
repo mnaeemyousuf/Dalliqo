@@ -566,7 +566,15 @@
       "SHOP": "Shop",
       "OFFICE": "Office",
       "COMMERCIAL": "Commercial",
-      "OTHER": "Other"
+      "OTHER": "Other",
+      "FARMHOUSE": "Farmhouse",
+      "FILE": "Plot file",
+      "COMMERCIAL_PLOT": "Commercial plot",
+      "BUILDING": "Building",
+      "WAREHOUSE": "Warehouse",
+      "FACTORY": "Factory",
+      "INDUSTRIAL_PLOT": "Industrial plot",
+      "AGRICULTURAL_LAND": "Agricultural land"
     },
     "propertyStatus": {
       "AVAILABLE": "Available",
@@ -574,7 +582,10 @@
       "SOLD": "Sold",
       "RENTED": "Rented",
       "WITHDRAWN": "Withdrawn",
-      "INACTIVE": "Inactive"
+      "INACTIVE": "Inactive",
+      "UNDER_NEGOTIATION": "Under negotiation",
+      "ON_HOLD": "On hold",
+      "EXPIRED": "Expired"
     },
     "listingPurpose": {
       "SALE": "Sale",
@@ -605,14 +616,20 @@
       "SOCIAL_MEDIA": "Social media",
       "PORTAL": "Property portal",
       "OTHER": "Other",
-      "UNKNOWN": "Not recorded"
+      "UNKNOWN": "Not recorded",
+      "FACEBOOK": "Facebook",
+      "INSTAGRAM": "Instagram",
+      "ZAMEEN": "Zameen.com",
+      "OLX": "OLX",
+      "WEBSITE": "Website"
     },
     "sizeUnit": {
       "SQ_FT": "Sq. ft",
       "SQ_YARD": "Sq. yard",
       "SQ_METER": "Sq. metre",
       "MARLA": "Marla",
-      "KANAL": "Kanal"
+      "KANAL": "Kanal",
+      "ACRE": "Acre"
     },
     "followUpType": {
       "CALL": "Call",
@@ -755,12 +772,15 @@
     "dealStage": {
       "INQUIRY": "Inquiry",
       "SITE_VISIT": "Site visit",
-      "OFFER": "Offer",
+      "OFFER": "Offer accepted",
       "TOKEN": "Token / bayana",
       "AGREEMENT": "Agreement",
       "TRANSFER": "Transfer",
       "CLOSED_WON": "Closed (won)",
-      "CLOSED_LOST": "Lost"
+      "CLOSED_LOST": "Lost",
+      "QUALIFIED": "Qualified",
+      "NEGOTIATION": "Negotiation",
+      "PAYMENT": "Payment"
     },
     "commissionStatus": {
       "PENDING": "Pending",
@@ -803,6 +823,61 @@
       "SIGNED": "Signed",
       "EXPIRED": "Expired",
       "CANCELLED": "Cancelled"
+    },
+    "leadTemperature": {
+      "HOT": "Hot",
+      "WARM": "Warm",
+      "COLD": "Cold"
+    },
+    "buyingTimeline": {
+      "IMMEDIATE": "Buying now",
+      "ONE_MONTH": "Within a month",
+      "THREE_MONTHS": "Within 3 months",
+      "SIX_MONTHS": "Within 6 months",
+      "EXPLORING": "Just exploring"
+    },
+    "lostReason": {
+      "BUDGET": "Budget",
+      "BOUGHT_ELSEWHERE": "Bought elsewhere",
+      "NOT_RESPONDING": "Not responding",
+      "NOT_INTERESTED": "Not interested",
+      "REQUIREMENT_CHANGED": "Requirement changed",
+      "INVALID_CONTACT": "Invalid contact",
+      "DUPLICATE": "Duplicate",
+      "OTHER": "Other"
+    },
+    "possessionStatus": {
+      "POSSESSION": "Possession",
+      "NON_POSSESSION": "Non-possession",
+      "BALLOTED": "Balloted",
+      "UNBALLOTED": "Un-balloted"
+    },
+    "developmentStatus": {
+      "DEVELOPED": "Developed",
+      "UNDER_DEVELOPMENT": "Under development",
+      "UNDEVELOPED": "Undeveloped"
+    },
+    "constructionStatus": {
+      "EMPTY_PLOT": "Empty plot",
+      "GREY_STRUCTURE": "Grey structure",
+      "UNDER_CONSTRUCTION": "Under construction",
+      "READY": "Ready",
+      "NEEDS_RENOVATION": "Needs renovation"
+    },
+    "furnishing": {
+      "UNFURNISHED": "Unfurnished",
+      "SEMI_FURNISHED": "Semi-furnished",
+      "FURNISHED": "Furnished"
+    },
+    "facing": {
+      "NORTH": "North",
+      "SOUTH": "South",
+      "EAST": "East",
+      "WEST": "West",
+      "NORTH_EAST": "North-east",
+      "NORTH_WEST": "North-west",
+      "SOUTH_EAST": "South-east",
+      "SOUTH_WEST": "South-west"
     }
   },
   "errors": {
@@ -826,7 +901,12 @@
     "BRANCH_IS_DEFAULT": "The main branch cannot be archived",
     "DEAL_NOT_FOUND": "Deal not found",
     "INVALID_AGENT_SHARES": "Agent shares must add up to 100%",
-    "PAYMENT_NOT_FOUND": "Payment not found"
+    "PAYMENT_NOT_FOUND": "Payment not found",
+    "PROPERTY_DUPLICATE": "This plot is already listed.",
+    "OFFER_NOT_FOUND": "Offer not found.",
+    "SUBSCRIPTION_EXPIRED": "Your subscription has ended. Renew it to add or change records — your data is safe and still readable.",
+    "MODULE_NOT_IN_PLAN": "This feature is not included in your plan.",
+    "PLAN_LIMIT_REACHED": "Your plan limit has been reached. Upgrade to add more."
   },
   "mobile": {
     "tabs": {
@@ -1053,7 +1133,44 @@
     "paymentsCount": "Payments",
     "outstandingDeals": "Deals with commission still due",
     "defaultBuyerPct": "Default buyer-side commission",
-    "defaultSellerPct": "Default seller-side commission"
+    "defaultSellerPct": "Default seller-side commission",
+    "negotiation": {
+      "title": "Negotiation",
+      "asking": "Owner asked",
+      "gap": "Below asking",
+      "party": "Offer from",
+      "BUYER": "Buyer",
+      "SELLER": "Seller",
+      "amount": "Amount (PKR)",
+      "record": "Record offer",
+      "empty": "No offers yet. Record the buyer’s first offer to start the negotiation.",
+      "accept": "Accept",
+      "reject": "Reject",
+      "withdraw": "Withdrawn",
+      "status": {
+        "OPEN": "Open",
+        "ACCEPTED": "Accepted",
+        "REJECTED": "Rejected",
+        "COUNTERED": "Countered",
+        "WITHDRAWN": "Withdrawn"
+      }
+    },
+    "checklist": {
+      "title": "Closing checklist",
+      "add": "Add your own item…",
+      "items": {
+        "DOCUMENTS_COLLECTED": "Documents collected",
+        "BUYER_VERIFIED": "Buyer verified",
+        "SELLER_VERIFIED": "Seller verified",
+        "TOKEN_RECEIVED": "Token (bayana) received",
+        "AGREEMENT_SIGNED": "Agreement signed",
+        "DUES_CHECKED": "Outstanding dues checked",
+        "TRANSFER_DOCS_READY": "Transfer documents prepared",
+        "PAYMENT_COMPLETED": "Payment completed",
+        "COMMISSION_RECEIVED": "Commission received",
+        "DEAL_CLOSED": "Deal closed"
+      }
+    }
   },
   "finance": {
     "title": "Income & expense",
@@ -1178,5 +1295,43 @@
   },
   "category": {
     "add": "Add category"
+  },
+  "lead": {
+    "title": "Lead score",
+    "responseTime": "First response in {{time}}",
+    "notContactedYet": "Not contacted yet",
+    "timeline": "Buying timeline",
+    "reasons": {
+      "BUDGET_MATCHES_INVENTORY": "Budget fits listings in stock",
+      "BUDGET_NO_MATCHES": "Budget known, but no matching listings yet",
+      "BUDGET_MISSING": "No budget recorded",
+      "LOCATION_PRECISE": "Precise location (society / block)",
+      "LOCATION_AREA_ONLY": "Only a general area is known",
+      "LOCATION_MISSING": "No preferred location",
+      "CATEGORY_SET": "Property type is known",
+      "CATEGORY_MISSING": "Property type not recorded",
+      "INTENT_ACTIVE": "Actively looking",
+      "INTENT_ON_HOLD": "Search on hold",
+      "INTENT_CLOSED": "Lead closed",
+      "CONTACTED_RECENTLY": "Contacted in the last 3 days",
+      "CONTACTED_THIS_WEEK": "Contacted this week",
+      "CONTACTED_THIS_MONTH": "Contacted this month",
+      "NOT_CONTACTED_LONG": "No contact for over a month",
+      "NEW_LEAD": "New lead (less than a day old)",
+      "NEVER_CONTACTED": "Never contacted",
+      "FOLLOWUPS_DONE": "Several follow-ups completed",
+      "FOLLOWUP_DONE": "One follow-up completed",
+      "FOLLOWUP_SCHEDULED": "Follow-up scheduled",
+      "NO_FOLLOWUPS": "No follow-ups yet",
+      "FOLLOWUPS_OVERDUE": "Follow-ups are overdue",
+      "TIMELINE_IMMEDIATE": "Wants to buy now",
+      "TIMELINE_ONE_MONTH": "Buying within a month",
+      "TIMELINE_THREE_MONTHS": "Buying within 3 months",
+      "TIMELINE_SIX_MONTHS": "Buying within 6 months",
+      "TIMELINE_EXPLORING": "Only exploring",
+      "TIMELINE_UNKNOWN": "Buying timeline unknown"
+    },
+    "temperature": "Temperature",
+    "score": "Lead score"
   }
 }

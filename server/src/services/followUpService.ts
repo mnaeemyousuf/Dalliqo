@@ -9,6 +9,7 @@ import { badRequest, notFound } from '../utils/AppError';
 import { diffFields } from '../utils/diff';
 import { activityService, type ActivityRef } from './activityService';
 import { auditService } from './auditService';
+import { leadService } from './leadService';
 import { notificationService } from './notificationService';
 import { publishChange } from './publish';
 import { settingsService } from './settingsService';
@@ -102,6 +103,7 @@ export const followUpService = {
       type: input.type,
     });
     publishChange(auth, SOCKET_EVENTS.FOLLOWUP_CREATED, 'followUp', followUp);
+    await leadService.safeRescore(auth, followUp.clientId.toString());
     if (assignedTo !== auth.userId) {
       await notificationService.notify(auth, {
         userIds: [assignedTo],
@@ -204,8 +206,9 @@ export const followUpService = {
     const { client, property } = await context(auth, updated.clientId.toString(), updated.propertyId?.toString());
     await activityService.record(auth, 'FOLLOWUP_COMPLETED', `Follow-up completed: ${describeFollowUp(updated.type, client.fullName, property)}${outcome ? ` — ${outcome}` : ''}`, refsFor(client, property, updated._id));
     if (['CALL', 'MEETING', 'WHATSAPP', 'SMS', 'PROPERTY_VISIT'].includes(updated.type)) {
-      await clientRepository.model.updateOne({ businessId: auth.businessId, _id: client._id }, { $set: { lastContactedAt: new Date() } });
+      await leadService.markContacted(auth, client._id);
     }
+    await leadService.safeRescore(auth, client._id.toString());
     publishChange(auth, SOCKET_EVENTS.FOLLOWUP_COMPLETED, 'followUp', updated);
     return updated;
   },
