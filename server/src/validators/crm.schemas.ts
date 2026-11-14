@@ -43,6 +43,9 @@ import {
   PROPERTY_CATEGORIES,
   VERIFICATION_DECISIONS,
   VERIFICATION_STATUSES,
+  LATE_FEE_TYPES,
+  LEASE_STATUSES,
+  INSPECTION_TYPES,
 } from '@recrm/shared';
 
 const uuid = z.string().uuid();
@@ -511,6 +514,50 @@ export const savedViewSchema = z
   .object({ page: z.enum(['clients', 'properties', 'deals', 'followups']), name: shortText(60).min(1), params: z.record(z.string().max(200)).refine((r) => Object.keys(r).length <= 30), shared: z.boolean().optional() })
   .strict();
 export const savedViewQuery = z.object({ page: z.enum(['clients', 'properties', 'deals', 'followups']) });
+// ── Rentals ──
+export const leaseCreateSchema = z
+  .object({
+    uuid: uuid.optional(),
+    branchId: branchRef,
+    propertyId: objectId,
+    landlordId: objectId.nullable().optional(),
+    tenantId: objectId,
+    agreementId: objectId.nullable().optional(),
+    managerId: objectId.nullable().optional(),
+    startDate: z.coerce.date(),
+    endDate: z.coerce.date(),
+    monthlyRent: money.pipe(z.number().min(1)),
+    dueDay: z.number().int().min(1).max(28).optional(),
+    escalationPct: z.number().min(0).max(100).optional(),
+    graceDays: z.number().int().min(0).max(60).optional(),
+    lateFeeType: z.enum(LATE_FEE_TYPES).optional(),
+    lateFeeValue: z.number().min(0).max(1e9).optional(),
+    securityDeposit: money.optional(),
+    managementFeePct: z.number().min(0).max(100).optional(),
+    notes: optionalText(2000),
+    markRented: z.boolean().optional(),
+  })
+  .strict();
+export const leaseListQuery = pagination.extend({
+  q: optionalText(100),
+  status: z.enum(LEASE_STATUSES).optional(),
+  propertyId: objectId.optional(),
+  tenantId: objectId.optional(),
+  landlordId: objectId.optional(),
+  overdue: bool.optional(),
+});
+export const rentPaymentSchema = z
+  .object({ id: uuid.optional(), date: z.coerce.date(), amount: money.pipe(z.number().min(1)), method: z.enum(PAYMENT_METHODS).optional(), reference: optionalText(100), notes: optionalText(500) })
+  .strict();
+export const rentWaiveSchema = z.object({ itemId: z.string().min(1).max(64), reason: shortText(300).min(2) }).strict();
+export const inspectionSchema = z
+  .object({ date: z.coerce.date(), type: z.enum(INSPECTION_TYPES), condition: z.enum(['EXCELLENT', 'GOOD', 'FAIR', 'POOR']), notes: optionalText(2000) })
+  .strict();
+export const leaseRenewSchema = z.object({ endDate: z.coerce.date(), monthlyRent: money.pipe(z.number().min(1)).optional() }).strict();
+export const leaseEndSchema = z
+  .object({ status: z.enum(['ENDED', 'TERMINATED']), date: z.coerce.date().optional(), reason: optionalText(500), depositRefund: money.optional(), relist: z.boolean().optional() })
+  .strict();
+
 export const propertyImportFields = z.object({ ownerId: objectId.optional(), agentId: objectId.optional() });
 
 // ── Notes & activities ──

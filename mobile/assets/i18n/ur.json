@@ -100,7 +100,8 @@
     "myDay": "میرا دن",
     "deals": "ڈیلز",
     "finance": "آمدنی و اخراجات",
-    "agreements": "معاہدے"
+    "agreements": "معاہدے",
+    "rentals": "کرایہ داری"
   },
   "topbar": {
     "searchPlaceholder": "کلائنٹس، پراپرٹیز، مالکان تلاش کریں…",
@@ -807,7 +808,9 @@
       "documents:read_sensitive": "شناختی کارڈ اور ملکیتی کاغذات دیکھیں",
       "verification:submit": "تصدیق کے لیے بھیجیں",
       "verification:decide": "تصدیق منظور / مسترد کریں",
-      "deals:approve": "ڈیل بند کرنے کی منظوری"
+      "deals:approve": "ڈیل بند کرنے کی منظوری",
+      "rentals:read": "لیز اور کرایہ دیکھیں",
+      "rentals:manage": "لیز اور کرایہ کا انتظام"
     },
     "dealStage": {
       "INQUIRY": "انکوائری",
@@ -918,6 +921,41 @@
       "NORTH_WEST": "شمال مغرب",
       "SOUTH_EAST": "جنوب مشرق",
       "SOUTH_WEST": "جنوب مغرب"
+    },
+    "leaseStatus": {
+      "DRAFT": "مسودہ",
+      "ACTIVE": "فعال",
+      "ENDED": "ختم",
+      "TERMINATED": "منسوخ"
+    },
+    "rentStatus": {
+      "PENDING": "واجب",
+      "PARTIAL": "جزوی ادا",
+      "PAID": "ادا",
+      "OVERDUE": "زائد المیعاد",
+      "WAIVED": "معاف"
+    },
+    "lateFeeType": {
+      "NONE": "کوئی جرمانہ نہیں",
+      "FIXED": "مقررہ رقم",
+      "PERCENT": "کرائے کا فیصد"
+    },
+    "depositStatus": {
+      "HELD": "جمع",
+      "PARTIALLY_REFUNDED": "جزوی واپس",
+      "REFUNDED": "واپس",
+      "ADJUSTED": "ایڈجسٹ"
+    },
+    "inspectionType": {
+      "MOVE_IN": "منتقلی پر",
+      "ROUTINE": "معمول",
+      "MOVE_OUT": "خالی کرنے پر"
+    },
+    "propertyCondition": {
+      "EXCELLENT": "بہترین",
+      "GOOD": "اچھی",
+      "FAIR": "مناسب",
+      "POOR": "خراب"
     }
   },
   "errors": {
@@ -1402,5 +1440,68 @@
       "PRICE_CONFIRMED": "مالک سے قیمت کی تصدیق"
     },
     "next": "اگلی جانچ {{date}}"
+  },
+  "rental": {
+    "title": "کرایہ داری",
+    "subtitle": "لیز، کرایہ کا شیڈول اور وصولی",
+    "add": "نئی لیز",
+    "created": "لیز بن گئی",
+    "search": "لیز، پراپرٹی یا کرایہ دار تلاش کریں…",
+    "lease": "لیز",
+    "tenant": "کرایہ دار",
+    "landlord": "مالک مکان",
+    "monthlyRent": "ماہانہ کرایہ",
+    "overdue": "زائد المیعاد",
+    "nextDue": "اگلی ادائیگی",
+    "endDate": "اختتام",
+    "startDate": "آغاز",
+    "activeLeases": "فعال لیز",
+    "rentRoll": "ماہانہ کرایہ کل",
+    "collectedThisMonth": "اس ماہ وصولی",
+    "expiringSoon": "60 دن میں ختم",
+    "allLeases": "تمام لیز",
+    "overdueOnly": "بقایا کرایہ والی",
+    "empty": "ابھی کوئی لیز نہیں",
+    "emptyHint": "کرایہ کا شیڈول بنانے اور وصولی کے لیے لیز بنائیں۔",
+    "findProperty": "پراپرٹی تلاش کریں",
+    "findTenant": "کرایہ دار تلاش کریں",
+    "securityDeposit": "سیکیورٹی ڈپازٹ",
+    "dueDay": "کرایہ کی تاریخ",
+    "escalation": "سالانہ اضافہ (%)",
+    "escalationHint": "ہر 12 ماہ بعد",
+    "graceDays": "رعایتی دن",
+    "lateFee": "تاخیر جرمانہ",
+    "lateFeePct": "جرمانہ (کرائے کا %)",
+    "lateFeeAmount": "جرمانہ (روپے)",
+    "managementFee": "ایجنسی فیس (کرائے کا %)",
+    "managementFeeHint": "کرایہ وصولی پر آمدنی میں درج",
+    "recordRent": "کرایہ درج کریں",
+    "inspection": "معائنہ",
+    "renew": "تجدید",
+    "end": "لیز ختم کریں",
+    "paid": "ادا شدہ",
+    "period": "مدت",
+    "credit": "پیشگی (کریڈٹ)",
+    "endReason": "وجہ",
+    "schedule": "کرایہ شیڈول",
+    "payments": "ادائیگیاں",
+    "inspections": "معائنے",
+    "month": "مہینہ",
+    "due": "تاریخ",
+    "rent": "کرایہ",
+    "waive": "معاف",
+    "waiveReason": "یہ مہینہ کیوں معاف ہے؟",
+    "noPayments": "ابھی کوئی کرایہ درج نہیں",
+    "noInspections": "کوئی معائنہ درج نہیں",
+    "amount": "رقم (روپے)",
+    "allocationHint": "پہلے پرانے بقایا مہینوں میں لگتا ہے؛ زائد رقم پیشگی رہتی ہے۔",
+    "rentRecorded": "کرایہ درج ہو گیا",
+    "renewed": "لیز کی تجدید ہو گئی",
+    "newEndDate": "نئی اختتامی تاریخ",
+    "newRent": "نیا ماہانہ کرایہ",
+    "ended": "لیز بند",
+    "depositRefund": "واپس ڈپازٹ (روپے)",
+    "relist": "پراپرٹی دوبارہ مارکیٹ میں ڈالیں",
+    "condition": "حالت"
   }
 }

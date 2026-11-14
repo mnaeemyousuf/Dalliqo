@@ -10,6 +10,7 @@ import { unauthorized } from '../utils/AppError';
  */
 export const MODULE_PREFIXES: [string, Module][] = [
   ['/deals', 'deals'],
+  ['/leases', 'rentals'],
   ['/reports/commissions', 'deals'],
   ['/agreements', 'agreements'],
   ['/agreement-templates', 'agreements'],

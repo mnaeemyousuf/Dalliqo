@@ -29,6 +29,12 @@ Run date: 13 Nov 2026 (Phase 3).
 - Regression fixes: permission-template list expectation; an agreement test that depended on the time of day now asserts a range.
 - Full results: server 236 passed, web 38 passed, Flutter 79 passed; production web build succeeds (map is a separate lazy chunk).
 
+## Phase 5A tests (`server/tests/rentals.test.ts`)
+- Schedule: monthly items, yearly escalation, first due date not before the start.
+- Allocation oldest-first with credit; fixed and percentage late fees; lease summary (overdue, next due).
+- Lifecycle: create (schedule, property RENTED, double lease refused), back-dated months carry no late fee, payment allocation and agency-fee income, rent roll; waive, inspection, renewal with new rent, termination with deposit refund and property relisted; scheduled refresh marks months overdue; viewer can read but not record rent (403).
+- Full results: server 242 passed, web 38, Flutter 79. Visual check of the Rentals list and lease detail with seeded demo leases.
+
 ## Manual / visual verification
 Demo API (`npm run demo`) + web, headless Chrome screenshots at 1440 px: client list with lead scores and temperature filter, client lead panel, Reports (leads + inventory aging), Settings → Subscription. All rendered correctly with real demo data.
 

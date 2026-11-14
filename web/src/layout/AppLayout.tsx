@@ -30,8 +30,7 @@ import {
   Wallet,
   FileSignature,
   CalendarPlus,
-  HousePlus,
-} from 'lucide-react';
+  HousePlus, KeyRound } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -84,6 +83,7 @@ function useNav(): { label: string; items: NavItem[] }[] {
       items: [
         { to: '/deals', label: t('nav.deals'), icon: <HandCoins className={i} />, perm: PERMISSIONS.DEALS_READ, module: 'deals' },
         { to: '/agreements', label: t('nav.agreements'), icon: <FileSignature className={i} />, perm: PERMISSIONS.AGREEMENTS_READ, module: 'agreements' },
+        { to: '/leases', label: t('nav.rentals'), icon: <KeyRound className={i} />, perm: PERMISSIONS.RENTALS_READ, module: 'rentals' },
         { to: '/finance', label: t('nav.finance'), icon: <Wallet className={i} />, perm: PERMISSIONS.FINANCE_READ, module: 'finance' },
         { to: '/documents', label: t('nav.documents'), icon: <FolderOpen className={i} />, perm: PERMISSIONS.DOCUMENTS_READ },
         { to: '/reports', label: t('nav.reports'), icon: <FileText className={i} />, perm: PERMISSIONS.REPORTS_READ, module: 'reports' },

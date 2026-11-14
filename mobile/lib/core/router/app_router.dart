@@ -18,6 +18,7 @@ import '../../features/notifications/notifications_screen.dart';
 import '../../features/owners/owner_screens.dart';
 import '../../features/properties/location_picker.dart';
 import '../../features/properties/property_screens.dart';
+import '../../features/rentals/rental_screens.dart';
 import '../../features/settings/settings_screens.dart';
 import '../../features/settings/sync_screen.dart';
 
@@ -100,6 +101,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/settings', builder: (_, _) => const SettingsScreen()),
       GoRoute(path: '/sync', builder: (_, _) => const SyncScreen()),
       GoRoute(path: '/branches', builder: (_, _) => const BranchesScreen()),
+      GoRoute(path: '/leases', builder: (_, _) => const RentalsScreen()),
+      GoRoute(path: '/leases/:id', builder: (_, s) => LeaseDetailScreen(id: s.pathParameters['id']!)),
       GoRoute(path: '/agreements', builder: (_, _) => const AgreementsScreen()),
       GoRoute(
         path: '/agreements/new',

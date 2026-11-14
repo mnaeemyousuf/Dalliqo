@@ -9,6 +9,7 @@ import {
   clientController,
   leadController,
   verificationController,
+  leaseController,
   inventoryToolsController,
   negotiationController,
   dealController,
@@ -132,6 +133,15 @@ r.post('/properties/:id/verification/submit', can(P.VERIFICATION_SUBMIT), valida
 r.post('/properties/:id/verification/assign', can(P.VERIFICATION_SUBMIT), validate({ params: idParams, body: s.verificationAssignSchema }), h(verificationController.assign));
 r.post('/properties/:id/verification/checklist', can(P.VERIFICATION_SUBMIT), validate({ params: idParams, body: s.verificationChecklistSchema }), h(verificationController.checklist));
 r.post('/properties/:id/verification/decide', can(P.VERIFICATION_DECIDE), validate({ params: idParams, body: s.verificationDecideSchema }), h(verificationController.decide));
+r.get('/leases', can(P.RENTALS_READ), validate({ query: s.leaseListQuery }), h(leaseController.list));
+r.get('/leases/rent-roll', can(P.RENTALS_READ), h(leaseController.rentRoll));
+r.post('/leases', can(P.RENTALS_MANAGE), validate({ body: s.leaseCreateSchema }), h(leaseController.create));
+r.get('/leases/:id', can(P.RENTALS_READ), id, h(leaseController.get));
+r.post('/leases/:id/payments', can(P.RENTALS_MANAGE), validate({ params: idParams, body: s.rentPaymentSchema }), h(leaseController.pay));
+r.post('/leases/:id/waive', can(P.RENTALS_MANAGE), validate({ params: idParams, body: s.rentWaiveSchema }), h(leaseController.waive));
+r.post('/leases/:id/inspections', can(P.RENTALS_MANAGE), validate({ params: idParams, body: s.inspectionSchema }), h(leaseController.inspect));
+r.post('/leases/:id/renew', can(P.RENTALS_MANAGE), validate({ params: idParams, body: s.leaseRenewSchema }), h(leaseController.renew));
+r.post('/leases/:id/end', can(P.RENTALS_MANAGE), validate({ params: idParams, body: s.leaseEndSchema }), h(leaseController.end));
 r.get('/verifications', can(P.PROPERTIES_READ), validate({ query: s.verificationQueueQuery }), h(verificationController.queue));
 r.get('/saved-views', validate({ query: s.savedViewQuery }), h(inventoryToolsController.views));
 r.post('/saved-views', validate({ body: s.savedViewSchema }), h(inventoryToolsController.createView));

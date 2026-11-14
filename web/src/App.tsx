@@ -43,6 +43,9 @@ const AuditPage = page(admin, 'AuditPage');
 const SettingsPage = page(admin, 'SettingsPage');
 const PlatformPage = page(() => import('@/pages/Phase3Pages'), 'PlatformPage');
 const VerificationsPage = page(() => import('@/pages/Phase4Pages'), 'VerificationsPage');
+const rentals = () => import('@/pages/RentalPages');
+const RentalsPage = page(rentals, 'RentalsPage');
+const LeaseDetailPage = page(rentals, 'LeaseDetailPage');
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -107,6 +110,8 @@ export function AppRoutes() {
         <Route path="settings" element={<SettingsPage />} />
         <Route path="platform" element={<PlatformPage />} />
         <Route path="verifications" element={<VerificationsPage />} />
+        <Route path="leases" element={<RentalsPage />} />
+        <Route path="leases/:id" element={<LeaseDetailPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

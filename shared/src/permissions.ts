@@ -70,6 +70,10 @@ export const PERMISSIONS = {
   /** Add and edit agreement templates. */
   TEMPLATES_MANAGE: 'templates:manage',
 
+  /** Leases, rent schedules and rent payments. */
+  RENTALS_READ: 'rentals:read',
+  RENTALS_MANAGE: 'rentals:manage',
+
   REPORTS_READ: 'reports:read',
   EXPORTS_CREATE: 'exports:create',
 
@@ -130,6 +134,7 @@ export const PERMISSION_GROUPS: Record<string, readonly Permission[]> = {
     PERMISSIONS.AGREEMENTS_DELETE,
     PERMISSIONS.TEMPLATES_MANAGE,
   ],
+  rentals: [PERMISSIONS.RENTALS_READ, PERMISSIONS.RENTALS_MANAGE],
   reports: [PERMISSIONS.REPORTS_READ, PERMISSIONS.EXPORTS_CREATE],
   administration: [
     PERMISSIONS.MEMBERS_READ,

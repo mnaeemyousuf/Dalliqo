@@ -4,7 +4,7 @@ export const TRANSACTION_TYPES = ['INCOME', 'EXPENSE'] as const;
 export type TransactionType = (typeof TRANSACTION_TYPES)[number];
 
 /** MANUAL entries are typed in; COMMISSION entries are created from commission payments on deals. */
-export const TRANSACTION_SOURCES = ['MANUAL', 'COMMISSION'] as const;
+export const TRANSACTION_SOURCES = ['MANUAL', 'COMMISSION', 'RENTAL'] as const;
 export type TransactionSource = (typeof TRANSACTION_SOURCES)[number];
 
 export interface DefaultTransactionCategory {

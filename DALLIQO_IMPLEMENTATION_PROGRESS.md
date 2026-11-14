@@ -55,8 +55,27 @@ New: `GET /properties/:id/verification`, `POST /properties/:id/verification/{sub
 ### Tests
 Server 236 passed (9 new) · Web 38 passed · Flutter 79 passed · typecheck/analyze clean.
 
+## Phase 5A — Rental management ✅ (14 Nov 2026)
+
+### Features implemented
+- Leases linking property, landlord (owner), tenant (client) and optionally the signed rent agreement; lease numbers `LS-000001`.
+- Monthly rent schedule generated from the term with due day, yearly escalation, grace days and late fees (fixed or % of rent); the first month is never due before the lease starts; back-dated months never get a late fee.
+- Rent payments allocated to the oldest unpaid months, partial payments, advances kept as credit, idempotent payment ids (safe retries from the phone), optional agency fee (% of rent) recorded automatically as income in "Rent collection fee".
+- Waive a month (with reason, audited), move-in / routine / move-out inspections, renewal (extends the schedule, optional new rent), end or terminate (future months removed, deposit refund tracked, property back on the market), property marked RENTED on activation.
+- Rent roll: active leases, monthly rent roll, due and collected this month, overdue, deposits held, leases ending in 60 days.
+- Automation: "Rent due reminder" and "Rent overdue" rules; hourly job marks overdue months and charges late fees.
+- Web: Rentals list with rent-roll tiles and filters, lease detail (schedule, payments, inspections, record rent, renew, end, waive). Android: Rentals list and lease detail with rent recording (online).
+- Plans: `rentals` module (Business and Enterprise); permissions `rentals:read`, `rentals:manage`; demo data includes two leases.
+
+### Database / APIs
+- New collection `leases` (schedule, payments, inspections embedded; 7 indexes); migration `006-rentals` (permissions); transaction source `RENTAL`.
+- `GET /leases`, `GET /leases/rent-roll`, `POST /leases`, `GET /leases/:id`, `POST /leases/:id/{payments,waive,inspections,renew,end}`.
+
+### Tests
+Server 242 passed (6 new rental tests: schedule maths, allocation, summary, full lease lifecycle, scheduled overdue refresh, permissions) · Web 38 · Flutter 79.
+
 ## Next phases (planned order)
 - **Phase 4 follow-ups:** role-specific dashboards (branch/sales/finance), co-owner and listing-agent pickers in the forms (API ready), verification screens on Android (status shown today).
-- **Phase 5:** rental management (tenants, leases, rent schedules, late fees, inspections), installment plans, receipts/vouchers, receivables/payables aging, cash flow, commission lifecycle (approved → distributed), external dealer/referral shares, agent statements.
+- **Phase 5B:** installment plans, receipts/vouchers, receivables/payables aging, cash flow, commission lifecycle (approved → distributed), external dealer/referral shares, agent statements.
 - **Phase 6:** public listing pages + inquiry → lead automation, campaigns and ROI, agent/agency landing pages, client & owner portals, email notifications, WhatsApp Business integration.
 - **Phase 7:** AI layer (permission-aware assistant, descriptions, summaries, forecasting, indicative pricing — clearly labelled estimates).

@@ -112,7 +112,8 @@
       "admin": "Administration"
     },
     "platform": "Platform admin",
-    "verifications": "Verifications"
+    "verifications": "Verifications",
+    "rentals": "Rentals"
   },
   "topbar": {
     "searchPlaceholder": "Search clients, properties, owners…",
@@ -570,7 +571,8 @@
       "deals": "Deals & commission",
       "finance": "Income & expense",
       "agreements": "Agreements",
-      "verification": "Verification"
+      "verification": "Verification",
+      "rentals": "Rentals"
     },
     "template": "Start from a template",
     "access": "Access",
@@ -879,7 +881,9 @@
       "documents:read_sensitive": "See CNIC & title documents",
       "verification:submit": "Submit for verification",
       "verification:decide": "Approve / reject verifications",
-      "deals:approve": "Approve deal closings"
+      "deals:approve": "Approve deal closings",
+      "rentals:read": "View leases & rent",
+      "rentals:manage": "Manage leases & record rent"
     },
     "dealStage": {
       "INQUIRY": "Inquiry",
@@ -990,6 +994,41 @@
       "NORTH_WEST": "North-west",
       "SOUTH_EAST": "South-east",
       "SOUTH_WEST": "South-west"
+    },
+    "leaseStatus": {
+      "DRAFT": "Draft",
+      "ACTIVE": "Active",
+      "ENDED": "Ended",
+      "TERMINATED": "Terminated"
+    },
+    "rentStatus": {
+      "PENDING": "Due",
+      "PARTIAL": "Part paid",
+      "PAID": "Paid",
+      "OVERDUE": "Overdue",
+      "WAIVED": "Waived"
+    },
+    "lateFeeType": {
+      "NONE": "No late fee",
+      "FIXED": "Fixed amount",
+      "PERCENT": "Percent of rent"
+    },
+    "depositStatus": {
+      "HELD": "held",
+      "PARTIALLY_REFUNDED": "part refunded",
+      "REFUNDED": "refunded",
+      "ADJUSTED": "adjusted"
+    },
+    "inspectionType": {
+      "MOVE_IN": "Move-in",
+      "ROUTINE": "Routine",
+      "MOVE_OUT": "Move-out"
+    },
+    "propertyCondition": {
+      "EXCELLENT": "Excellent",
+      "GOOD": "Good",
+      "FAIR": "Fair",
+      "POOR": "Poor"
     }
   },
   "errors": {
@@ -1467,6 +1506,14 @@
       "VERIFICATION_DUE": {
         "title": "Re-verification & document expiry",
         "hint": "Remind before an approved listing is due for re-verification, and before uploaded documents (NOC, tax receipts) expire."
+      },
+      "RENT_DUE": {
+        "title": "Rent due reminder",
+        "hint": "Remind the lease manager this many days before rent falls due."
+      },
+      "RENT_OVERDUE": {
+        "title": "Rent overdue",
+        "hint": "Alert the lease manager and managers when rent is this many days late."
       }
     }
   },
@@ -1544,5 +1591,68 @@
     "openOnly": "Open items",
     "assignedToMe": "Assigned to me",
     "queueEmpty": "Nothing waiting for verification"
+  },
+  "rental": {
+    "title": "Rentals",
+    "subtitle": "Leases, rent schedules and collections",
+    "add": "New lease",
+    "created": "Lease created",
+    "search": "Search lease, property or tenant…",
+    "lease": "Lease",
+    "tenant": "Tenant",
+    "landlord": "Landlord",
+    "monthlyRent": "Monthly rent",
+    "overdue": "Overdue",
+    "nextDue": "Next due",
+    "endDate": "Ends",
+    "startDate": "Starts",
+    "activeLeases": "Active leases",
+    "rentRoll": "Monthly rent roll",
+    "collectedThisMonth": "Collected this month",
+    "expiringSoon": "Ending in 60 days",
+    "allLeases": "All leases",
+    "overdueOnly": "With overdue rent",
+    "empty": "No leases yet",
+    "emptyHint": "Create a lease to generate the rent schedule and track collections.",
+    "findProperty": "Find property",
+    "findTenant": "Find tenant",
+    "securityDeposit": "Security deposit",
+    "dueDay": "Rent due on day",
+    "escalation": "Yearly increase (%)",
+    "escalationHint": "Applied every 12 months",
+    "graceDays": "Grace days",
+    "lateFee": "Late fee",
+    "lateFeePct": "Late fee (% of rent)",
+    "lateFeeAmount": "Late fee (PKR)",
+    "managementFee": "Agency fee (% of rent)",
+    "managementFeeHint": "Recorded as income when rent is received",
+    "recordRent": "Record rent",
+    "inspection": "Inspection",
+    "renew": "Renew",
+    "end": "End lease",
+    "paid": "Paid",
+    "period": "Period",
+    "credit": "Advance (credit)",
+    "endReason": "Reason",
+    "schedule": "Rent schedule",
+    "payments": "Payments",
+    "inspections": "Inspections",
+    "month": "Month",
+    "due": "Due date",
+    "rent": "Rent",
+    "waive": "Waive",
+    "waiveReason": "Why is this month waived?",
+    "noPayments": "No rent recorded yet",
+    "noInspections": "No inspections recorded",
+    "amount": "Amount (PKR)",
+    "allocationHint": "Applied to the oldest unpaid months first; any extra is kept as advance.",
+    "rentRecorded": "Rent recorded",
+    "renewed": "Lease renewed",
+    "newEndDate": "New end date",
+    "newRent": "New monthly rent",
+    "ended": "Lease closed",
+    "depositRefund": "Deposit refunded (PKR)",
+    "relist": "Put the property back on the market",
+    "condition": "Condition"
   }
 }

@@ -42,6 +42,8 @@ import type {
   PlanKey,
   PossessionStatus,
   VerificationStatus,
+  RentItemStatus,
+  LeaseSummary,
 } from '@recrm/shared';
 
 export interface ApiSuccess<T> {
@@ -335,6 +337,59 @@ export interface Verification {
   history: { status: VerificationStatus; action: string; remarks?: string | null; by?: string | null; at: string }[];
   missingDocuments: string[];
   expiringDocuments: { fileName: string; category?: string; expiresAt: string }[];
+}
+
+export interface RentItem {
+  _id: string;
+  period: string;
+  dueDate: string;
+  amount: number;
+  lateFee: number;
+  paid: number;
+  status: RentItemStatus;
+  waivedReason?: string | null;
+}
+
+export interface Lease {
+  _id: string;
+  uuid: string;
+  version: number;
+  leaseNo: string;
+  propertyId: string | { _id: string; propertyId: string; society?: string; block?: string };
+  tenantId: string | { _id: string; fullName: string; mobileNumber?: string };
+  landlordId?: string | { _id: string; fullName: string; mobileNumber?: string } | null;
+  status: 'DRAFT' | 'ACTIVE' | 'ENDED' | 'TERMINATED';
+  startDate: string;
+  endDate: string;
+  monthlyRent: number;
+  dueDay: number;
+  escalationPct: number;
+  graceDays: number;
+  lateFeeType: 'NONE' | 'FIXED' | 'PERCENT';
+  lateFeeValue: number;
+  securityDeposit: number;
+  depositStatus: string;
+  depositRefunded: number;
+  managementFeePct: number;
+  credit: number;
+  schedule: RentItem[];
+  payments: { _id: string; date: string; amount: number; method: PaymentMethod; reference?: string | null; allocations: { itemId: string; amount: number }[] }[];
+  inspections: { _id: string; date: string; type: string; condition: string; notes?: string | null }[];
+  outstanding: number;
+  overdueAmount: number;
+  nextDueDate?: string | null;
+  endReason?: string | null;
+  summary: LeaseSummary;
+}
+
+export interface RentRoll {
+  activeLeases: number;
+  monthlyRentRoll: number;
+  dueThisMonth: number;
+  collectedThisMonth: number;
+  overdue: number;
+  depositsHeld: number;
+  expiringSoon: number;
 }
 
 export interface SavedView {

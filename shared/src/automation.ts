@@ -11,6 +11,8 @@ export const AUTOMATION_RULE_KEYS = [
   'DEAL_STUCK_NEGOTIATION',
   'AGREEMENT_EXPIRING',
   'VERIFICATION_DUE',
+  'RENT_DUE',
+  'RENT_OVERDUE',
 ] as const;
 export type AutomationRuleKey = (typeof AUTOMATION_RULE_KEYS)[number];
 
@@ -32,6 +34,8 @@ export const AUTOMATION_RULES: Record<AutomationRuleKey, AutomationRuleDefinitio
   DEAL_STUCK_NEGOTIATION: { key: 'DEAL_STUCK_NEGOTIATION', unit: 'days', defaultThreshold: 14, min: 1, max: 120, notify: ['assignee', 'managers'] },
   AGREEMENT_EXPIRING: { key: 'AGREEMENT_EXPIRING', unit: 'days', defaultThreshold: 30, min: 1, max: 120, notify: ['assignee', 'managers'] },
   VERIFICATION_DUE: { key: 'VERIFICATION_DUE', unit: 'days', defaultThreshold: 7, min: 0, max: 60, notify: ['assignee'] },
+  RENT_DUE: { key: 'RENT_DUE', unit: 'days', defaultThreshold: 3, min: 0, max: 15, notify: ['assignee'] },
+  RENT_OVERDUE: { key: 'RENT_OVERDUE', unit: 'days', defaultThreshold: 1, min: 0, max: 30, notify: ['assignee', 'managers'] },
 };
 
 export interface AutomationRuleSetting {

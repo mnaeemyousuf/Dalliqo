@@ -30,6 +30,8 @@ import type {
   LeadReport,
   Verification,
   SavedView,
+  Lease,
+  RentRoll,
   InventoryReport,
   ImportResult,
   SubscriptionInfo,
@@ -254,6 +256,18 @@ export const inventoryApi = {
   views: (page: string) => api<SavedView[]>({ url: '/saved-views', params: { page } }),
   createView: (body: Body) => api<SavedView>({ method: 'POST', url: '/saved-views', data: body }),
   removeView: (id: string) => api<null>({ method: 'DELETE', url: `/saved-views/${id}` }),
+};
+
+export const leaseApi = {
+  list: (params: Params) => apiPage<Lease>('/leases', params),
+  get: (id: string) => api<Lease>({ url: `/leases/${id}` }),
+  create: (body: Body) => api<Lease>({ method: 'POST', url: '/leases', data: clean(body) }),
+  pay: (id: string, body: Body) => api<Lease>({ method: 'POST', url: `/leases/${id}/payments`, data: clean(body) }),
+  waive: (id: string, itemId: string, reason: string) => api<Lease>({ method: 'POST', url: `/leases/${id}/waive`, data: { itemId, reason } }),
+  inspect: (id: string, body: Body) => api<Lease>({ method: 'POST', url: `/leases/${id}/inspections`, data: clean(body) }),
+  renew: (id: string, body: Body) => api<Lease>({ method: 'POST', url: `/leases/${id}/renew`, data: body }),
+  end: (id: string, body: Body) => api<Lease>({ method: 'POST', url: `/leases/${id}/end`, data: clean(body) }),
+  rentRoll: () => api<RentRoll>({ url: '/leases/rent-roll' }),
 };
 
 export const subscriptionApi = {

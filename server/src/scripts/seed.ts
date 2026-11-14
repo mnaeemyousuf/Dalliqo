@@ -31,6 +31,7 @@ import { branchService } from '../services/branchService';
 import { dealService } from '../services/dealService';
 import { transactionService } from '../services/transactionService';
 import { agreementService } from '../services/agreementService';
+import { leaseService } from '../services/leaseService';
 import { demoDocumentPdf, demoPropertyImage } from './demoImages';
 import type { AuthContext } from '../types/context';
 import { normalizePhone } from '../utils/phone';
@@ -362,6 +363,24 @@ export async function seed(opts: { reset?: boolean } = {}): Promise<Record<strin
     startDate: day(320), endDate: day(-45), witness1: 'Hamza Ali',
   });
   await agreementService.changeStatus(father, String(rent._id), { status: 'SIGNED', note: 'Signed at the office' });
+  // Rentals: the signed tenancy as a managed lease with most rent collected, and a second lease with arrears.
+  const lease = await leaseService.create(father, {
+    propertyId: rentProp._id.toString(), tenantId: tenant._id.toString(), agreementId: String(rent._id), startDate: day(320), endDate: day(-45),
+    monthlyRent: rentProp.askingPrice, dueDay: 5, escalationPct: 10, graceDays: 5, lateFeeType: 'FIXED', lateFeeValue: 2_000,
+    securityDeposit: rentProp.askingPrice * 2, managementFeePct: 5,
+  });
+  for (let m = 9; m >= 1; m--) {
+    await leaseService.recordPayment(father, String(lease._id), { date: day(m * 30 + 5), amount: rentProp.askingPrice, method: m % 2 ? 'BANK_TRANSFER' : 'CASH' });
+  }
+  const otherRent = properties.find((p) => p.listingPurpose === 'RENT' && String(p._id) !== String(rentProp._id) && p.status === 'AVAILABLE');
+  const otherTenant = clients.find((c) => c.purchaseOrRental === 'RENTAL' && String(c._id) !== String(tenant._id));
+  if (otherRent && otherTenant) {
+    const l2 = await leaseService.create(son, {
+      propertyId: otherRent._id.toString(), tenantId: otherTenant._id.toString(), startDate: day(100), endDate: day(-265),
+      monthlyRent: otherRent.askingPrice, dueDay: 1, graceDays: 3, lateFeeType: 'PERCENT', lateFeeValue: 5, securityDeposit: otherRent.askingPrice * 2,
+    });
+    await leaseService.recordPayment(son, String(l2._id), { date: day(95), amount: otherRent.askingPrice, method: 'JAZZCASH' });
+  }
   await agreementService.create(son, {
     kind: 'TOKEN_RECEIPT', language: 'ur', clientId: clients[2]._id.toString(), propertyId: mainProps[2]._id.toString(),
     ownerId: mainProps[2].ownerId ? String(mainProps[2].ownerId) : null, amount: mainProps[2].askingPrice, tokenAmount: 500_000, endDate: day(-30),

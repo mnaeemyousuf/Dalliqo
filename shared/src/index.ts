@@ -11,3 +11,4 @@ export * from './leads';
 export * from './plans';
 export * from './automation';
 export * from './verification';
+export * from './rentals';

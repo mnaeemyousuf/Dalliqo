@@ -4,6 +4,7 @@ import { logger } from '../config/logger';
 import { JobLock } from '../models/SyncRecord';
 import { automationService } from '../services/automationService';
 import { followUpService } from '../services/followUpService';
+import { leaseService } from '../services/leaseService';
 
 const OWNER = `${hostname()}:${process.pid}:${randomUUID().slice(0, 8)}`;
 
@@ -38,6 +39,7 @@ export const JOBS: Job[] = [
   { name: 'followup-overdue', everyMs: 5 * 60_000, run: () => followUpService.markOverdue() },
   { name: 'automation-rules', everyMs: 10 * 60_000, run: () => automationService.runAll() },
   { name: 'lead-rescore', everyMs: 30 * 60_000, run: () => automationService.rescoreStaleLeads() },
+  { name: 'lease-refresh', everyMs: 60 * 60_000, run: () => leaseService.refreshAll() },
 ];
 
 export function startScheduler(): () => void {

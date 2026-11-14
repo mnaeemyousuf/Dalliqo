@@ -48,6 +48,14 @@ New components live in `web/src/pages/Phase3Pages.tsx` (LeadPanel, TemperatureBa
 | Map | `web/src/components/domain/PropertyMap.tsx` (Leaflet, lazy-loaded chunk) |
 | Migration | `migrations/005-phase4.ts` |
 
+## Phase 5A — rentals
+| Concern | Where |
+|---|---|
+| Schedule, allocation, late fee, summary maths | `shared/src/rentals.ts` |
+| Lease lifecycle, payments, rent roll, scheduled refresh | `server/src/services/leaseService.ts`, `models/Lease.ts` |
+| Alerts | `automationService.rentAlerts` (RENT_DUE, RENT_OVERDUE) |
+| UI | `web/src/pages/RentalPages.tsx`, `mobile/lib/features/rentals/rental_screens.dart` |
+
 ## Configuration
 | Variable | Purpose |
 |---|---|

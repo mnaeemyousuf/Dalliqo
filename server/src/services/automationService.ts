@@ -7,6 +7,7 @@ import { BusinessMember } from '../models/BusinessMember';
 import { Client, type ClientDoc } from '../models/Client';
 import { Deal, type DealDoc } from '../models/Deal';
 import { Document as DocumentAsset } from '../models/FileAsset';
+import { Lease, type LeaseDoc } from '../models/Lease';
 import { Property, type PropertyDoc } from '../models/Property';
 import type { TenantContext } from '../types/context';
 import { activityService } from './activityService';
@@ -75,6 +76,7 @@ export const automationService = {
       ...(await this.stuckDeals(ctx, rules, managers, now)),
       ...(await this.expiringAgreements(ctx, rules, managers, now)),
       ...(await this.verificationsDue(ctx, rules, now)),
+      ...(await this.rentAlerts(ctx, rules, managers, now)),
     ];
     for (const a of alerts) {
       if (!a.userIds.length) continue;
@@ -275,6 +277,31 @@ export const automationService = {
         deepLink: `/${route}/${d.entityId}`,
         key: `DOCUMENT_EXPIRING:${d._id}:${new Date(d.expiresAt).getTime()}`,
       });
+    }
+    return out;
+  },
+
+  /** Rent falling due soon (manager reminder) and rent overdue past the threshold (manager + managers). */
+  async rentAlerts(ctx: TenantContext, rules: AutomationSettings, managers: string[], now: Date): Promise<Alert[]> {
+    const out: Alert[] = [];
+    const leases = await Lease.find({ businessId: ctx.businessId, deletedAt: null, status: 'ACTIVE' })
+      .select('leaseNo managerId createdBy schedule tenantId')
+      .populate({ path: 'tenantId', select: 'fullName', options: { skipTenantGuard: true } })
+      .limit(500)
+      .lean<LeaseDoc[]>();
+    for (const l of leases) {
+      const tenant = (l.tenantId as unknown as { fullName?: string })?.fullName ?? '';
+      for (const it of l.schedule) {
+        const bal = it.status === 'WAIVED' ? 0 : it.amount + (it.lateFee ?? 0) - (it.paid ?? 0);
+        if (bal <= 0) continue;
+        const due = new Date(it.dueDate).getTime();
+        if (rules.RENT_DUE.enabled && due > now.getTime() && due - now.getTime() <= rules.RENT_DUE.threshold * DAY) {
+          out.push({ userIds: ids(l.managerId ?? l.createdBy), category: 'AUTOMATION', title: 'Rent due soon', body: `${l.leaseNo}: ${tenant} owes Rs ${bal.toLocaleString('en-PK')} for ${it.period} on ${new Date(it.dueDate).toISOString().slice(0, 10)}.`, deepLink: `/leases/${l._id}`, key: `RENT_DUE:${l._id}:${it._id}` });
+        }
+        if (rules.RENT_OVERDUE.enabled && now.getTime() - due >= rules.RENT_OVERDUE.threshold * DAY) {
+          out.push({ userIds: ids(l.managerId ?? l.createdBy, ...managers), category: 'AUTOMATION', title: 'Rent overdue', body: `${l.leaseNo}: ${tenant} has not paid Rs ${bal.toLocaleString('en-PK')} for ${it.period}.`, deepLink: `/leases/${l._id}`, key: `RENT_OVERDUE:${l._id}:${it._id}` });
+        }
+      }
     }
     return out;
   },

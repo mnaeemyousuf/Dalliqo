@@ -41,6 +41,7 @@ import { badRequest, forbidden } from '../utils/AppError';
 import { ERROR_CODES, PERMISSIONS } from '@recrm/shared';
 import { leadService } from '../services/leadService';
 import { verificationService } from '../services/verificationService';
+import { leaseService } from '../services/leaseService';
 import { inventoryToolsService } from '../services/inventoryToolsService';
 import { redactOwner } from '../services/ownerService';
 import { pageMeta, sendSuccess } from '../utils/http';
@@ -225,6 +226,37 @@ export const categoryController = {
   },
   async update(req: Request, res: Response) {
     sendSuccess(res, await categoryService.update(authOf(req), req.params.id, req.body), { message: 'Category updated successfully' });
+  },
+};
+
+export const leaseController = {
+  async list(req: Request, res: Response) {
+    const q = query<Q>(req);
+    list(res, q.page, q.limit, await leaseService.list(authOf(req), q));
+  },
+  async get(req: Request, res: Response) {
+    sendSuccess(res, await leaseService.get(authOf(req), req.params.id));
+  },
+  async create(req: Request, res: Response) {
+    sendSuccess(res, await leaseService.create(authOf(req), req.body, requestMeta(req)), { status: 201, message: 'Lease created' });
+  },
+  async pay(req: Request, res: Response) {
+    sendSuccess(res, await leaseService.recordPayment(authOf(req), req.params.id, req.body, requestMeta(req)), { message: 'Rent recorded' });
+  },
+  async waive(req: Request, res: Response) {
+    sendSuccess(res, await leaseService.waive(authOf(req), req.params.id, req.body.itemId, req.body.reason));
+  },
+  async inspect(req: Request, res: Response) {
+    sendSuccess(res, await leaseService.addInspection(authOf(req), req.params.id, req.body));
+  },
+  async renew(req: Request, res: Response) {
+    sendSuccess(res, await leaseService.renew(authOf(req), req.params.id, req.body));
+  },
+  async end(req: Request, res: Response) {
+    sendSuccess(res, await leaseService.end(authOf(req), req.params.id, req.body));
+  },
+  async rentRoll(req: Request, res: Response) {
+    sendSuccess(res, await leaseService.rentRoll(authOf(req)));
   },
 };
 

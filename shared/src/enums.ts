@@ -205,13 +205,17 @@ export const ACTIVITY_TYPES = [
   'VERIFICATION_ASSIGNED',
   'VERIFICATION_DECIDED',
   'PROPERTIES_IMPORTED',
+  'LEASE_CREATED',
+  'LEASE_UPDATED',
+  'RENT_RECEIVED',
+  'LEASE_ENDED',
 ] as const;
 export type ActivityType = (typeof ACTIVITY_TYPES)[number];
 
-export const ENTITY_TYPES = ['client', 'property', 'owner', 'followUp', 'deal', 'transaction', 'agreement'] as const;
+export const ENTITY_TYPES = ['client', 'property', 'owner', 'followUp', 'deal', 'transaction', 'agreement', 'lease'] as const;
 export type EntityType = (typeof ENTITY_TYPES)[number];
 
-export const DOCUMENT_ENTITY_TYPES = ['client', 'property', 'owner', 'deal', 'transaction', 'agreement'] as const;
+export const DOCUMENT_ENTITY_TYPES = ['client', 'property', 'owner', 'deal', 'transaction', 'agreement', 'lease'] as const;
 export type DocumentEntityType = (typeof DOCUMENT_ENTITY_TYPES)[number];
 
 export const COMMUNICATION_CHANNELS = ['CALL', 'WHATSAPP', 'SMS', 'EMAIL'] as const;
