@@ -121,6 +121,7 @@ class OwnerDetailScreen extends ConsumerWidget {
                 InfoRow(l.t('common.mobile'), o.mobileNumber, ltr: true),
                 InfoRow(l.t('common.email'), o.email, ltr: true),
                 InfoRow(l.t('common.address'), o.address),
+                if (o.json['cnicMasked'] != null) InfoRow(l.t('owner.cnic'), (o.json['cnic'] as String?) ?? o.json['cnicMasked'] as String?, ltr: true),
                 InfoRow(l.t('common.notes'), o.notes),
                 InfoRow(l.t('common.dateAdded'), formatDate(o.createdAt, locale: l.locale.languageCode)),
                 const SizedBox(height: 8),

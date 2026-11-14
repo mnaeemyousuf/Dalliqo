@@ -13,6 +13,8 @@ export interface PropertyOwnerDoc extends SyncDoc {
   email?: string;
   address?: string;
   notes?: string;
+  /** CNIC (13 digits, stored without dashes). Visible only with documents:read_sensitive. */
+  cnic?: string;
   propertyCount: number;
   searchText: string;
   createdBy: Types.ObjectId;
@@ -33,6 +35,7 @@ const schema = new Schema<PropertyOwnerDoc>(
     email: { type: String, lowercase: true, trim: true },
     address: { type: String, maxlength: 500 },
     notes: { type: String, maxlength: 2000 },
+    cnic: { type: String, maxlength: 13 },
     propertyCount: { type: Number, default: 0 },
     searchText: { type: String, default: '' },
   },

@@ -34,8 +34,29 @@ Server 227 passed (20 new Phase 3 tests) · Web 38 passed · Flutter 79 passed (
 ### Outstanding dependencies
 Payment gateway, WhatsApp Business API, AI provider key, Google Maps key (optional). See gap analysis.
 
+## Phase 4 — Verification, sensitive data, inventory tools, approvals ✅ (14 Nov 2026)
+
+### Features implemented
+- **Property verification workflow:** submit (with note) → assign to a verification officer → 8-item checklist (identity, ownership proof, NOC, tax, dues, possession, site inspection, price) → approve / reject / send back with remarks; four-eyes rule (the submitter cannot approve their own submission, owners/admins excepted); verified by/at, next verification date (default 6 months), full history, missing-document detection by category, documents expiring within 30 days; verification queue page; notifications to officers/submitters; disclaimer on every screen that this is an internal check, not a government confirmation of ownership.
+- **Sensitive data protection:** new document categories (CNIC, registry, allotment letter, transfer letter, society NOC, property tax, dues record, possession); identity/title documents and owners' CNIC numbers visible only with `documents:read_sensitive` (API, sync and download); CNIC masked (12345-*******-1) otherwise and never written to the audit log in clear text; every download of a sensitive document is audited; document expiry dates with reminders.
+- **Inventory tools:** property Excel import (template, owner matched by mobile or created, duplicate plots and invalid rows reported), property QR code (PNG), map view of listings (OpenStreetMap, configurable tiles), saved list views (private or shared with the team) for clients and properties, Android property form with Pakistan attributes.
+- **Roles:** six new permission templates — Branch manager, Sales manager, Property manager, Verification officer, Finance manager, Marketing manager; new permissions `verification:submit`, `verification:decide`, `documents:read_sensitive`, `deals:approve`.
+- **Deal approval workflow:** optional setting — closing a deal as won by an agent becomes a request that members with `deals:approve` approve or reject (also when the agent closes it offline on Android).
+- **Automation:** new rule "Re-verification & document expiry".
+
+### Database changes (migration `005-phase4`)
+- `properties.verification` {status, assignedTo, submittedBy/At, checklist[], decision, remarks, verifiedBy/At, nextVerificationAt, history[]} + 2 indexes.
+- `propertyOwners.cnic`; `propertyDocuments.expiresAt`; `deals.approval`; `settings.commission.closeApprovalRequired`; new collection `savedViews`.
+- Migration keeps behaviour for existing members: property editors get `verification:submit`, document uploaders keep `documents:read_sensitive`, commission managers get `deals:approve`.
+
+### APIs
+New: `GET /properties/:id/verification`, `POST /properties/:id/verification/{submit,assign,checklist,decide}`, `GET /verifications`, `GET /properties/import/template`, `POST /properties/import`, `GET /properties/:id/qr`, `GET|POST /saved-views`, `DELETE /saved-views/:id`, `POST /deals/:id/approval`. Modified: owners (cnic, masking), documents (categories, expiry, sensitive filtering), sync pull (owner CNIC), deal stage change (approval), settings (closeApprovalRequired).
+
+### Tests
+Server 236 passed (9 new) · Web 38 passed · Flutter 79 passed · typecheck/analyze clean.
+
 ## Next phases (planned order)
-- **Phase 4:** property verification workflow (document checklist, verification officer, approve/reject, CNIC restricted access), multiple owners/agents pickers, Android property form for Pakistan attributes, map discovery, property QR codes + bulk import, saved views, role presets (Branch/Sales/Finance managers, Verification Officer), role dashboards, deal approval workflow.
+- **Phase 4 follow-ups:** role-specific dashboards (branch/sales/finance), co-owner and listing-agent pickers in the forms (API ready), verification screens on Android (status shown today).
 - **Phase 5:** rental management (tenants, leases, rent schedules, late fees, inspections), installment plans, receipts/vouchers, receivables/payables aging, cash flow, commission lifecycle (approved → distributed), external dealer/referral shares, agent statements.
 - **Phase 6:** public listing pages + inquiry → lead automation, campaigns and ROI, agent/agency landing pages, client & owner portals, email notifications, WhatsApp Business integration.
 - **Phase 7:** AI layer (permission-aware assistant, descriptions, summaries, forecasting, indicative pricing — clearly labelled estimates).

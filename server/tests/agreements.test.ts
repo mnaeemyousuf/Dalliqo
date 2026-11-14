@@ -130,8 +130,12 @@ describe('agreements', () => {
     expect(a.versions[0].body).toContain('Rs 85,000');
     const pending = async () => FollowUp.find({ businessId: owner.businessId, _id: { $in: (await request(app).get(`/api/agreements/${a._id}`).set(auth)).body.data.renewalFollowUpIds }, status: 'PENDING' }).sort({ dueAt: 1 }).lean();
     const first = await pending();
-    const days = first.map((f) => Math.round((+new Date(f.dueAt) - Date.now()) / 86_400_000));
-    expect(days).toEqual([30, 53]);
+    // Reminders are due at a fixed time of day, so the gap is 'about N days' depending on when the test runs.
+    const days = first.map((f) => (+new Date(f.dueAt) - Date.now()) / 86_400_000);
+    expect(days[0]).toBeGreaterThan(29);
+    expect(days[0]).toBeLessThanOrEqual(31);
+    expect(days[1]).toBeGreaterThan(52);
+    expect(days[1]).toBeLessThanOrEqual(54);
     expect(first[1].notes).toContain('(7 days)');
     expect(first[1].priority).toBe('HIGH');
 

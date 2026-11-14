@@ -8,6 +8,8 @@ import {
   categoryController,
   clientController,
   leadController,
+  verificationController,
+  inventoryToolsController,
   negotiationController,
   dealController,
   transactionController,
@@ -79,6 +81,7 @@ r.get('/deals/:id', can(P.DEALS_READ), id, h(dealController.get));
 r.patch('/deals/:id', can(P.DEALS_UPDATE), validate({ params: idParams, body: s.dealUpdateSchema }), h(dealController.update));
 r.post('/deals/:id/offers', can(P.DEALS_UPDATE), validate({ params: idParams, body: s.offerSchema }), h(negotiationController.addOffer));
 r.post('/deals/:id/offers/:subId/respond', can(P.DEALS_UPDATE), validate({ params: s.subIdParams, body: s.offerRespondSchema }), h(negotiationController.respond));
+r.post('/deals/:id/approval', can(P.DEALS_APPROVE), validate({ params: idParams, body: s.dealApprovalSchema }), h(negotiationController.approval));
 r.post('/deals/:id/checklist', can(P.DEALS_UPDATE), validate({ params: idParams, body: s.checklistItemSchema }), h(negotiationController.checklist));
 r.post('/deals/:id/stage', can(P.DEALS_UPDATE), validate({ params: idParams, body: s.dealStageSchema }), h(dealController.stage));
 r.post('/deals/:id/payments', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), validate({ params: idParams, body: s.dealPaymentSchema }), h(dealController.addPayment));
@@ -121,6 +124,18 @@ r.delete('/owners/:id', can(P.OWNERS_DELETE), id, h(ownerController.remove));
 
 // Properties
 r.get('/properties', can(P.PROPERTIES_READ), validate({ query: s.propertyListQuery }), h(propertyController.list));
+r.get('/properties/import/template', can(P.PROPERTIES_CREATE), h(inventoryToolsController.template));
+r.post('/properties/import', can(P.PROPERTIES_CREATE), upload.single('file'), h(inventoryToolsController.importExcel));
+r.get('/properties/:id/qr', can(P.PROPERTIES_READ), id, h(inventoryToolsController.qr));
+r.get('/properties/:id/verification', can(P.PROPERTIES_READ), id, h(verificationController.get));
+r.post('/properties/:id/verification/submit', can(P.VERIFICATION_SUBMIT), validate({ params: idParams, body: s.verificationSubmitSchema }), h(verificationController.submit));
+r.post('/properties/:id/verification/assign', can(P.VERIFICATION_SUBMIT), validate({ params: idParams, body: s.verificationAssignSchema }), h(verificationController.assign));
+r.post('/properties/:id/verification/checklist', can(P.VERIFICATION_SUBMIT), validate({ params: idParams, body: s.verificationChecklistSchema }), h(verificationController.checklist));
+r.post('/properties/:id/verification/decide', can(P.VERIFICATION_DECIDE), validate({ params: idParams, body: s.verificationDecideSchema }), h(verificationController.decide));
+r.get('/verifications', can(P.PROPERTIES_READ), validate({ query: s.verificationQueueQuery }), h(verificationController.queue));
+r.get('/saved-views', validate({ query: s.savedViewQuery }), h(inventoryToolsController.views));
+r.post('/saved-views', validate({ body: s.savedViewSchema }), h(inventoryToolsController.createView));
+r.delete('/saved-views/:id', id, h(inventoryToolsController.removeView));
 r.get('/properties/duplicates', can(P.PROPERTIES_READ), validate({ query: s.duplicatePropertyQuery }), h(propertyController.duplicates));
 r.post('/properties', can(P.PROPERTIES_CREATE), validate({ body: s.propertyCreateSchema }), h(propertyController.create));
 r.get('/properties/:id', can(P.PROPERTIES_READ), id, h(propertyController.get));

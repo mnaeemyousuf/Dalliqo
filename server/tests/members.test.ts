@@ -179,7 +179,7 @@ describe('business settings', () => {
     expect(res.status).toBe(200);
     expect(res.body.data.assignableRoles).toEqual(['MEMBER']);
     // The phone's user editor uses the same permission templates as the web.
-    expect(Object.keys(res.body.data.permissionTemplates)).toEqual(['MEMBER', 'MANAGER', 'AGENT', 'SALESPERSON', 'ACCOUNTANT', 'VIEWER']);
+    expect(Object.keys(res.body.data.permissionTemplates)).toEqual(['MEMBER', 'MANAGER', 'BRANCH_MANAGER', 'SALES_MANAGER', 'AGENT', 'SALESPERSON', 'PROPERTY_MANAGER', 'VERIFICATION_OFFICER', 'FINANCE_MANAGER', 'ACCOUNTANT', 'MARKETING_MANAGER', 'VIEWER']);
     expect(res.body.data.permissionTemplates.AGENT).toEqual([...ROLE_PRESETS.AGENT]);
   });
 });

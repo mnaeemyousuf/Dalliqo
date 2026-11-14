@@ -58,6 +58,7 @@ const schema = new Schema<SettingsDoc>(
       defaultBuyerPct: { type: Number, default: DEFAULT_COMMISSION_SETTINGS.defaultBuyerPct },
       defaultSellerPct: { type: Number, default: DEFAULT_COMMISSION_SETTINGS.defaultSellerPct },
       autoCreateIncome: { type: Boolean, default: DEFAULT_COMMISSION_SETTINGS.autoCreateIncome },
+      closeApprovalRequired: { type: Boolean, default: DEFAULT_COMMISSION_SETTINGS.closeApprovalRequired },
     },
     // Missing values fall back to DEFAULT_LEAD_SCORING / DEFAULT_AUTOMATION_SETTINGS (see settingsService).
     leadScoring: {

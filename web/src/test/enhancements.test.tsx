@@ -35,7 +35,7 @@ describe('listing verification badge', () => {
     rerender(<VerificationBadge property={{ status: 'AVAILABLE', lastVerifiedAt: days(3) }} />);
     expect(screen.queryByText(/Verified/)).not.toBeInTheDocument();
     rerender(<VerificationBadge property={{ status: 'AVAILABLE', lastVerifiedAt: days(3) }} showFresh />);
-    expect(screen.getByText(/^Verified/)).toBeInTheDocument();
+    expect(screen.getByText(/^Availability confirmed/)).toBeInTheDocument();
   });
 });
 

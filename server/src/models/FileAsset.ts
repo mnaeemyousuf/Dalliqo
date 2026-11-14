@@ -37,6 +37,8 @@ export interface FileAssetDoc {
   isPrivate: boolean;
   uploadedBy: Types.ObjectId;
   deletedAt?: Date | null;
+  /** Documents that lapse (NOC, tax receipts …) get a reminder before this date. */
+  expiresAt?: Date | null;
   createdBy: Types.ObjectId;
   updatedBy: Types.ObjectId;
   createdAt: Date;
@@ -66,6 +68,7 @@ function buildSchema() {
       isPrivate: { type: Boolean, default: false },
       uploadedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
       deletedAt: { type: Date, default: null },
+      expiresAt: { type: Date, default: null },
     },
     { timestamps: true, versionKey: false },
   );

@@ -38,7 +38,18 @@ New components live in `web/src/pages/Phase3Pages.tsx` (LeadPanel, TemperatureBa
 ## Android
 `features/clients/lead_score_card.dart`, `features/deals/negotiation_section.dart`; repository methods `addDealOffer`, `respondDealOffer`, `setDealChecklistItem` write full arrays through the offline outbox (server reconciles ids and actors).
 
+## Phase 4 additions
+| Concern | Where |
+|---|---|
+| Verification workflow | `services/verificationService.ts`, `shared/src/verification.ts` (checklist, sensitive categories, CNIC helpers) |
+| Sensitive data | `mediaService` (`canSeeSensitive`: list filter, 404 on download, audited access), `ownerService.redactOwner` (API + sync), CNIC masked in audit |
+| Property import, QR, saved views | `services/inventoryToolsService.ts`, `models/SavedView.ts` |
+| Deal approval | `dealService.requestCloseApproval` / `decideApproval`; triggered inside `changeStage` so offline syncs are covered |
+| Map | `web/src/components/domain/PropertyMap.tsx` (Leaflet, lazy-loaded chunk) |
+| Migration | `migrations/005-phase4.ts` |
+
 ## Configuration
 | Variable | Purpose |
 |---|---|
 | `PLATFORM_ADMIN_EMAILS` | Comma-separated Dalliqo staff emails allowed to manage subscriptions |
+| `VITE_MAP_TILES` / `VITE_MAP_ATTRIBUTION` | Optional map tile provider for the web map (default OpenStreetMap) |

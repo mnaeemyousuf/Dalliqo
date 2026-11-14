@@ -1,4 +1,4 @@
-import { ERROR_CODES, SOCKET_EVENTS } from '@recrm/shared';
+import { ERROR_CODES, SOCKET_EVENTS, maskCnic } from '@recrm/shared';
 import type { PropertyOwnerDoc } from '../models/PropertyOwner';
 import { ownerRepository, propertyRepository } from '../repositories/entityRepositories';
 import type { AuthContext, RequestMeta, TenantContext } from '../types/context';
@@ -19,9 +19,18 @@ export interface OwnerInput {
   email?: string;
   address?: string;
   notes?: string;
+  cnic?: string;
 }
 
-const FIELDS = ['branchId', 'fullName', 'mobileNumber', 'alternateNumber', 'whatsappNumber', 'email', 'address', 'notes'] as const;
+const FIELDS = ['branchId', 'fullName', 'mobileNumber', 'alternateNumber', 'whatsappNumber', 'email', 'address', 'notes', 'cnic'] as const;
+
+/** Masks the CNIC for members without documents:read_sensitive (lists, detail, sync, audit). */
+export function redactOwner<T extends { cnic?: string | null }>(canSee: boolean, o: T): T & { cnicMasked?: string } {
+  if (!o.cnic) return o;
+  if (canSee) return { ...o, cnicMasked: maskCnic(o.cnic) };
+  const { cnic: _c, ...rest } = o;
+  return { ...(rest as T), cnicMasked: maskCnic(o.cnic) };
+}
 
 export const ownerService = {
   async create(auth: AuthContext, input: OwnerInput, meta: RequestMeta = {}): Promise<PropertyOwnerDoc> {
@@ -67,7 +76,10 @@ export const ownerService = {
     const merged = { ...before, ...set };
     set.searchText = searchBlob(merged.fullName, merged.mobileNumber, merged.whatsappNumber, merged.email);
     const updated = await ownerRepository.update(auth, id, set, { baseVersion: opts.baseVersion });
-    const changes = diffFields(before as unknown as Record<string, unknown>, set, FIELDS);
+    // CNIC values never go into the audit log in clear text.
+    const changes = diffFields(before as unknown as Record<string, unknown>, set, FIELDS).map((c) =>
+      c.field === 'cnic' ? { ...c, oldValue: c.oldValue ? maskCnic(String(c.oldValue)) : null, newValue: c.newValue ? maskCnic(String(c.newValue)) : null } : c,
+    );
     if (changes.length) {
       await auditService.record(auth, { action: 'owner.updated', entityType: 'owner', entityId: updated._id, entityLabel: updated.fullName, changes, ip: opts.meta?.ip });
       await activityService.record(auth, 'OWNER_UPDATED', `Owner ${updated.fullName} updated`, [{ entityType: 'owner', entityId: updated._id, label: updated.fullName }]);

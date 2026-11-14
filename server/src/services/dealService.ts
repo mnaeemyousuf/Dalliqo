@@ -30,6 +30,7 @@ import { withTransaction } from '../utils/transaction';
 import { activityService, type ActivityRef } from './activityService';
 import { auditService } from './auditService';
 import { publishChange } from './publish';
+import { notificationService } from './notificationService';
 import { settingsService } from './settingsService';
 
 export const dealRepository = createTenantRepository<DealDoc>(Deal, ERROR_CODES.DEAL_NOT_FOUND);
@@ -393,9 +394,12 @@ export const dealService = {
     return (await dealRepository.findById(auth, id)) ?? updated;
   },
 
-  async changeStage(auth: AuthContext, id: string, stage: DealStage, opts: { note?: string; lostReason?: string; baseVersion?: number; meta?: RequestMeta } = {}) {
+  async changeStage(auth: AuthContext, id: string, stage: DealStage, opts: { note?: string; lostReason?: string; baseVersion?: number; meta?: RequestMeta; approved?: boolean } = {}) {
     const before = await this.load(auth, id);
     if (stage === before.stage) return before;
+    if (stage === 'CLOSED_WON' && !opts.approved && !auth.permissions.includes(PERMISSIONS.DEALS_APPROVE) && (await settingsService.get(auth)).commission.closeApprovalRequired) {
+      return this.requestCloseApproval(auth, before, opts.note);
+    }
     if (stage === 'CLOSED_LOST' && !opts.lostReason?.trim()) throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'Give a reason the deal was lost');
     const closed = stage === 'CLOSED_WON' || stage === 'CLOSED_LOST';
     const updated = await Deal.findOneAndUpdate(
@@ -412,6 +416,41 @@ export const dealService = {
     await auditService.record(auth, { action: 'deal.stage_changed', entityType: 'deal', entityId: updated._id, entityLabel: updated.dealNo, changes: [{ field: 'stage', oldValue: before.stage, newValue: stage }], ip: opts.meta?.ip });
     publishChange(auth, SOCKET_EVENTS.DEAL_UPDATED, 'deal', updated);
     return updated;
+  },
+
+  /** Asks the approvers to confirm the deal as won; the stage stays where it is meanwhile. */
+  async requestCloseApproval(auth: AuthContext, deal: DealDoc, note?: string) {
+    if (deal.approval?.status === 'PENDING') return deal;
+    const approval = { status: 'PENDING' as const, action: 'CLOSE_WON' as const, requestedBy: new Types.ObjectId(auth.userId), requestedAt: new Date(), decidedBy: null, decidedAt: null, note: note ?? null };
+    const updated = await dealRepository.update(auth, deal._id.toString(), { approval });
+    await activityService.record(auth, 'DEAL_UPDATED', `Deal ${deal.dealNo}: closing as won requested${note ? ` (${note})` : ''}`, refs(updated));
+    await auditService.record(auth, { action: 'deal.close_requested', entityType: 'deal', entityId: updated._id, entityLabel: updated.dealNo });
+    const approvers = (await memberRepository.activeUserIdsWithPermission(auth, PERMISSIONS.DEALS_APPROVE)).filter((u) => u !== auth.userId);
+    await notificationService.notify(auth, { userIds: approvers, category: 'DEAL', title: 'Deal waiting for approval', body: `${deal.dealNo}${deal.title ? ` (${deal.title})` : ''} is ready to close as won.`, deepLink: `/deals/${deal._id}` });
+    publishChange(auth, SOCKET_EVENTS.DEAL_UPDATED, 'deal', updated);
+    return updated;
+  },
+
+  /** An approver confirms (stage → CLOSED_WON) or turns down the request. */
+  async decideApproval(auth: AuthContext, id: string, decision: 'APPROVED' | 'REJECTED', note?: string, meta: RequestMeta = {}) {
+    if (!auth.permissions.includes(PERMISSIONS.DEALS_APPROVE)) throw forbidden();
+    const deal = await this.load(auth, id);
+    if (deal.approval?.status !== 'PENDING') throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'Nothing is waiting for approval on this deal');
+    if (decision === 'APPROVED') await this.changeStage(auth, id, 'CLOSED_WON', { note: note ?? 'Approved', approved: true, meta });
+    const approval = { ...deal.approval, status: decision, decidedBy: new Types.ObjectId(auth.userId), decidedAt: new Date(), note: note ?? deal.approval.note ?? null };
+    const updated = await dealRepository.update(auth, id, { approval });
+    await auditService.record(auth, { action: `deal.close_${decision.toLowerCase()}`, entityType: 'deal', entityId: updated._id, entityLabel: updated.dealNo, meta: note ? { note } : undefined, ip: meta.ip });
+    if (deal.approval.requestedBy && String(deal.approval.requestedBy) !== auth.userId) {
+      await notificationService.notify(auth, {
+        userIds: [String(deal.approval.requestedBy)],
+        category: 'DEAL',
+        title: decision === 'APPROVED' ? 'Deal closing approved' : 'Deal closing not approved',
+        body: `${deal.dealNo}${note ? `: ${note}` : ''}`,
+        deepLink: `/deals/${deal._id}`,
+      });
+    }
+    publishChange(auth, SOCKET_EVENTS.DEAL_UPDATED, 'deal', updated);
+    return (await dealRepository.findById(auth, id)) ?? updated;
   },
 
   /**

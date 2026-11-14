@@ -344,7 +344,25 @@
     "verifyHint": "Confirm with the owner that this property is still on offer at the listed price, then record it here.",
     "verification": "Verification",
     "recentlyVerified": "Recently verified",
-    "matches_one": "{{count}} match"
+    "matches_one": "{{count}} match",
+    "pk": {
+      "title": "Pakistan details",
+      "phase": "Phase",
+      "sector": "Sector",
+      "unitNumber": "House / unit / file no.",
+      "possession": "Possession",
+      "development": "Development",
+      "construction": "Construction",
+      "furnishing": "Furnishing",
+      "facing": "Facing",
+      "expires": "Available until",
+      "expiresHint": "The listing becomes Expired after this date",
+      "corner": "Corner",
+      "parkFacing": "Park facing",
+      "mainRoad": "Main road",
+      "priceHistory": "Price history",
+      "duplicateConfirm": "This plot is already listed as {{id}}. Save it as a separate listing anyway?"
+    }
   },
   "owner": {
     "title": "Owners",
@@ -358,7 +376,9 @@
     "noOwners": "No owners yet",
     "searchPlaceholder": "Search owners…",
     "deleteConfirm": "Delete {{name}}?",
-    "propertyCount_one": "{{count}} property"
+    "propertyCount_one": "{{count}} property",
+    "cnic": "CNIC",
+    "cnicHint": "Visible only to members allowed to see identity data"
   },
   "match": {
     "title": "Matches",
@@ -480,7 +500,8 @@
       "administration": "Administration",
       "deals": "Deals & commission",
       "finance": "Income & expense",
-      "agreements": "Agreements"
+      "agreements": "Agreements",
+      "verification": "Verification"
     },
     "template": "Start from a template",
     "access": "Access",
@@ -492,7 +513,13 @@
       "AGENT": "Agent",
       "SALESPERSON": "Salesperson",
       "ACCOUNTANT": "Accountant (reports)",
-      "VIEWER": "Read-only viewer"
+      "VIEWER": "Read-only viewer",
+      "BRANCH_MANAGER": "Branch manager",
+      "SALES_MANAGER": "Sales manager",
+      "PROPERTY_MANAGER": "Property manager",
+      "FINANCE_MANAGER": "Finance manager",
+      "MARKETING_MANAGER": "Marketing manager",
+      "VERIFICATION_OFFICER": "Verification officer"
     }
   },
   "notification": {
@@ -651,7 +678,15 @@
       "AGREEMENT": "Agreement",
       "IDENTITY": "Identity",
       "PROPERTY_DOCUMENT": "Property document",
-      "OTHER": "Other"
+      "OTHER": "Other",
+      "CNIC": "CNIC",
+      "REGISTRY": "Registry",
+      "ALLOTMENT_LETTER": "Allotment letter",
+      "TRANSFER_LETTER": "Transfer letter",
+      "SOCIETY_NOC": "Society NOC",
+      "PROPERTY_TAX": "Property tax",
+      "DUES_RECORD": "Dues record",
+      "POSSESSION": "Possession"
     },
     "matchStatus": {
       "NEW": "New",
@@ -767,7 +802,12 @@
       "agreements:create": "Draft agreements",
       "agreements:update": "Edit agreements, change status",
       "agreements:delete": "Delete agreements",
-      "templates:manage": "Manage agreement templates"
+      "templates:manage": "Manage agreement templates",
+      "properties:view_floor_price": "See owners' minimum price",
+      "documents:read_sensitive": "See CNIC & title documents",
+      "verification:submit": "Submit for verification",
+      "verification:decide": "Approve / reject verifications",
+      "deals:approve": "Approve deal closings"
     },
     "dealStage": {
       "INQUIRY": "Inquiry",
@@ -1170,6 +1210,12 @@
         "COMMISSION_RECEIVED": "Commission received",
         "DEAL_CLOSED": "Deal closed"
       }
+    },
+    "approval": {
+      "setting": "Closing a deal as won needs approval",
+      "settingHint": "Agents can request it; members with “Approve deal closings” confirm it.",
+      "pending": "Waiting for approval to close as won.",
+      "requestedBy": "Requested by {{name}} {{time}}"
     }
   },
   "finance": {
@@ -1333,5 +1379,28 @@
     },
     "temperature": "Temperature",
     "score": "Lead score"
+  },
+  "verification": {
+    "title": "Verification",
+    "disclaimer": "Internal verification by your team only. It is not a government or legal confirmation of ownership.",
+    "status": {
+      "NOT_SUBMITTED": "Not submitted",
+      "PENDING": "Waiting",
+      "IN_REVIEW": "In review",
+      "CHANGES_REQUESTED": "Sent back",
+      "APPROVED": "Verified",
+      "REJECTED": "Rejected"
+    },
+    "items": {
+      "OWNER_IDENTITY": "Owner's identity (CNIC)",
+      "OWNERSHIP_PROOF": "Ownership proof (registry / allotment / transfer)",
+      "SOCIETY_NOC": "Society NOC",
+      "PROPERTY_TAX": "Property tax paid",
+      "DUES_CLEARED": "Outstanding dues cleared",
+      "POSSESSION_CONFIRMED": "Possession confirmed",
+      "SITE_INSPECTED": "Site inspected",
+      "PRICE_CONFIRMED": "Price confirmed with owner"
+    },
+    "next": "next check {{date}}"
   }
 }

@@ -6,6 +6,7 @@ import { Business, type BusinessDoc } from '../models/Business';
 import { BusinessMember } from '../models/BusinessMember';
 import { Client, type ClientDoc } from '../models/Client';
 import { Deal, type DealDoc } from '../models/Deal';
+import { Document as DocumentAsset } from '../models/FileAsset';
 import { Property, type PropertyDoc } from '../models/Property';
 import type { TenantContext } from '../types/context';
 import { activityService } from './activityService';
@@ -73,6 +74,7 @@ export const automationService = {
       ...(await this.expiringListings(ctx, rules, now)),
       ...(await this.stuckDeals(ctx, rules, managers, now)),
       ...(await this.expiringAgreements(ctx, rules, managers, now)),
+      ...(await this.verificationsDue(ctx, rules, now)),
     ];
     for (const a of alerts) {
       if (!a.userIds.length) continue;
@@ -240,6 +242,41 @@ export const automationService = {
       deepLink: `/agreements/${a._id}`,
       key: `AGREEMENT_EXPIRING:${a._id}:${new Date(a.endDate).getTime()}`,
     }));
+  },
+
+  /** Approved listings whose next verification date is near, and documents about to expire. */
+  async verificationsDue(ctx: TenantContext, rules: AutomationSettings, now: Date): Promise<Alert[]> {
+    const r = rules.VERIFICATION_DUE;
+    if (!r.enabled) return [];
+    const until = new Date(now.getTime() + r.threshold * DAY);
+    const props = await Property.find({ businessId: ctx.businessId, deletedAt: null, status: { $in: ['AVAILABLE', 'RESERVED', 'UNDER_NEGOTIATION'] }, 'verification.status': 'APPROVED', 'verification.nextVerificationAt': { $ne: null, $lte: until } })
+      .select('propertyId agentIds createdBy verification.nextVerificationAt verification.verifiedBy')
+      .limit(LIMIT)
+      .lean<PropertyDoc[]>();
+    const out: Alert[] = props.map((p) => ({
+      userIds: ids(p.verification?.verifiedBy, ...(p.agentIds?.length ? p.agentIds : [p.createdBy])),
+      category: 'PROPERTY',
+      title: 'Re-verification due',
+      body: `${p.propertyId} is due for re-verification on ${new Date(p.verification!.nextVerificationAt!).toISOString().slice(0, 10)}.`,
+      deepLink: `/properties/${p._id}?tab=verification`,
+      key: `VERIFICATION_DUE:${p._id}:${new Date(p.verification!.nextVerificationAt!).getTime()}`,
+    }));
+    const docs = await DocumentAsset.find({ businessId: ctx.businessId, deletedAt: null, expiresAt: { $ne: null, $gt: now, $lte: new Date(now.getTime() + Math.max(r.threshold, 30) * DAY) } })
+      .select('fileName entityType entityId uploadedBy expiresAt')
+      .limit(LIMIT)
+      .lean<{ _id: Types.ObjectId; fileName: string; entityType: string; entityId: Types.ObjectId; uploadedBy: Types.ObjectId; expiresAt: Date }[]>();
+    for (const d of docs) {
+      const route = { property: 'properties', client: 'clients', owner: 'owners', deal: 'deals', agreement: 'agreements', transaction: 'finance' }[d.entityType] ?? 'documents';
+      out.push({
+        userIds: ids(d.uploadedBy),
+        category: 'AUTOMATION',
+        title: 'Document expiring',
+        body: `"${d.fileName}" expires on ${new Date(d.expiresAt).toISOString().slice(0, 10)}.`,
+        deepLink: `/${route}/${d.entityId}`,
+        key: `DOCUMENT_EXPIRING:${d._id}:${new Date(d.expiresAt).getTime()}`,
+      });
+    }
+    return out;
   },
 
   /** Engagement decays with time, so active leads are rescored periodically. */

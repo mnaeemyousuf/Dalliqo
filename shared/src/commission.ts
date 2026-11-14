@@ -123,6 +123,11 @@ export interface CommissionDefaults {
   defaultSellerPct: number;
   /** Record every commission payment as an income transaction automatically. */
   autoCreateIncome: boolean;
+  /** Closing a deal as won needs approval from a member with deals:approve. */
+  closeApprovalRequired: boolean;
 }
 
-export const DEFAULT_COMMISSION_SETTINGS: CommissionDefaults = { defaultBuyerPct: 1, defaultSellerPct: 1, autoCreateIncome: true };
+export const DEFAULT_COMMISSION_SETTINGS: CommissionDefaults = { defaultBuyerPct: 1, defaultSellerPct: 1, autoCreateIncome: true, closeApprovalRequired: false };
+
+export const APPROVAL_STATUSES = ['PENDING', 'APPROVED', 'REJECTED'] as const;
+export type ApprovalStatus = (typeof APPROVAL_STATUSES)[number];

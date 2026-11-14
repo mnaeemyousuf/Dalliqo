@@ -3,7 +3,7 @@ import { Download, FileSpreadsheet, FileText, Pencil, Plus, RefreshCw, Trash2 } 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { CLIENT_PURPOSES, CLIENT_STATUSES, DOCUMENT_CATEGORIES, DOCUMENT_ENTITY_TYPES, FOLLOWUP_TYPES, MATCH_STATUSES, PERMISSIONS, PROPERTY_STATUSES, PROPERTY_TYPES } from '@recrm/shared';
+import { formatCnic, CLIENT_PURPOSES, CLIENT_STATUSES, DOCUMENT_CATEGORIES, DOCUMENT_ENTITY_TYPES, FOLLOWUP_TYPES, MATCH_STATUSES, PERMISSIONS, PROPERTY_STATUSES, PROPERTY_TYPES } from '@recrm/shared';
 import { documentApi, exportApi, followUpApi, matchApi, ownerApi } from '@/api/endpoints';
 import type { Owner } from '@/api/types';
 import { ContactActions, MatchCard, PropertyStatusBadge, locationLabel, useSizeLabel } from '@/components/domain';
@@ -35,7 +35,9 @@ function OwnerFormDrawer({ open, onClose, owner }: { open: boolean; onClose(): v
     email: owner?.email ?? '',
     address: owner?.address ?? '',
     notes: owner?.notes ?? '',
+    cnic: owner?.cnic ?? '',
   });
+  const canSensitive = useCan(PERMISSIONS.DOCUMENTS_SENSITIVE);
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const save = useMutation({
     mutationFn: () => {
@@ -73,6 +75,7 @@ function OwnerFormDrawer({ open, onClose, owner }: { open: boolean; onClose(): v
         <Input label={t('client.alternate')} type="tel" value={form.alternateNumber} onChange={set('alternateNumber')} />
         <Input label={t('common.email')} type="email" value={form.email} onChange={set('email')} error={errors.email} />
         <Input label={t('common.address')} value={form.address} onChange={set('address')} wrapperClassName="sm:col-span-2" />
+        {canSensitive && <Input label={t('owner.cnic')} placeholder="35202-1234567-1" value={form.cnic} onChange={set('cnic')} error={errors.cnic} hint={t('owner.cnicHint')} />}
         <Textarea label={t('common.notes')} value={form.notes} onChange={set('notes')} wrapperClassName="sm:col-span-2" />
       </form>
     </Drawer>
@@ -152,8 +155,9 @@ export function OwnerDetailPage() {
           </>
         }
       />
-      {(o.address || o.notes) && (
+      {(o.address || o.notes || o.cnicMasked) && (
         <Card>
+          {o.cnicMasked && <p className="ltr-nums mb-1 text-sm"><span className="text-muted">{t('owner.cnic')}:</span> {o.cnic ? formatCnic(o.cnic) : o.cnicMasked}</p>}
           <p className="text-sm">{o.address}</p>
           {o.notes && <p className="mt-2 whitespace-pre-wrap text-sm text-muted">{o.notes}</p>}
         </Card>

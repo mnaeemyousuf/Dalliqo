@@ -41,6 +41,8 @@ import {
   OFFER_PARTIES,
   POSSESSION_STATUSES,
   PROPERTY_CATEGORIES,
+  VERIFICATION_DECISIONS,
+  VERIFICATION_STATUSES,
 } from '@recrm/shared';
 
 const uuid = z.string().uuid();
@@ -178,6 +180,12 @@ const ownerFields = {
   email: email.optional(),
   address: optionalText(500),
   notes: optionalText(2000),
+  cnic: z
+    .string()
+    .trim()
+    .refine((v) => /^\d{5}-?\d{7}-?\d$/.test(v), { message: 'CNIC must be 13 digits (12345-1234567-1)' })
+    .transform((v) => v.replace(/\D/g, ''))
+    .optional(),
 };
 export const ownerCreateSchema = z.object({ uuid: uuid.optional(), ...ownerFields }).strict();
 export const ownerUpdateSchema = z.object(ownerFields).partial().extend({ baseVersion: z.number().int().positive().optional() }).strict();
@@ -298,6 +306,7 @@ export const offerSchema = z
   .object({ id: uuid.optional(), _id: uuid.optional(), party: z.enum(OFFER_PARTIES), amount: money.pipe(z.number().min(1)), note: optionalText(500), status: z.enum(['OPEN', 'ACCEPTED', 'REJECTED', 'COUNTERED', 'WITHDRAWN']).optional(), at: z.coerce.date().optional() })
   .strict();
 export const offerRespondSchema = z.object({ status: z.enum(['ACCEPTED', 'REJECTED', 'WITHDRAWN']) }).strict();
+export const dealApprovalSchema = z.object({ decision: z.enum(['APPROVED', 'REJECTED']), note: optionalText(500) }).strict();
 export const checklistItemSchema = z.object({ key: shortText(60).min(1), label: optionalText(120), done: z.boolean() }).strict();
 const commissionTerm = z.object({ mode: z.enum(COMMISSION_MODES), value: z.number().min(0).max(1e12) }).strict();
 const agentShare = z.object({ userId: objectId, sharePct: z.number().gt(0).max(100) }).strict();
@@ -481,13 +490,28 @@ export const documentUploadFields = z.object({
   entityId: objectId,
   category: z.enum(DOCUMENT_CATEGORIES).optional(),
   fileName: optionalText(200),
+  expiresAt: z.coerce.date().optional(),
 });
 export const documentListQuery = pagination.extend({
   entityType: z.enum(DOCUMENT_ENTITY_TYPES).optional(),
   entityId: objectId.optional(),
   category: z.enum(DOCUMENT_CATEGORIES).optional(),
 });
-export const documentUpdateSchema = z.object({ fileName: shortText(200).min(1).optional(), category: z.enum(DOCUMENT_CATEGORIES).optional() }).strict();
+export const documentUpdateSchema = z.object({ fileName: shortText(200).min(1).optional(), category: z.enum(DOCUMENT_CATEGORIES).optional(), expiresAt: z.coerce.date().nullable().optional() }).strict();
+
+// ── Verification, saved views, property import ──
+export const verificationSubmitSchema = z.object({ note: optionalText(500) }).strict();
+export const verificationAssignSchema = z.object({ userId: objectId }).strict();
+export const verificationChecklistSchema = z.object({ key: shortText(60).min(1), done: z.boolean(), note: optionalText(300) }).strict();
+export const verificationDecideSchema = z
+  .object({ decision: z.enum(VERIFICATION_DECISIONS), remarks: optionalText(1000), nextVerificationAt: z.coerce.date().nullable().optional() })
+  .strict();
+export const verificationQueueQuery = pagination.extend({ status: z.enum(VERIFICATION_STATUSES).optional(), mine: bool.optional() });
+export const savedViewSchema = z
+  .object({ page: z.enum(['clients', 'properties', 'deals', 'followups']), name: shortText(60).min(1), params: z.record(z.string().max(200)).refine((r) => Object.keys(r).length <= 30), shared: z.boolean().optional() })
+  .strict();
+export const savedViewQuery = z.object({ page: z.enum(['clients', 'properties', 'deals', 'followups']) });
+export const propertyImportFields = z.object({ ownerId: objectId.optional(), agentId: objectId.optional() });
 
 // ── Notes & activities ──
 export const noteListQuery = pagination.extend({ entityType: z.enum(ENTITY_TYPES), entityId: objectId });
@@ -535,7 +559,7 @@ export const settingsUpdateSchema = z
       .optional(),
     reminders: z.object({ defaultMinutesBefore: z.number().int().min(0).max(10080) }).strict().optional(),
     commission: z
-      .object({ defaultBuyerPct: z.number().min(0).max(20).optional(), defaultSellerPct: z.number().min(0).max(20).optional(), autoCreateIncome: z.boolean().optional() })
+      .object({ defaultBuyerPct: z.number().min(0).max(20).optional(), defaultSellerPct: z.number().min(0).max(20).optional(), autoCreateIncome: z.boolean().optional(), closeApprovalRequired: z.boolean().optional() })
       .strict()
       .optional(),
   })

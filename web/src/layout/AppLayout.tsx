@@ -76,6 +76,7 @@ function useNav(): { label: string; items: NavItem[] }[] {
         { to: '/owners', label: t('nav.owners'), icon: <Building2 className={i} />, perm: PERMISSIONS.OWNERS_READ },
         { to: '/matches', label: t('nav.matches'), icon: <Handshake className={i} />, perm: PERMISSIONS.MATCHES_READ },
         { to: '/followups', label: t('nav.followups'), icon: <CalendarCheck className={i} />, perm: PERMISSIONS.FOLLOWUPS_READ },
+        { to: '/verifications', label: t('nav.verifications'), icon: <ShieldCheck className={i} />, perm: PERMISSIONS.VERIFICATION_SUBMIT },
       ],
     },
     {

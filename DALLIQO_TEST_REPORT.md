@@ -20,6 +20,15 @@ Run date: 13 Nov 2026 (Phase 3).
 - Subscriptions: trial on registration and `/auth/me` entitlements; module blocked on Starter (403), user limit (403); expired account read-only (402) but readable; platform-only plan changes.
 - Automation: hot-lead alert raised exactly once across two runs (de-duplication); lapsed listing auto-expired; settings validation (bounds, thresholds).
 
+## Phase 4 tests (`server/tests/phase4.test.ts`, run 14 Nov 2026)
+- CNIC format/mask helpers.
+- Verification: submit → queue + officer notification → agent cannot decide (403) → assign → checklist → remarks required for send-back → resubmit → approve; history, verifiedBy and next date checked; four-eyes rule (403 when approving own submission).
+- Sensitive data: CNIC masked for a viewer in detail and sync; identity document hidden from list and 404 on download for a viewer; missing-document detection by category.
+- Deal approval: direct close when off; with approvals on an agent's close-won is held (PENDING, approver notified), agent cannot approve (403), owner approval closes the deal.
+- Property Excel import with owner creation, duplicate plot and invalid rows; QR PNG; saved views private/shared and deletion only by the owner; new permission templates.
+- Regression fixes: permission-template list expectation; an agreement test that depended on the time of day now asserts a range.
+- Full results: server 236 passed, web 38 passed, Flutter 79 passed; production web build succeeds (map is a separate lazy chunk).
+
 ## Manual / visual verification
 Demo API (`npm run demo`) + web, headless Chrome screenshots at 1440 px: client list with lead scores and temperature filter, client lead panel, Reports (leads + inventory aging), Settings → Subscription. All rendered correctly with real demo data.
 

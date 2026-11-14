@@ -10,3 +10,4 @@ export * from './agreements';
 export * from './leads';
 export * from './plans';
 export * from './automation';
+export * from './verification';

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { BadgeCheck, BookImage, CalendarPlus, Home, Crosshair, MessageCircle, ExternalLink, LayoutGrid, MapPin, Pencil, Plus, RefreshCw, Rows3, Share2, Star, Trash2, Upload, Video } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { lazy, Suspense, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { LISTING_PURPOSES, PERMISSIONS, PROPERTY_STATUS_TRANSITIONS, PROPERTY_STATUSES, PROPERTY_TYPES, SIZE_UNITS, type PropertyStatus } from '@recrm/shared';
@@ -11,6 +11,7 @@ import { ActivityPanel, DocumentsPanel, FollowUpForm, FollowUpsPanel, NotesPanel
 import { BranchField, useBranchName, useBranches } from '@/components/branches';
 import { DealsPanel } from '@/pages/DealPages';
 import { PropertyExtraDetails, PropertyExtraFields } from '@/pages/Phase3Pages';
+import { PropertyImportModal, PropertyQrButton, SavedViews, VerificationBadgeSmall, VerificationPanel } from '@/pages/Phase4Pages';
 import { toApiError } from '@/api/client';
 import { BrochureDialog } from '@/components/domain/BrochureDialog';
 import { Badge, Button, Card, Checkbox, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column, FilterBar, ViewToggle } from '@/components/ui';
@@ -244,6 +245,7 @@ export function PropertiesPage() {
   const navigate = useNavigate();
   const size = useSizeLabel();
   const canCreate = useCan(PERMISSIONS.PROPERTIES_CREATE);
+  const [importOpen, setImportOpen] = useState(false);
   const [filters, setFilters] = useUrlState({
     q: '', propertyType: '', status: '', listingPurpose: '', area: '', society: '', block: '', minPrice: '', maxPrice: '', minSize: '', maxSize: '', sizeUnit: 'SQ_YARD', ownerId: '', verification: '', sort: '-updatedAt', page: '1', view: 'grid',
   });
@@ -254,7 +256,8 @@ export function PropertiesPage() {
   const area = useDebounce(filters.area, 300);
   const page = Number(filters.page);
   const hasSize = filters.minSize || filters.maxSize;
-  const params = { ...filters, q, area, society, page, limit: filters.view === 'grid' ? 24 : 20, view: undefined, sizeUnit: hasSize ? filters.sizeUnit : undefined };
+  // The map shows up to 100 listings of the current filters (pins need coordinates).
+  const params = { ...filters, q, area, society, page: filters.view === 'map' ? 1 : page, limit: filters.view === 'map' ? 100 : filters.view === 'grid' ? 24 : 20, view: undefined, sizeUnit: hasSize ? filters.sizeUnit : undefined };
   const query = useQuery({ queryKey: ['properties', params], queryFn: () => propertyApi.list(params), placeholderData: (prev) => prev });
   const types = useEnumOptions('propertyType', PROPERTY_TYPES);
   const statuses = useEnumOptions('propertyStatus', PROPERTY_STATUSES);
@@ -296,8 +299,14 @@ export function PropertiesPage() {
               options={[
                 { value: 'table', icon: <Rows3 className="h-4 w-4" />, label: t('property.tableView') },
                 { value: 'grid', icon: <LayoutGrid className="h-4 w-4" />, label: t('property.gridView') },
+                { value: 'map', icon: <MapPin className="h-4 w-4" />, label: t('property.map.view') },
               ]}
             />
+            {canCreate && (
+              <Button variant="secondary" icon={<Upload className="h-4 w-4" />} onClick={() => setImportOpen(true)}>
+                {t('lead.import.button')}
+              </Button>
+            )}
             {canCreate && (
               <Button icon={<Plus className="h-4 w-4" />} onClick={() => setFormOpen(true)}>
                 {t('property.add')}
@@ -306,6 +315,8 @@ export function PropertiesPage() {
           </>
         }
       />
+      <PropertyImportModal open={importOpen} onClose={() => setImportOpen(false)} />
+      <div className="mb-3"><SavedViews page="properties" params={filters} onApply={(p) => setFilters({ ...Object.fromEntries(Object.keys(filters).filter((k) => k !== 'view' && k !== 'sizeUnit').map((k) => [k, ''])), ...p, page: '1' } as never)} /></div>
       <FilterBar
         activeAdvanced={[filters.area, filters.society, filters.block, filters.minPrice, filters.maxPrice, filters.minSize, filters.maxSize, filters.verification, filters.ownerId].filter(Boolean).length}
         advanced={
@@ -358,7 +369,17 @@ export function PropertiesPage() {
         />
       </FilterBar>
 
-      {filters.view === 'grid' ? (
+      {filters.view === 'map' ? (
+        query.isError ? (
+          <ErrorState onRetry={() => query.refetch()} />
+        ) : !query.data ? (
+          <PageLoader />
+        ) : (
+          <Suspense fallback={<PageLoader />}>
+            <PropertyMap properties={query.data.items} />
+          </Suspense>
+        )
+      ) : filters.view === 'grid' ? (
         query.isLoading ? (
           <PageLoader />
         ) : query.isError ? (
@@ -380,6 +401,8 @@ export function PropertiesPage() {
     </div>
   );
 }
+
+const PropertyMap = lazy(() => import('@/components/domain/PropertyMap'));
 
 /* ───────────── Media gallery ───────────── */
 
@@ -496,7 +519,7 @@ function MediaGallery({ property }: { property: Property }) {
 
 /* ───────────── Detail ───────────── */
 
-type PropTab = 'overview' | 'media' | 'matches' | 'followups' | 'deals' | 'documents' | 'notes' | 'activity';
+type PropTab = 'overview' | 'media' | 'matches' | 'followups' | 'deals' | 'verification' | 'documents' | 'notes' | 'activity';
 
 function Info({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -519,7 +542,7 @@ export function PropertyDetailPage() {
   const size = useSizeLabel();
   const canEdit = useCan(PERMISSIONS.PROPERTIES_UPDATE);
   const canDelete = useCan(PERMISSIONS.PROPERTIES_DELETE);
-  const [tab, setTab] = useState<PropTab>('overview');
+  const [tab, setTab] = useState<PropTab>(() => (new URLSearchParams(window.location.search).get('tab') as PropTab | null) ?? 'overview');
   const [editing, setEditing] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [nextStatus, setNextStatus] = useState<PropertyStatus>('RESERVED');
@@ -591,6 +614,7 @@ export function PropertyDetailPage() {
           <span className="flex flex-wrap items-center gap-2">
             <span className="ltr-nums">{p.propertyId}</span>
             <PropertyStatusBadge status={p.status} />
+            <VerificationBadgeSmall status={p.verification?.status} />
             <VerificationBadge property={p} showFresh />
           </span>
         }
@@ -621,6 +645,7 @@ export function PropertyDetailPage() {
                 {t('brochure.button')}
               </Button>
             )}
+            <PropertyQrButton property={p} />
             {canEdit && (
               <Button variant="secondary" icon={<Pencil className="h-4 w-4" />} onClick={() => setEditing(true)}>
                 {t('common.edit')}
@@ -643,6 +668,7 @@ export function PropertyDetailPage() {
           { value: 'matches', label: t('property.tabs.matches'), count: p.matchCount },
           { value: 'followups', label: t('property.tabs.followups') },
           ...(canDeals ? [{ value: 'deals' as const, label: t('nav.deals') }] : []),
+          { value: 'verification', label: t('verification.title') },
           { value: 'documents', label: t('property.tabs.documents') },
           { value: 'notes', label: t('property.tabs.notes') },
           { value: 'activity', label: t('property.tabs.activity') },
@@ -728,6 +754,7 @@ export function PropertyDetailPage() {
       {tab === 'deals' && <DealsPanel propertyId={id} />}
       {tab === 'documents' && <Card><DocumentsPanel entityType="property" entityId={id} /></Card>}
       {tab === 'notes' && <Card><NotesPanel entityType="property" entityId={id} /></Card>}
+      {tab === 'verification' && <VerificationPanel property={p} />}
       {tab === 'activity' && <Card><ActivityPanel entityId={id} /></Card>}
 
       {editing && <PropertyFormDrawer open property={p} onClose={() => setEditing(false)} />}

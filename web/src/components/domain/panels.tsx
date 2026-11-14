@@ -158,6 +158,7 @@ export function DocumentsPanel({ entityType, entityId }: { entityType: 'client' 
   const canDelete = useCan(PERMISSIONS.DOCUMENTS_DELETE);
   const categories = useEnumOptions('documentCategory', DOCUMENT_CATEGORIES);
   const [category, setCategory] = useState('OTHER');
+  const [expiresAt, setExpiresAt] = useState('');
   const [progress, setProgress] = useState<number | null>(null);
   const [toDelete, setToDelete] = useState<string | null>(null);
   const [toRename, setToRename] = useState<{ _id: string; fileName: string } | null>(null);
@@ -170,7 +171,7 @@ export function DocumentsPanel({ entityType, entityId }: { entityType: 'client' 
     for (const file of Array.from(files)) {
       setProgress(0);
       try {
-        await documentApi.upload({ entityType, entityId, category }, file, setProgress);
+        await documentApi.upload({ entityType, entityId, category, expiresAt: expiresAt || undefined }, file, setProgress);
         toast.success(t('document.uploaded'), file.name);
       } catch (e) {
         onError(e);
@@ -209,6 +210,7 @@ export function DocumentsPanel({ entityType, entityId }: { entityType: 'client' 
       {canUpload && (
         <div className="flex flex-wrap items-end gap-2 rounded-lg border border-dashed border-line p-3">
           <Select label={t('document.category')} options={categories} value={category} onChange={(e) => setCategory(e.target.value)} wrapperClassName="w-48" />
+          <Input label={t('document.expiresAt')} type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} wrapperClassName="w-44" />
           <input ref={input} type="file" multiple hidden accept=".pdf,.jpg,.jpeg,.png,.webp,.docx,.xlsx" onChange={(e) => void upload(e.target.files)} />
           <Button icon={<Upload className="h-4 w-4" />} loading={progress !== null} onClick={() => input.current?.click()}>
             {progress !== null ? `${progress}%` : t('document.upload')}

@@ -11,6 +11,8 @@ import {
   type FurnishingStatus,
   type PossessionStatus,
   LISTING_PURPOSES,
+  VERIFICATION_STATUSES,
+  type VerificationStatus,
   PROPERTY_STATUSES,
   PROPERTY_TYPES,
   SIZE_UNITS,
@@ -21,6 +23,20 @@ import {
 } from '@recrm/shared';
 import { branchField, branchIndexes, tenantFields, tenantGuardPlugin } from './plugins/tenant';
 import { syncFields, syncIndexes, type SyncDoc } from './plugins/sync';
+
+export interface PropertyVerification {
+  status: VerificationStatus;
+  assignedTo?: Types.ObjectId | null;
+  submittedBy?: Types.ObjectId | null;
+  submittedAt?: Date | null;
+  checklist: { key: string; done: boolean; note?: string | null; doneBy?: Types.ObjectId | null; doneAt?: Date | null }[];
+  decision?: string | null;
+  remarks?: string | null;
+  verifiedBy?: Types.ObjectId | null;
+  verifiedAt?: Date | null;
+  nextVerificationAt?: Date | null;
+  history: { status: VerificationStatus; action: string; remarks?: string | null; by?: Types.ObjectId; at: Date }[];
+}
 
 export interface PropertyDoc extends SyncDoc {
   _id: Types.ObjectId;
@@ -58,6 +74,7 @@ export interface PropertyDoc extends SyncDoc {
   /** Agents handling the listing. */
   agentIds?: Types.ObjectId[];
   priceHistory?: { price: number; at: Date; by?: Types.ObjectId; note?: string }[];
+  verification?: PropertyVerification;
   size: number;
   sizeUnit: SizeUnit;
   sizeSqft: number;
@@ -120,6 +137,25 @@ const schema = new Schema<PropertyDoc>(
       type: [{ _id: false, price: Number, at: Date, by: { type: Schema.Types.ObjectId, ref: 'User' }, note: String }],
       default: [],
     },
+    verification: {
+      status: { type: String, enum: VERIFICATION_STATUSES, default: 'NOT_SUBMITTED' },
+      assignedTo: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+      submittedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+      submittedAt: { type: Date, default: null },
+      checklist: {
+        type: [{ _id: false, key: String, done: Boolean, note: String, doneBy: { type: Schema.Types.ObjectId, ref: 'User' }, doneAt: Date }],
+        default: [],
+      },
+      decision: { type: String, default: null },
+      remarks: { type: String, maxlength: 1000, default: null },
+      verifiedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+      verifiedAt: { type: Date, default: null },
+      nextVerificationAt: { type: Date, default: null },
+      history: {
+        type: [{ _id: false, status: String, action: String, remarks: String, by: { type: Schema.Types.ObjectId, ref: 'User' }, at: Date }],
+        default: [],
+      },
+    },
     street: { type: String, trim: true, maxlength: 120 },
     plotNumber: { type: String, trim: true, maxlength: 60 },
     city: { type: String, trim: true, maxlength: 80 },
@@ -162,6 +198,8 @@ schema.index({ businessId: 1, society: 1, block: 1 });
 schema.index({ businessId: 1, plotNumber: 1 });
 schema.index({ businessId: 1, status: 1, availabilityExpiresAt: 1 });
 schema.index({ businessId: 1, agentIds: 1 });
+schema.index({ businessId: 1, 'verification.status': 1, 'verification.submittedAt': 1 });
+schema.index({ businessId: 1, 'verification.nextVerificationAt': 1 });
 schema.index({ businessId: 1, ownerId: 1 });
 schema.index({ businessId: 1, status: 1, lastVerifiedAt: 1 });
 schema.index({ businessId: 1, searchText: 1 });

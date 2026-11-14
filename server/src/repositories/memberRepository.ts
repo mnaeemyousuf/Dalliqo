@@ -65,6 +65,12 @@ export const memberRepository = {
     return (await BusinessMember.countDocuments({ businessId: ctx.businessId, userId, status: 'ACTIVE' })) > 0;
   },
 
+  /** Active members holding a permission (owners hold every permission). */
+  async activeUserIdsWithPermission(ctx: TenantContext, permission: string): Promise<string[]> {
+    const rows = await BusinessMember.find({ businessId: ctx.businessId, status: 'ACTIVE', $or: [{ role: 'OWNER' }, { permissions: permission }] }).select('userId').lean();
+    return rows.map((r) => r.userId.toString());
+  },
+
   /** userIds of all active members, used to fan out notifications. */
   async activeUserIds(ctx: TenantContext): Promise<string[]> {
     const rows = await BusinessMember.find({ businessId: ctx.businessId, status: 'ACTIVE' }).select('userId').lean();

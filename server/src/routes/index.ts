@@ -43,6 +43,7 @@ const CRM_PREFIXES = [
   '/dashboard', '/my-day', '/search', '/branches', '/client-categories', '/clients', '/owners', '/properties', '/media',
   '/documents', '/uploads', '/notes', '/activities', '/matches', '/settings', '/followups', '/notifications',
   '/devices', '/exports', '/sync', '/deals', '/reports', '/transactions', '/transaction-categories', '/agreements', '/agreement-templates',
+  '/verifications', '/saved-views',
 ];
 api.use(CRM_PREFIXES, ...secured, entitlementGuard);
 api.use(crmRoutes);

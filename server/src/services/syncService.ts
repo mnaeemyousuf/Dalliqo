@@ -25,6 +25,7 @@ import { memberService } from './memberService';
 import { noteService } from './noteService';
 import { ownerService } from './ownerService';
 import { propertyService } from './propertyService';
+import { redactOwner } from './ownerService';
 import { settingsService } from './settingsService';
 import {
   clientCreateSchema,
@@ -365,6 +366,10 @@ export const syncService = {
       // A branch-restricted member only receives their own branches (for the branch switcher).
       changes[entity] = entity === 'branches' && auth.allowedBranchIds ? rows.filter((b) => auth.allowedBranchIds!.includes(String(b._id))) : rows;
       // The owner's floor price never reaches phones of members who may not see it.
+      if (entity === 'owners') {
+        const see = auth.permissions.includes(PERMISSIONS.DOCUMENTS_SENSITIVE);
+        changes[entity] = (changes[entity] as { cnic?: string }[]).map((o) => redactOwner(see, o));
+      }
       if (entity === 'properties' && !auth.permissions.includes(PERMISSIONS.PROPERTIES_VIEW_FLOOR)) {
         changes[entity] = (changes[entity] as { minimumPrice?: number }[]).map((p) => propertyService.redact(false, p));
       }

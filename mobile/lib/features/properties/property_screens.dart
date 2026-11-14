@@ -377,6 +377,8 @@ class _Overview extends ConsumerWidget {
       Wrap(spacing: 6, runSpacing: 6, crossAxisAlignment: WrapCrossAlignment.center, children: [
         AppChip(l.enumLabel('propertyStatus', p.status), tone: statusTone(p.status)),
         AppChip(l.enumLabel('listingPurpose', p.listingPurpose)),
+        if ((p.json['verification'] as Map?)?['status'] case final String vs when vs != 'NOT_SUBMITTED')
+          AppChip(l.t('verification.status.$vs'), tone: vs == 'APPROVED' ? ChipTone.green : vs == 'REJECTED' ? ChipTone.red : ChipTone.amber, icon: Icons.verified_user_outlined),
         SyncBadge(p.syncStatus),
         if (onChangeStatus != null) TextButton.icon(onPressed: onChangeStatus, icon: const Icon(Icons.swap_horiz), label: Text(l.t('property.changeStatus'))),
       ]),
@@ -384,7 +386,17 @@ class _Overview extends ConsumerWidget {
       InfoRow(l.t('property.society'), p.society),
       InfoRow(l.t('property.area'), p.area),
       InfoRow(l.t('property.block'), p.block),
+      if (p.json['phase'] != null) InfoRow(l.t('property.pk.phase'), p.json['phase'] as String?),
       InfoRow(l.t('property.plotNumber'), p.plotNumber),
+      if (p.json['possessionStatus'] != null) InfoRow(l.t('property.pk.possession'), l.enumLabel('possessionStatus', p.json['possessionStatus'] as String?)),
+      if (p.json['constructionStatus'] != null) InfoRow(l.t('property.pk.construction'), l.enumLabel('constructionStatus', p.json['constructionStatus'] as String?)),
+      if (p.json['furnishing'] != null) InfoRow(l.t('property.pk.furnishing'), l.enumLabel('furnishing', p.json['furnishing'] as String?)),
+      if (p.json['facing'] != null) InfoRow(l.t('property.pk.facing'), l.enumLabel('facing', p.json['facing'] as String?)),
+      if (const ['corner', 'parkFacing', 'mainRoad'].any((k) => p.json[k] == true))
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Wrap(spacing: 6, children: [for (final k in const ['corner', 'parkFacing', 'mainRoad']) if (p.json[k] == true) AppChip(l.t('property.pk.$k'), tone: ChipTone.green)]),
+        ),
       InfoRow(l.t('property.street'), p.street),
       InfoRow(l.t('property.minimumPrice'), p.minimumPrice == null ? null : formatPkr(p.minimumPrice, urdu: l.isRtl)),
       InfoRow(l.t('property.expectedFinalPrice'), p.expectedFinalPrice == null ? null : formatPkr(p.expectedFinalPrice, urdu: l.isRtl)),
@@ -599,7 +611,13 @@ class PropertyFormScreen extends ConsumerStatefulWidget {
 
 class _PropertyFormScreenState extends ConsumerState<PropertyFormScreen> {
   final _form = GlobalKey<FormState>();
-  final _c = {for (final k in const ['title', 'society', 'area', 'block', 'street', 'plotNumber', 'size', 'askingPrice', 'minimumPrice', 'expectedFinalPrice', 'bedrooms', 'bathrooms', 'floors', 'description']) k: TextEditingController()};
+  final _c = {
+    for (final k in const ['title', 'society', 'area', 'block', 'phase', 'sector', 'unitNumber', 'street', 'plotNumber', 'size', 'askingPrice', 'minimumPrice', 'expectedFinalPrice', 'bedrooms', 'bathrooms', 'floors', 'description'])
+      k: TextEditingController(),
+  };
+  // Pakistan-specific attributes (null = not recorded).
+  final Map<String, String?> _pk = {'possessionStatus': null, 'constructionStatus': null, 'furnishing': null, 'facing': null};
+  final Map<String, bool> _flags = {'corner': false, 'parkFacing': false, 'mainRoad': false};
   String _type = 'RESIDENTIAL_PLOT';
   String _purpose = 'SALE';
   String _unit = 'SQ_YARD';
@@ -627,6 +645,12 @@ class _PropertyFormScreenState extends ConsumerState<PropertyFormScreen> {
       _purpose = p.listingPurpose;
       _unit = p.sizeUnit;
       _negotiable = p.negotiable;
+      for (final k in _pk.keys) {
+        _pk[k] = p.json[k] as String?;
+      }
+      for (final k in _flags.keys) {
+        _flags[k] = p.json[k] == true;
+      }
       _ownerId = p.ownerId;
       _branchId = p.branchId;
       _lat = p.latitude;
@@ -651,8 +675,11 @@ class _PropertyFormScreenState extends ConsumerState<PropertyFormScreen> {
       'sizeUnit': _unit,
       'askingPrice': _num('askingPrice')!.round(),
       'negotiable': _negotiable,
-      for (final k in const ['title', 'society', 'area', 'block', 'street', 'plotNumber', 'description'])
+      for (final k in const ['title', 'society', 'area', 'block', 'phase', 'sector', 'unitNumber', 'street', 'plotNumber', 'description'])
         if (_c[k]!.text.trim().isNotEmpty) k: _c[k]!.text.trim(),
+      for (final e in _pk.entries)
+        if (e.value != null) e.key: e.value,
+      ..._flags,
       for (final k in const ['minimumPrice', 'expectedFinalPrice'])
         if (_num(k) != null) k: _num(k)!.round(),
       for (final k in const ['bedrooms', 'bathrooms', 'floors'])
@@ -732,6 +759,40 @@ class _PropertyFormScreenState extends ConsumerState<PropertyFormScreen> {
             Expanded(child: AppTextField(label: l.t('property.expectedFinalPrice'), controller: _c['expectedFinalPrice'], keyboardType: TextInputType.number)),
           ]),
           SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(l.t('property.negotiable')), value: _negotiable, onChanged: (v) => setState(() => _negotiable = v)),
+          ExpansionTile(
+            tilePadding: EdgeInsets.zero,
+            initiallyExpanded: _pk.values.any((v) => v != null) || _flags.values.any((v) => v),
+            title: Text(l.t('property.pk.title'), style: Theme.of(context).textTheme.titleSmall),
+            childrenPadding: const EdgeInsets.only(bottom: 8),
+            children: [
+              Row(children: [
+                Expanded(child: AppTextField(label: l.t('property.pk.phase'), controller: _c['phase'])),
+                const SizedBox(width: 8),
+                Expanded(child: AppTextField(label: l.t('property.pk.sector'), controller: _c['sector'])),
+              ]),
+              const SizedBox(height: 12),
+              AppTextField(label: l.t('property.pk.unitNumber'), controller: _c['unitNumber']),
+              for (final (key, group, values) in const [
+                ('possessionStatus', 'possessionStatus', ['POSSESSION', 'NON_POSSESSION', 'BALLOTED', 'UNBALLOTED']),
+                ('constructionStatus', 'constructionStatus', ['EMPTY_PLOT', 'GREY_STRUCTURE', 'UNDER_CONSTRUCTION', 'READY', 'NEEDS_RENOVATION']),
+                ('furnishing', 'furnishing', ['UNFURNISHED', 'SEMI_FURNISHED', 'FURNISHED']),
+                ('facing', 'facing', ['NORTH', 'SOUTH', 'EAST', 'WEST', 'NORTH_EAST', 'NORTH_WEST', 'SOUTH_EAST', 'SOUTH_WEST']),
+              ]) ...[
+                const SizedBox(height: 12),
+                AppDropdown<String>(
+                  label: l.t('property.pk.${const {'possessionStatus': 'possession', 'constructionStatus': 'construction', 'furnishing': 'furnishing', 'facing': 'facing'}[key]}'),
+                  value: _pk[key],
+                  allowEmpty: true,
+                  items: {for (final v in values) v: l.enumLabel(group, v)},
+                  onChanged: (v) => setState(() => _pk[key] = v),
+                ),
+              ],
+              Wrap(spacing: 8, children: [
+                for (final f in _flags.keys)
+                  FilterChip(label: Text(l.t('property.pk.$f')), selected: _flags[f]!, onSelected: (v) => setState(() => _flags[f] = v)),
+              ]),
+            ],
+          ),
           if (residential)
             Row(children: [
               Expanded(child: AppTextField(label: l.t('property.bedrooms'), controller: _c['bedrooms'], keyboardType: TextInputType.number)),

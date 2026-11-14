@@ -22,7 +22,7 @@ import { transactionService } from '../services/transactionService';
 import { agreementService } from '../services/agreementService';
 import { brochureService, type BrochureOptions } from '../services/brochureService';
 import { clientRepository, propertyRepository } from '../repositories/entityRepositories';
-import { leadImportFields, clientListQuery, dealListQuery, documentUploadFields, agreementListQuery, financeReportQuery, followUpListQuery, matchListQuery, ownerListQuery, propertyListQuery, transactionListQuery } from '../validators/crm.schemas';
+import { leadImportFields, propertyImportFields, clientListQuery, dealListQuery, documentUploadFields, agreementListQuery, financeReportQuery, followUpListQuery, matchListQuery, ownerListQuery, propertyListQuery, transactionListQuery } from '../validators/crm.schemas';
 import type { ZodTypeAny } from 'zod';
 
 const EXPORT_FILTERS: Record<ExportResource, ZodTypeAny> = {
@@ -40,6 +40,9 @@ const EXPORT_FILTERS: Record<ExportResource, ZodTypeAny> = {
 import { badRequest, forbidden } from '../utils/AppError';
 import { ERROR_CODES, PERMISSIONS } from '@recrm/shared';
 import { leadService } from '../services/leadService';
+import { verificationService } from '../services/verificationService';
+import { inventoryToolsService } from '../services/inventoryToolsService';
+import { redactOwner } from '../services/ownerService';
 import { pageMeta, sendSuccess } from '../utils/http';
 import { requestMeta } from './authController';
 
@@ -164,6 +167,9 @@ export const negotiationController = {
   async respond(req: Request, res: Response) {
     sendSuccess(res, await dealService.respondToOffer(authOf(req), req.params.id, req.params.subId, req.body.status, requestMeta(req)));
   },
+  async approval(req: Request, res: Response) {
+    sendSuccess(res, await dealService.decideApproval(authOf(req), req.params.id, req.body.decision, req.body.note, requestMeta(req)));
+  },
   async checklist(req: Request, res: Response) {
     sendSuccess(res, await dealService.setChecklistItem(authOf(req), req.params.id, req.body.key, req.body.done, req.body.label, requestMeta(req)));
   },
@@ -219,6 +225,60 @@ export const categoryController = {
   },
   async update(req: Request, res: Response) {
     sendSuccess(res, await categoryService.update(authOf(req), req.params.id, req.body), { message: 'Category updated successfully' });
+  },
+};
+
+export const verificationController = {
+  async get(req: Request, res: Response) {
+    sendSuccess(res, await verificationService.get(authOf(req), req.params.id));
+  },
+  async submit(req: Request, res: Response) {
+    sendSuccess(res, await verificationService.submit(authOf(req), req.params.id, req.body.note, requestMeta(req)), { message: 'Submitted for verification' });
+  },
+  async assign(req: Request, res: Response) {
+    sendSuccess(res, await verificationService.assign(authOf(req), req.params.id, req.body.userId, requestMeta(req)));
+  },
+  async checklist(req: Request, res: Response) {
+    sendSuccess(res, await verificationService.setChecklistItem(authOf(req), req.params.id, req.body.key, req.body.done, req.body.note));
+  },
+  async decide(req: Request, res: Response) {
+    const b = req.body as { decision: never; remarks?: string; nextVerificationAt?: Date | null };
+    sendSuccess(res, await verificationService.decide(authOf(req), req.params.id, b.decision, b.remarks, b.nextVerificationAt, requestMeta(req)));
+  },
+  async queue(req: Request, res: Response) {
+    const q = query<{ status?: never; mine?: boolean }>(req);
+    list(res, q.page, q.limit, await verificationService.queue(authOf(req), q));
+  },
+};
+
+export const inventoryToolsController = {
+  async template(_req: Request, res: Response) {
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="dalliqo-properties-template.xlsx"');
+    res.end(await inventoryToolsService.propertyTemplate());
+  },
+  async importExcel(req: Request, res: Response) {
+    const file = req.file as { buffer: Buffer } | undefined;
+    if (!file) throw badRequest(ERROR_CODES.INVALID_FILE, 'No file received');
+    const opts = propertyImportFields.parse(req.body ?? {});
+    sendSuccess(res, await inventoryToolsService.importProperties(authOf(req), file.buffer, opts), { message: 'Import finished' });
+  },
+  async qr(req: Request, res: Response) {
+    const r = await inventoryToolsService.propertyQr(authOf(req), req.params.id);
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Disposition', `inline; filename="${r.fileName}"`);
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+    res.end(r.png);
+  },
+  async views(req: Request, res: Response) {
+    sendSuccess(res, await inventoryToolsService.listViews(authOf(req), (req.query as { page: never }).page));
+  },
+  async createView(req: Request, res: Response) {
+    sendSuccess(res, await inventoryToolsService.createView(authOf(req), req.body), { status: 201 });
+  },
+  async removeView(req: Request, res: Response) {
+    await inventoryToolsService.removeView(authOf(req), req.params.id);
+    sendSuccess(res, null);
   },
 };
 
@@ -280,10 +340,14 @@ export const clientController = {
 export const ownerController = {
   async list(req: Request, res: Response) {
     const q = query<Q>(req);
-    list(res, q.page, q.limit, await ownerService.list(authOf(req), q));
+    const auth = authOf(req);
+    const see = auth.permissions.includes(PERMISSIONS.DOCUMENTS_SENSITIVE);
+    const r = await ownerService.list(auth, q);
+    list(res, q.page, q.limit, { ...r, items: r.items.map((o) => redactOwner(see, o)) });
   },
   async get(req: Request, res: Response) {
-    sendSuccess(res, await ownerService.get(authOf(req), req.params.id));
+    const auth = authOf(req);
+    sendSuccess(res, redactOwner(auth.permissions.includes(PERMISSIONS.DOCUMENTS_SENSITIVE), await ownerService.get(auth, req.params.id)));
   },
   async create(req: Request, res: Response) {
     sendSuccess(res, await ownerService.create(authOf(req), req.body, requestMeta(req)), { status: 201, message: 'Owner created successfully' });

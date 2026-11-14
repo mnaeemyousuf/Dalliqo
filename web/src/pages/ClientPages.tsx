@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { BUYING_TIMELINES, CLIENT_PURPOSES, CLIENT_SOURCES, CLIENT_STATUSES, LEAD_TEMPERATURES, LOST_REASONS, PERMISSIONS, PRIORITIES, PROPERTY_TYPES, SIZE_UNITS } from '@recrm/shared';
 import { LeadImportModal, LeadPanel, TemperatureBadge } from '@/pages/Phase3Pages';
+import { SavedViews } from '@/pages/Phase4Pages';
 import { toApiError } from '@/api/client';
 import { clientApi } from '@/api/endpoints';
 import type { Client, Requirement } from '@/api/types';
@@ -340,6 +341,7 @@ export function ClientsPage() {
         }
       />
       <LeadImportModal open={importOpen} onClose={() => setImportOpen(false)} />
+      <div className="mb-3"><SavedViews page="clients" params={filters} onApply={(p) => setFilters({ ...Object.fromEntries(Object.keys(filters).filter((k) => k !== 'view' && k !== 'sizeUnit').map((k) => [k, ''])), ...p, page: '1' } as never)} /></div>
       <FilterBar
         activeAdvanced={[filters.area, filters.block, filters.minSize, filters.maxSize, filters.minBudget, filters.maxBudget, filters.assignedTo, filters.source, filters.unassigned].filter(Boolean).length}
         advanced={

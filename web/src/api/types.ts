@@ -41,6 +41,7 @@ import type {
   PlanDefinition,
   PlanKey,
   PossessionStatus,
+  VerificationStatus,
 } from '@recrm/shared';
 
 export interface ApiSuccess<T> {
@@ -262,6 +263,8 @@ export interface Owner extends Versioned {
   email?: string;
   address?: string;
   notes?: string;
+  cnic?: string;
+  cnicMasked?: string;
   propertyCount: number;
   properties?: Property[];
 }
@@ -315,6 +318,32 @@ export interface Property extends Versioned {
   coOwnerIds?: string[];
   agentIds?: string[];
   priceHistory?: { price: number; at: string; by?: string; note?: string }[];
+  verification?: { status: VerificationStatus; assignedTo?: string | null; submittedAt?: string | null; nextVerificationAt?: string | null };
+}
+
+export interface Verification {
+  status: VerificationStatus;
+  assignedTo?: string | null;
+  submittedBy?: string | null;
+  submittedAt?: string | null;
+  checklist: { key: string; done: boolean; note?: string | null; doneBy?: string | null; doneAt?: string | null }[];
+  decision?: string | null;
+  remarks?: string | null;
+  verifiedBy?: string | null;
+  verifiedAt?: string | null;
+  nextVerificationAt?: string | null;
+  history: { status: VerificationStatus; action: string; remarks?: string | null; by?: string | null; at: string }[];
+  missingDocuments: string[];
+  expiringDocuments: { fileName: string; category?: string; expiresAt: string }[];
+}
+
+export interface SavedView {
+  _id: string;
+  page: string;
+  name: string;
+  params: Record<string, string>;
+  shared: boolean;
+  userId: string;
 }
 
 export interface Match {
@@ -415,6 +444,7 @@ export interface Deal {
   tokenAmount?: number;
   offers?: { _id: string; party: OfferParty; amount: number; status: OfferStatus; note?: string; at: string; by?: string }[];
   checklist?: { key: string; label?: string; done: boolean; doneAt?: string | null; doneBy?: string | null }[];
+  approval?: { status: 'PENDING' | 'APPROVED' | 'REJECTED'; action: 'CLOSE_WON'; requestedBy?: string; requestedAt?: string; decidedBy?: string | null; decidedAt?: string | null; note?: string | null } | null;
   expectedCloseDate?: string | null;
   closedAt?: string | null;
   notes?: string;
@@ -556,7 +586,7 @@ export interface MyDay {
 
 export interface Settings {
   matching: { weights: Record<'type' | 'location' | 'budget' | 'size' | 'purpose', number>; storeThreshold: number; notifyThreshold: number; crossBranch: boolean };
-  commission: { defaultBuyerPct: number; defaultSellerPct: number; autoCreateIncome: boolean };
+  commission: { defaultBuyerPct: number; defaultSellerPct: number; autoCreateIncome: boolean; closeApprovalRequired?: boolean };
   sqftPerUnit: Record<SizeUnit, number>;
   reminders: { defaultMinutesBefore: number };
   leadScoring: LeadScoringSettings;

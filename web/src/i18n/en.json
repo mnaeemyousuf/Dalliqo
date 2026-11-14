@@ -111,7 +111,8 @@
       "business": "Business",
       "admin": "Administration"
     },
-    "platform": "Platform admin"
+    "platform": "Platform admin",
+    "verifications": "Verifications"
   },
   "topbar": {
     "searchPlaceholder": "Search clients, properties, owners…",
@@ -375,7 +376,7 @@
     "share": "Share location",
     "verify": "Confirm availability",
     "verified": "Availability confirmed",
-    "verifiedAgo": "Verified {{time}}",
+    "verifiedAgo": "Availability confirmed {{time}}",
     "needsVerification": "Needs verification",
     "verifyNote": "Note (optional)",
     "verifyHint": "Confirm with the owner that this property is still on offer at the listed price, then record it here.",
@@ -412,6 +413,23 @@
       },
       "oldest": "Longest on the market",
       "days": "{{n}} days"
+    },
+    "import": {
+      "title": "Import properties from Excel",
+      "hint": "Use the template (type, size, unit and asking price are required). Owners are matched by mobile number or created. Duplicate plots and invalid rows are skipped and listed.",
+      "agent": "Listing agent",
+      "duplicateOf": "already listed as {{id}}"
+    },
+    "qr": {
+      "button": "QR code",
+      "title": "Property QR code",
+      "download": "Download PNG",
+      "hint": "Print it on signboards or the property file — scanning opens this listing in Dalliqo."
+    },
+    "map": {
+      "view": "Map",
+      "summary": "{{shown}} of {{total}} listings have a location.",
+      "missing": "Add coordinates in the property form to show the rest."
     }
   },
   "owner": {
@@ -426,7 +444,9 @@
     "noOwners": "No owners yet",
     "searchPlaceholder": "Search owners…",
     "deleteConfirm": "Delete {{name}}?",
-    "propertyCount_one": "{{count}} property"
+    "propertyCount_one": "{{count}} property",
+    "cnic": "CNIC",
+    "cnicHint": "Visible only to members allowed to see identity data"
   },
   "match": {
     "title": "Matches",
@@ -504,7 +524,8 @@
     "allowed": "PDF, images, Word or Excel up to 25 MB",
     "chooseRecord": "Open a client, property or owner to upload documents to it.",
     "rename": "Rename",
-    "renamed": "Document renamed"
+    "renamed": "Document renamed",
+    "expiresAt": "Expires on"
   },
   "report": {
     "title": "Reports & exports",
@@ -548,7 +569,8 @@
       "administration": "Administration",
       "deals": "Deals & commission",
       "finance": "Income & expense",
-      "agreements": "Agreements"
+      "agreements": "Agreements",
+      "verification": "Verification"
     },
     "template": "Start from a template",
     "access": "Access",
@@ -560,7 +582,13 @@
       "AGENT": "Agent",
       "SALESPERSON": "Salesperson",
       "ACCOUNTANT": "Accountant (reports)",
-      "VIEWER": "Read-only viewer"
+      "VIEWER": "Read-only viewer",
+      "BRANCH_MANAGER": "Branch manager",
+      "SALES_MANAGER": "Sales manager",
+      "PROPERTY_MANAGER": "Property manager",
+      "FINANCE_MANAGER": "Finance manager",
+      "MARKETING_MANAGER": "Marketing manager",
+      "VERIFICATION_OFFICER": "Verification officer"
     }
   },
   "notification": {
@@ -721,7 +749,15 @@
       "AGREEMENT": "Agreement",
       "IDENTITY": "Identity",
       "PROPERTY_DOCUMENT": "Property document",
-      "OTHER": "Other"
+      "OTHER": "Other",
+      "CNIC": "CNIC",
+      "REGISTRY": "Registry",
+      "ALLOTMENT_LETTER": "Allotment letter",
+      "TRANSFER_LETTER": "Transfer letter",
+      "SOCIETY_NOC": "Society NOC",
+      "PROPERTY_TAX": "Property tax",
+      "DUES_RECORD": "Dues record",
+      "POSSESSION": "Possession"
     },
     "matchStatus": {
       "NEW": "New",
@@ -838,7 +874,12 @@
       "agreements:create": "Draft agreements",
       "agreements:update": "Edit agreements, change status",
       "agreements:delete": "Delete agreements",
-      "templates:manage": "Manage agreement templates"
+      "templates:manage": "Manage agreement templates",
+      "properties:view_floor_price": "See owners' minimum price",
+      "documents:read_sensitive": "See CNIC & title documents",
+      "verification:submit": "Submit for verification",
+      "verification:decide": "Approve / reject verifications",
+      "deals:approve": "Approve deal closings"
     },
     "dealStage": {
       "INQUIRY": "Inquiry",
@@ -1104,6 +1145,12 @@
         "COMMISSION_RECEIVED": "Commission received",
         "DEAL_CLOSED": "Deal closed"
       }
+    },
+    "approval": {
+      "setting": "Closing a deal as won needs approval",
+      "settingHint": "Agents can request it; members with “Approve deal closings” confirm it.",
+      "pending": "Waiting for approval to close as won.",
+      "requestedBy": "Requested by {{name}} {{time}}"
     }
   },
   "finance": {
@@ -1416,6 +1463,10 @@
       "AGREEMENT_EXPIRING": {
         "title": "Agreement expiring",
         "hint": "Notify before a rental or sale agreement reaches its end date."
+      },
+      "VERIFICATION_DUE": {
+        "title": "Re-verification & document expiry",
+        "hint": "Remind before an approved listing is due for re-verification, and before uploaded documents (NOC, tax receipts) expire."
       }
     }
   },
@@ -1427,5 +1478,71 @@
     "paidUntil": "Paid until",
     "amount": "Payment received (PKR)",
     "reference": "Payment reference"
+  },
+  "views": {
+    "save": "Save view",
+    "saved": "View saved",
+    "shared": "team",
+    "shareWithTeam": "Share with the whole team"
+  },
+  "verification": {
+    "title": "Verification",
+    "disclaimer": "Internal verification by your team only. It is not a government or legal confirmation of ownership.",
+    "status": {
+      "NOT_SUBMITTED": "Not submitted",
+      "PENDING": "Waiting",
+      "IN_REVIEW": "In review",
+      "CHANGES_REQUESTED": "Sent back",
+      "APPROVED": "Verified",
+      "REJECTED": "Rejected"
+    },
+    "verifiedOn": "Verified {{date}} by {{name}}",
+    "next": "next check {{date}}",
+    "remarks": "Remarks",
+    "notePlaceholder": "Note for the verification officer (optional)",
+    "submit": "Submit for verification",
+    "resubmit": "Submit again",
+    "submitted": "Submitted for verification",
+    "decided": "Verification updated",
+    "approve": "Approve",
+    "sendBack": "Send back",
+    "reject": "Reject",
+    "assignTo": "Verification officer",
+    "checklist": "Checklist",
+    "checklistLocked": "Submit the listing to work on the checklist.",
+    "docMissing": "Document missing",
+    "attention": "Needs attention",
+    "missing": "No document uploaded for: {{item}}",
+    "expiring": "\"{{name}}\" expires on {{date}}",
+    "uploadHint": "Upload documents in the Documents tab with the matching category.",
+    "nextDate": "Next verification",
+    "nextHint": "Leave empty for 6 months from today",
+    "decisionTitle": {
+      "APPROVED": "Approve verification",
+      "REJECTED": "Reject verification",
+      "CHANGES_REQUESTED": "Send back for changes"
+    },
+    "items": {
+      "OWNER_IDENTITY": "Owner's identity (CNIC)",
+      "OWNERSHIP_PROOF": "Ownership proof (registry / allotment / transfer)",
+      "SOCIETY_NOC": "Society NOC",
+      "PROPERTY_TAX": "Property tax paid",
+      "DUES_CLEARED": "Outstanding dues cleared",
+      "POSSESSION_CONFIRMED": "Possession confirmed",
+      "SITE_INSPECTED": "Site inspected",
+      "PRICE_CONFIRMED": "Price confirmed with owner"
+    },
+    "actions": {
+      "submitted": "Submitted",
+      "assigned": "Assigned",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "changes_requested": "Sent back"
+    },
+    "queueTitle": "Verification queue",
+    "queueSubtitle": "Listings waiting for document and site checks",
+    "openOnly": "Open items",
+    "assignedToMe": "Assigned to me",
+    "queueEmpty": "Nothing waiting for verification"
   }
 }

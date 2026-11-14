@@ -35,6 +35,13 @@ export const PERMISSIONS = {
   DOCUMENTS_READ: 'documents:read',
   DOCUMENTS_UPLOAD: 'documents:upload',
   DOCUMENTS_DELETE: 'documents:delete',
+  /** CNIC copies, title documents and owners' CNIC numbers. */
+  DOCUMENTS_SENSITIVE: 'documents:read_sensitive',
+
+  /** Submit listings for verification and work the checklist. */
+  VERIFICATION_SUBMIT: 'verification:submit',
+  /** Approve, reject or send back verifications (verification officers). */
+  VERIFICATION_DECIDE: 'verification:decide',
 
   /** Deals the user is an agent on. */
   DEALS_READ: 'deals:read',
@@ -45,6 +52,8 @@ export const PERMISSIONS = {
   DEALS_DELETE: 'deals:delete',
   /** Record commission payments received and agent payouts. */
   COMMISSIONS_MANAGE: 'commissions:manage',
+  /** Approve deals closing as won when approvals are switched on. */
+  DEALS_APPROVE: 'deals:approve',
 
   /** Income & expense entries and the finance report. */
   FINANCE_READ: 'finance:read',
@@ -102,7 +111,8 @@ export const PERMISSION_GROUPS: Record<string, readonly Permission[]> = {
     PERMISSIONS.FOLLOWUPS_DELETE,
   ],
   notes: [PERMISSIONS.NOTES_CREATE, PERMISSIONS.NOTES_MANAGE_ALL],
-  documents: [PERMISSIONS.DOCUMENTS_READ, PERMISSIONS.DOCUMENTS_UPLOAD, PERMISSIONS.DOCUMENTS_DELETE],
+  documents: [PERMISSIONS.DOCUMENTS_READ, PERMISSIONS.DOCUMENTS_UPLOAD, PERMISSIONS.DOCUMENTS_DELETE, PERMISSIONS.DOCUMENTS_SENSITIVE],
+  verification: [PERMISSIONS.VERIFICATION_SUBMIT, PERMISSIONS.VERIFICATION_DECIDE],
   deals: [
     PERMISSIONS.DEALS_READ,
     PERMISSIONS.DEALS_READ_ALL,
@@ -110,6 +120,7 @@ export const PERMISSION_GROUPS: Record<string, readonly Permission[]> = {
     PERMISSIONS.DEALS_UPDATE,
     PERMISSIONS.DEALS_DELETE,
     PERMISSIONS.COMMISSIONS_MANAGE,
+    PERMISSIONS.DEALS_APPROVE,
   ],
   finance: [PERMISSIONS.FINANCE_READ, PERMISSIONS.FINANCE_CREATE, PERMISSIONS.FINANCE_UPDATE, PERMISSIONS.FINANCE_DELETE],
   agreements: [

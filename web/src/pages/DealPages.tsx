@@ -21,6 +21,7 @@ import { BranchField } from '@/components/branches';
 import { ActivityPanel, DocumentsPanel, NotesPanel } from '@/components/domain/panels';
 import { AgreementsPanel } from '@/pages/AgreementPages';
 import { ChecklistPanel, NegotiationPanel } from '@/pages/Phase3Pages';
+import { ApprovalBanner } from '@/pages/Phase4Pages';
 import { Badge, Button, Card, ConfirmDialog, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Table, Tabs, Textarea, type BadgeColor, type Column, ViewToggle, MetricTile } from '@/components/ui';
 import { formatDate, formatPkr } from '@/lib/format';
 import { useDebounce, useEnumOptions, useErrorText, useMembers, useOnError, useUrlState, useOpenOnNew } from '@/lib/hooks';
@@ -408,6 +409,7 @@ export function DealDetailPage() {
         )}
         {d.stage === 'CLOSED_LOST' && d.lostReason && <p className="w-full pt-1 text-xs text-red-600">{t('deal.lostReason')}: {d.lostReason}</p>}
       </Card>
+      <ApprovalBanner deal={d} />
       <div className="stagger mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <MetricTile tone="brand" label={t('deal.expected')} value={formatPkr(s.expected.total)} />
         <MetricTile tone="good" label={t('deal.received')} value={formatPkr(s.received.total)} />

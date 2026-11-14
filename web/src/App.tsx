@@ -42,6 +42,7 @@ const NotificationsPage = page(admin, 'NotificationsPage');
 const AuditPage = page(admin, 'AuditPage');
 const SettingsPage = page(admin, 'SettingsPage');
 const PlatformPage = page(() => import('@/pages/Phase3Pages'), 'PlatformPage');
+const VerificationsPage = page(() => import('@/pages/Phase4Pages'), 'VerificationsPage');
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -105,6 +106,7 @@ export function AppRoutes() {
         <Route path="audit" element={<AuditPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="platform" element={<PlatformPage />} />
+        <Route path="verifications" element={<VerificationsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

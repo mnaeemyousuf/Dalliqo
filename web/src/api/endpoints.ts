@@ -28,6 +28,8 @@ import type {
   Property,
   Session,
   LeadReport,
+  Verification,
+  SavedView,
   InventoryReport,
   ImportResult,
   SubscriptionInfo,
@@ -88,6 +90,7 @@ export const dealApi = {
   remove: (id: string) => api<null>({ method: 'DELETE', url: `/deals/${id}` }),
   addOffer: (id: string, body: Body) => api<Deal>({ method: 'POST', url: `/deals/${id}/offers`, data: body }),
   respondOffer: (id: string, offerId: string, status: 'ACCEPTED' | 'REJECTED' | 'WITHDRAWN') => api<Deal>({ method: 'POST', url: `/deals/${id}/offers/${offerId}/respond`, data: { status } }),
+  decideApproval: (id: string, decision: 'APPROVED' | 'REJECTED', note?: string) => api<Deal>({ method: 'POST', url: `/deals/${id}/approval`, data: { decision, ...(note ? { note } : {}) } }),
   setChecklist: (id: string, key: string, done: boolean, label?: string) => api<Deal>({ method: 'POST', url: `/deals/${id}/checklist`, data: clean({ key, done, label }) }),
   report: (params: Params) => api<CommissionReport>({ url: '/reports/commissions', params: clean(params) }),
 };
@@ -204,6 +207,55 @@ export const clientApi = {
   },
 };
 
+async function blobDownload(url: string, fileName: string) {
+  try {
+    const r = await http.get<Blob>(url, { responseType: 'blob' });
+    const href = URL.createObjectURL(r.data);
+    const a = document.createElement('a');
+    a.href = href;
+    a.download = fileName;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(href), 1000);
+  } catch (e) {
+    throw toApiError(e);
+  }
+}
+
+export const verificationApi = {
+  get: (id: string) => api<Verification>({ url: `/properties/${id}/verification` }),
+  submit: (id: string, note?: string) => api<Property>({ method: 'POST', url: `/properties/${id}/verification/submit`, data: clean({ note }) ?? {} }),
+  assign: (id: string, userId: string) => api<Property>({ method: 'POST', url: `/properties/${id}/verification/assign`, data: { userId } }),
+  checklist: (id: string, key: string, done: boolean) => api<Property>({ method: 'POST', url: `/properties/${id}/verification/checklist`, data: { key, done } }),
+  decide: (id: string, body: Body) => api<Property>({ method: 'POST', url: `/properties/${id}/verification/decide`, data: clean(body) }),
+  queue: (params: Params) => apiPage<Property>('/verifications', params),
+};
+
+export const inventoryApi = {
+  async importProperties(file: File, opts: { agentId?: string } = {}) {
+    const form = new FormData();
+    form.append('file', file);
+    if (opts.agentId) form.append('agentId', opts.agentId);
+    try {
+      const r = await http.post<{ data: ImportResult }>('/properties/import', form, { timeout: 5 * 60_000 });
+      return r.data.data;
+    } catch (e) {
+      throw toApiError(e);
+    }
+  },
+  downloadTemplate: () => blobDownload('/properties/import/template', 'dalliqo-properties-template.xlsx'),
+  async qrObjectUrl(id: string) {
+    try {
+      const r = await http.get<Blob>(`/properties/${id}/qr`, { responseType: 'blob' });
+      return URL.createObjectURL(r.data);
+    } catch (e) {
+      throw toApiError(e);
+    }
+  },
+  views: (page: string) => api<SavedView[]>({ url: '/saved-views', params: { page } }),
+  createView: (body: Body) => api<SavedView>({ method: 'POST', url: '/saved-views', data: body }),
+  removeView: (id: string) => api<null>({ method: 'DELETE', url: `/saved-views/${id}` }),
+};
+
 export const subscriptionApi = {
   get: () => api<SubscriptionInfo>({ url: '/subscription' }),
   request: (plan: string, cycle: string, note?: string) => api<SubscriptionInfo>({ method: 'POST', url: '/subscription/request', data: clean({ plan, cycle, note }) }),
@@ -250,7 +302,7 @@ export const propertyApi = {
 
 export const documentApi = {
   list: (params: Params) => apiPage<FileAsset>('/documents', params),
-  async upload(fields: { entityType: string; entityId: string; category: string; fileName?: string }, file: File, onProgress?: (p: number) => void) {
+  async upload(fields: { entityType: string; entityId: string; category: string; fileName?: string; expiresAt?: string }, file: File, onProgress?: (p: number) => void) {
     const form = new FormData();
     Object.entries(fields).forEach(([k, v]) => v && form.append(k, v));
     form.append('file', file);

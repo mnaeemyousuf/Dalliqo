@@ -22,7 +22,7 @@ import { useUi } from '@/store/ui';
  * Permission templates for members. The member's role stays MEMBER; a template only
  * pre-ticks a proven permission set, which the API then enforces permission by permission.
  */
-const TEMPLATES = ['MEMBER', 'MANAGER', 'AGENT', 'SALESPERSON', 'ACCOUNTANT', 'VIEWER'] as const;
+const TEMPLATES = ['MEMBER', 'MANAGER', 'BRANCH_MANAGER', 'SALES_MANAGER', 'AGENT', 'SALESPERSON', 'PROPERTY_MANAGER', 'VERIFICATION_OFFICER', 'FINANCE_MANAGER', 'ACCOUNTANT', 'MARKETING_MANAGER', 'VIEWER'] as const;
 
 function templateOf(perms: readonly string[]): (typeof TEMPLATES)[number] | null {
   const key = [...perms].sort().join(',');
@@ -426,6 +426,8 @@ function MatchingSettings() {
             <div className="sm:col-span-2">
               <Checkbox label={t('finance.autoIncome')} checked={draft.commission.autoCreateIncome !== false} disabled={!canManage} onChange={(on) => setDraft({ ...draft, commission: { ...draft.commission, autoCreateIncome: on } })} />
               <p className="ms-6 text-xs text-muted">{t('finance.autoIncomeHint')}</p>
+              <Checkbox label={t('deal.approval.setting')} checked={!!draft.commission.closeApprovalRequired} disabled={!canManage} onChange={(on) => setDraft({ ...draft, commission: { ...draft.commission, closeApprovalRequired: on } })} />
+              <p className="ms-6 text-xs text-muted">{t('deal.approval.settingHint')}</p>
             </div>
           </>
         )}

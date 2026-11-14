@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { Schema, model, type Types } from 'mongoose';
 import {
+  APPROVAL_STATUSES,
+  type ApprovalStatus,
   OFFER_PARTIES,
   OFFER_STATUSES,
   type OfferParty,
@@ -80,6 +82,8 @@ export interface DealDoc extends SyncDoc {
   offers: DealOffer[];
   tokenAmount?: number;
   checklist: DealChecklistEntry[];
+  /** Pending request to close the deal as won (when approvals are required). */
+  approval?: { status: ApprovalStatus; action: 'CLOSE_WON'; requestedBy?: Types.ObjectId; requestedAt?: Date; decidedBy?: Types.ObjectId | null; decidedAt?: Date | null; note?: string | null } | null;
   agreedPrice?: number;
   finalPrice?: number;
   expectedCloseDate?: Date | null;
@@ -140,6 +144,21 @@ const schema = new Schema<DealDoc>(
       default: [],
     },
     tokenAmount: { type: Number, min: 0 },
+    approval: {
+      type: new Schema(
+        {
+          status: { type: String, enum: APPROVAL_STATUSES, required: true },
+          action: { type: String, enum: ['CLOSE_WON'], required: true },
+          requestedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+          requestedAt: Date,
+          decidedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+          decidedAt: { type: Date, default: null },
+          note: { type: String, maxlength: 500, default: null },
+        },
+        { _id: false },
+      ),
+      default: null,
+    },
     checklist: {
       type: [
         {

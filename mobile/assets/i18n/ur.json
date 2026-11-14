@@ -344,7 +344,25 @@
     "verifyHint": "مالک سے تصدیق کریں کہ یہ پراپرٹی اب بھی درج قیمت پر دستیاب ہے، پھر یہاں درج کریں۔",
     "verification": "تصدیق",
     "recentlyVerified": "حال ہی میں تصدیق شدہ",
-    "matches_one": "{{count}} میچز"
+    "matches_one": "{{count}} میچز",
+    "pk": {
+      "title": "پاکستانی تفصیلات",
+      "phase": "فیز",
+      "sector": "سیکٹر",
+      "unitNumber": "مکان / یونٹ / فائل نمبر",
+      "possession": "قبضہ",
+      "development": "ترقی",
+      "construction": "تعمیر",
+      "furnishing": "فرنیچر",
+      "facing": "رخ",
+      "expires": "دستیابی کی آخری تاریخ",
+      "expiresHint": "اس تاریخ کے بعد لسٹنگ میعاد ختم ہو جائے گی",
+      "corner": "کارنر",
+      "parkFacing": "پارک فیسنگ",
+      "mainRoad": "مین روڈ",
+      "priceHistory": "قیمت کی تاریخ",
+      "duplicateConfirm": "یہ پلاٹ پہلے سے {{id}} کے طور پر درج ہے۔ پھر بھی الگ لسٹنگ محفوظ کریں؟"
+    }
   },
   "owner": {
     "title": "مالکان",
@@ -358,7 +376,9 @@
     "noOwners": "ابھی کوئی مالک نہیں",
     "searchPlaceholder": "مالکان تلاش کریں…",
     "deleteConfirm": "{{name}} کو حذف کریں؟",
-    "propertyCount_one": "{{count}} پراپرٹیز"
+    "propertyCount_one": "{{count}} پراپرٹیز",
+    "cnic": "شناختی کارڈ نمبر",
+    "cnicHint": "صرف وہ ارکان دیکھ سکتے ہیں جنہیں شناختی معلومات کی اجازت ہے"
   },
   "match": {
     "title": "میچز",
@@ -480,7 +500,8 @@
       "administration": "انتظامیہ",
       "deals": "ڈیلز اور کمیشن",
       "finance": "آمدنی و اخراجات",
-      "agreements": "معاہدے"
+      "agreements": "معاہدے",
+      "verification": "تصدیق"
     },
     "template": "ٹیمپلیٹ سے شروع کریں",
     "access": "رسائی",
@@ -492,7 +513,13 @@
       "AGENT": "ایجنٹ",
       "SALESPERSON": "سیلز پرسن",
       "ACCOUNTANT": "اکاؤنٹنٹ (رپورٹس)",
-      "VIEWER": "صرف دیکھنے والا"
+      "VIEWER": "صرف دیکھنے والا",
+      "BRANCH_MANAGER": "برانچ مینیجر",
+      "SALES_MANAGER": "سیلز مینیجر",
+      "PROPERTY_MANAGER": "پراپرٹی مینیجر",
+      "FINANCE_MANAGER": "فنانس مینیجر",
+      "MARKETING_MANAGER": "مارکیٹنگ مینیجر",
+      "VERIFICATION_OFFICER": "تصدیقی افسر"
     }
   },
   "notification": {
@@ -651,7 +678,15 @@
       "AGREEMENT": "معاہدہ",
       "IDENTITY": "شناخت",
       "PROPERTY_DOCUMENT": "پراپرٹی دستاویز",
-      "OTHER": "دیگر"
+      "OTHER": "دیگر",
+      "CNIC": "شناختی کارڈ",
+      "REGISTRY": "رجسٹری",
+      "ALLOTMENT_LETTER": "الاٹمنٹ لیٹر",
+      "TRANSFER_LETTER": "ٹرانسفر لیٹر",
+      "SOCIETY_NOC": "سوسائٹی این او سی",
+      "PROPERTY_TAX": "پراپرٹی ٹیکس",
+      "DUES_RECORD": "واجبات کا ریکارڈ",
+      "POSSESSION": "قبضہ"
     },
     "matchStatus": {
       "NEW": "نیا",
@@ -767,7 +802,12 @@
       "agreements:create": "معاہدوں کے مسودے بنائیں",
       "agreements:update": "معاہدوں میں ترمیم، حیثیت تبدیل",
       "agreements:delete": "معاہدے حذف کریں",
-      "templates:manage": "معاہدوں کے نمونے منظم کریں"
+      "templates:manage": "معاہدوں کے نمونے منظم کریں",
+      "properties:view_floor_price": "مالک کی کم از کم قیمت دیکھیں",
+      "documents:read_sensitive": "شناختی کارڈ اور ملکیتی کاغذات دیکھیں",
+      "verification:submit": "تصدیق کے لیے بھیجیں",
+      "verification:decide": "تصدیق منظور / مسترد کریں",
+      "deals:approve": "ڈیل بند کرنے کی منظوری"
     },
     "dealStage": {
       "INQUIRY": "انکوائری",
@@ -1170,6 +1210,12 @@
         "COMMISSION_RECEIVED": "کمیشن وصول",
         "DEAL_CLOSED": "ڈیل بند"
       }
+    },
+    "approval": {
+      "setting": "ڈیل کامیاب بند کرنے کے لیے منظوری درکار",
+      "settingHint": "ایجنٹ درخواست دے سکتے ہیں؛ \"ڈیل بند کرنے کی منظوری\" والے ارکان تصدیق کرتے ہیں۔",
+      "pending": "کامیاب بند کرنے کی منظوری کا انتظار ہے۔",
+      "requestedBy": "{{name}} نے {{time}} درخواست کی"
     }
   },
   "finance": {
@@ -1333,5 +1379,28 @@
     },
     "temperature": "درجہ",
     "score": "لیڈ اسکور"
+  },
+  "verification": {
+    "title": "تصدیق",
+    "disclaimer": "یہ صرف آپ کی ٹیم کی اندرونی تصدیق ہے۔ یہ ملکیت کی سرکاری یا قانونی تصدیق نہیں ہے۔",
+    "status": {
+      "NOT_SUBMITTED": "نہیں بھیجی",
+      "PENDING": "منتظر",
+      "IN_REVIEW": "جانچ جاری",
+      "CHANGES_REQUESTED": "واپس بھیجی",
+      "APPROVED": "تصدیق شدہ",
+      "REJECTED": "مسترد"
+    },
+    "items": {
+      "OWNER_IDENTITY": "مالک کی شناخت (شناختی کارڈ)",
+      "OWNERSHIP_PROOF": "ملکیت کا ثبوت (رجسٹری / الاٹمنٹ / ٹرانسفر)",
+      "SOCIETY_NOC": "سوسائٹی این او سی",
+      "PROPERTY_TAX": "پراپرٹی ٹیکس ادا",
+      "DUES_CLEARED": "واجبات ادا",
+      "POSSESSION_CONFIRMED": "قبضے کی تصدیق",
+      "SITE_INSPECTED": "سائٹ کا معائنہ",
+      "PRICE_CONFIRMED": "مالک سے قیمت کی تصدیق"
+    },
+    "next": "اگلی جانچ {{date}}"
   }
 }

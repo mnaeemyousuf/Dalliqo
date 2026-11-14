@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import sharp from 'sharp';
-import { ERROR_CODES, type DocumentCategory, type DocumentEntityType, type MediaKind } from '@recrm/shared';
+import { ERROR_CODES, type DocumentCategory, type DocumentEntityType, type MediaKind, PERMISSIONS, SENSITIVE_DOCUMENT_CATEGORIES, isSensitiveCategory } from '@recrm/shared';
 import { env } from '../config/env';
 import { Document, PropertyMedia, type FileAssetDoc } from '../models/FileAsset';
 import { propertyRepository } from '../repositories/entityRepositories';
 import type { AuthContext, TenantContext } from '../types/context';
-import { AppError, badRequest, notFound } from '../utils/AppError';
+import { AppError, badRequest, notFound, forbidden } from '../utils/AppError';
 import { activityService } from './activityService';
 import { auditService } from './auditService';
 import { assertEntity, entityInfo } from './noteService';
@@ -142,6 +142,12 @@ function withUrls(f: FileAssetDoc) {
   };
 }
 
+/** CNIC copies and title documents need documents:read_sensitive (system contexts without permissions pass). */
+function canSeeSensitive(ctx: TenantContext): boolean {
+  const perms = (ctx as Partial<AuthContext>).permissions;
+  return !perms || perms.includes(PERMISSIONS.DOCUMENTS_SENSITIVE);
+}
+
 export const mediaService = {
   // ── Property gallery (images & videos, public URLs) ──
 
@@ -223,10 +229,11 @@ export const mediaService = {
 
   async uploadDocument(
     auth: AuthContext,
-    input: { entityType: DocumentEntityType; entityId: string; category?: DocumentCategory; fileName?: string },
+    input: { entityType: DocumentEntityType; entityId: string; category?: DocumentCategory; fileName?: string; expiresAt?: Date | null },
     file: UploadedFile | undefined,
   ) {
     if (!file) throw badRequest(ERROR_CODES.INVALID_FILE, 'No file received');
+    if (isSensitiveCategory(input.category) && !canSeeSensitive(auth)) throw forbidden(ERROR_CODES.FORBIDDEN, 'You cannot upload identity or title documents');
     await subscriptionService.assertLimit(auth, 'storageMb', file.size / 1_048_576);
     const { label, branchId } = await entityInfo(auth, input.entityType, input.entityId);
     const detected = await sniff(file);
@@ -242,6 +249,7 @@ export const mediaService = {
       entityId: input.entityId,
       branchId,
       category: input.category ?? 'OTHER',
+      expiresAt: input.expiresAt ?? null,
       fileName: safeDisplayName(input.fileName ?? file.originalname),
       isPrivate: true,
       uploadedBy: auth.userId,
@@ -260,6 +268,8 @@ export const mediaService = {
     if (q.entityType) filter.entityType = q.entityType;
     if (q.entityId) filter.entityId = q.entityId;
     if (q.category) filter.category = q.category;
+    // CNIC copies and title documents are listed only for members allowed to see them.
+    if (!canSeeSensitive(ctx)) filter.category = q.category && !isSensitiveCategory(q.category) ? q.category : { $nin: SENSITIVE_DOCUMENT_CATEGORIES };
     const [items, total] = await Promise.all([
       Document.find(filter).sort({ createdAt: -1 }).skip((q.page - 1) * q.limit).limit(q.limit).populate('uploadedBy', 'fullName').lean<FileAssetDoc[]>(),
       Document.countDocuments(filter),
@@ -269,19 +279,24 @@ export const mediaService = {
 
   async getDocument(ctx: TenantContext, id: string) {
     const d = await Document.findOne({ businessId: ctx.businessId, _id: id, deletedAt: null, ...branchFilter(ctx) }).lean<FileAssetDoc>();
-    if (!d) throw notFound(ERROR_CODES.DOCUMENT_NOT_FOUND, 'Document not found');
+    if (!d || (isSensitiveCategory(d.category) && !canSeeSensitive(ctx))) throw notFound(ERROR_CODES.DOCUMENT_NOT_FOUND, 'Document not found');
     return d;
   },
 
   /** Short-lived link for preview / download / share. */
   async downloadUrl(ctx: TenantContext, id: string, expiresInSec = 600) {
     const d = await this.getDocument(ctx, id);
+    // Every access to an identity or title document is traceable.
+    if (isSensitiveCategory(d.category)) await auditService.record(ctx, { action: 'document.sensitive_accessed', entityType: 'document', entityId: d._id, entityLabel: d.fileName });
     const url = storage().signedUrl(d.storageKey, { resourceType: resourceTypeOf(d.kind), mimeType: d.mimeType, expiresInSec, fileName: d.fileName });
     return { url, expiresAt: new Date(Date.now() + expiresInSec * 1000), fileName: d.fileName, mimeType: d.mimeType };
   },
 
-  async updateDocument(auth: AuthContext, id: string, input: { fileName?: string; category?: DocumentCategory }) {
+  async updateDocument(auth: AuthContext, id: string, input: { fileName?: string; category?: DocumentCategory; expiresAt?: Date | null }) {
+    await this.getDocument(auth, id);
+    if (isSensitiveCategory(input.category) && !canSeeSensitive(auth)) throw forbidden();
     const set: Record<string, unknown> = { updatedBy: auth.userId };
+    if (input.expiresAt !== undefined) set.expiresAt = input.expiresAt;
     if (input.fileName) set.fileName = safeDisplayName(input.fileName);
     if (input.category) set.category = input.category;
     const d = await Document.findOneAndUpdate({ businessId: auth.businessId, _id: id, deletedAt: null, ...branchFilter(auth) }, { $set: set }, { new: true }).lean<FileAssetDoc>();

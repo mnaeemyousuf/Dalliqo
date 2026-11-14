@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import { ALL_PERMISSIONS, ASSIGNABLE_ROLES, PERMISSION_GROUPS, ROLE_PRESETS } from '@recrm/shared';
 import { sendSuccess } from '../utils/http';
 
-const PERMISSION_TEMPLATES = ['MEMBER', 'MANAGER', 'AGENT', 'SALESPERSON', 'ACCOUNTANT', 'VIEWER'] as const;
+const PERMISSION_TEMPLATES = ['MEMBER', 'MANAGER', 'BRANCH_MANAGER', 'SALES_MANAGER', 'AGENT', 'SALESPERSON', 'PROPERTY_MANAGER', 'VERIFICATION_OFFICER', 'FINANCE_MANAGER', 'ACCOUNTANT', 'MARKETING_MANAGER', 'VIEWER'] as const;
 
 export const metaController = {
   /** Catalogue for permission editors; authorization itself never trusts the client. */
