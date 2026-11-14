@@ -42,6 +42,8 @@ import { ERROR_CODES, PERMISSIONS } from '@recrm/shared';
 import { leadService } from '../services/leadService';
 import { verificationService } from '../services/verificationService';
 import { leaseService } from '../services/leaseService';
+import { installmentService } from '../services/installmentService';
+import { financeReportService } from '../services/financeReportService';
 import { inventoryToolsService } from '../services/inventoryToolsService';
 import { redactOwner } from '../services/ownerService';
 import { pageMeta, sendSuccess } from '../utils/http';
@@ -168,6 +170,12 @@ export const negotiationController = {
   async respond(req: Request, res: Response) {
     sendSuccess(res, await dealService.respondToOffer(authOf(req), req.params.id, req.params.subId, req.body.status, requestMeta(req)));
   },
+  async approveCommission(req: Request, res: Response) {
+    sendSuccess(res, await dealService.approveCommission(authOf(req), req.params.id, requestMeta(req)));
+  },
+  async payExternal(req: Request, res: Response) {
+    sendSuccess(res, await dealService.payExternal(authOf(req), req.params.id, req.params.subId, req.body.amount, requestMeta(req)));
+  },
   async approval(req: Request, res: Response) {
     sendSuccess(res, await dealService.decideApproval(authOf(req), req.params.id, req.body.decision, req.body.note, requestMeta(req)));
   },
@@ -226,6 +234,64 @@ export const categoryController = {
   },
   async update(req: Request, res: Response) {
     sendSuccess(res, await categoryService.update(authOf(req), req.params.id, req.body), { message: 'Category updated successfully' });
+  },
+};
+
+export const installmentController = {
+  async list(req: Request, res: Response) {
+    const q = query<Q>(req);
+    list(res, q.page, q.limit, await installmentService.list(authOf(req), q));
+  },
+  async get(req: Request, res: Response) {
+    sendSuccess(res, await installmentService.get(authOf(req), req.params.id));
+  },
+  async create(req: Request, res: Response) {
+    sendSuccess(res, await installmentService.create(authOf(req), req.body, requestMeta(req)), { status: 201, message: 'Installment plan created' });
+  },
+  async pay(req: Request, res: Response) {
+    sendSuccess(res, await installmentService.recordPayment(authOf(req), req.params.id, req.body, requestMeta(req)), { message: 'Payment recorded' });
+  },
+  async cancel(req: Request, res: Response) {
+    sendSuccess(res, await installmentService.cancel(authOf(req), req.params.id, req.body.reason));
+  },
+};
+
+export const financeReportController = {
+  async cashFlow(req: Request, res: Response) {
+    sendSuccess(res, await financeReportService.cashFlow(authOf(req), req.query as never));
+  },
+  async aging(req: Request, res: Response) {
+    sendSuccess(res, await financeReportService.aging(authOf(req)));
+  },
+  async agentStatement(req: Request, res: Response) {
+    const q = req.query as unknown as { userId: string; from?: Date; to?: Date; format?: 'json' | 'pdf' };
+    if (q.format === 'pdf') {
+      const { PassThrough } = await import('node:stream');
+      const buf = new PassThrough();
+      const chunks: Buffer[] = [];
+      buf.on('data', (c: Buffer) => chunks.push(c));
+      const done = new Promise<void>((r) => buf.on('end', () => r()));
+      await financeReportService.agentStatementPdf(authOf(req), q.userId, q, buf);
+      await done;
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline; filename="commission-statement.pdf"');
+      res.end(Buffer.concat(chunks));
+      return;
+    }
+    sendSuccess(res, await financeReportService.agentStatement(authOf(req), q.userId, q));
+  },
+  async receipt(req: Request, res: Response) {
+    const { kind, id: rid, paymentId } = req.params as { kind: 'lease' | 'installment' | 'deal'; id: string; paymentId: string };
+    const { PassThrough } = await import('node:stream');
+    const buf = new PassThrough();
+    const chunks: Buffer[] = [];
+    buf.on('data', (c: Buffer) => chunks.push(c));
+    const done = new Promise<void>((r) => buf.on('end', () => r()));
+    await financeReportService.receiptPdf(authOf(req), kind, rid, paymentId, buf);
+    await done;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="receipt-${paymentId.slice(0, 8)}.pdf"`);
+    res.end(Buffer.concat(chunks));
   },
 };
 

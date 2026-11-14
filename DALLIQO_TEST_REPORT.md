@@ -1,6 +1,6 @@
 # Dalliqo — Test Report
 
-Run date: 13 Nov 2026 (Phase 3).
+Run date: 14 Nov 2026 (latest: Phase 5B — see per-phase sections for current totals).
 
 | Suite | Command | Result |
 |---|---|---|
@@ -34,6 +34,25 @@ Run date: 13 Nov 2026 (Phase 3).
 - Allocation oldest-first with credit; fixed and percentage late fees; lease summary (overdue, next due).
 - Lifecycle: create (schedule, property RENTED, double lease refused), back-dated months carry no late fee, payment allocation and agency-fee income, rent roll; waive, inspection, renewal with new rent, termination with deposit refund and property relisted; scheduled refresh marks months overdue; viewer can read but not record rent (403).
 - Full results: server 242 passed, web 38, Flutter 79. Visual check of the Rentals list and lease detail with seeded demo leases.
+
+## Phase 5B tests (`server/tests/finance5b.test.ts`, `mobile/test/commission_external_test.dart`)
+- **Shared maths:** a quarterly schedule with booking, down payment and possession adds up to the total; the commission split with a 25% outside dealer, and lifecycle EXPECTED → APPROVED → RECEIVED → DISTRIBUTED → PAID; amounts in lakh/crore words; aging buckets.
+- **Installments API:**
+  - A back-dated plan shows overdue amounts.
+  - Custom items that don't add up to the total are refused (400).
+  - A payment fills the oldest installments first.
+  - The plan appears in receivables aging.
+  - The receipt is a valid PDF.
+- **Commission API:**
+  - Approve sets the lifecycle to APPROVED.
+  - The outside referral is paid in full.
+  - The agent's share excludes the referral.
+  - An agent can read their own statement but gets 403 for someone else's.
+  - The statement PDF is generated.
+  - Payables aging shows the agent by name.
+- **Cash flow:** 12 months; this month's income, expense, net and cumulative are correct.
+- **Full results:** server 248 passed (1 skipped), web 38, Flutter 81, `flutter analyze` clean, web build OK.
+- **Visual check** of the installment plan detail, the Reports page (cash flow, aging, statement) and the deal detail (lifecycle, Approve, outside shares) on the demo data.
 
 ## Manual / visual verification
 Demo API (`npm run demo`) + web, headless Chrome screenshots at 1440 px: client list with lead scores and temperature filter, client lead panel, Reports (leads + inventory aging), Settings → Subscription. All rendered correctly with real demo data.

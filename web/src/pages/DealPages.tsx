@@ -3,18 +3,7 @@ import { ChevronRight, Columns3, Download, HandCoins, Plus, Rows3, Trash2, Walle
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import {
-  COMMISSION_MODES,
-  COMMISSION_STATUSES,
-  DEAL_SIDES,
-  DEAL_STAGES,
-  OPEN_DEAL_STAGES,
-  PAYMENT_METHODS,
-  PERMISSIONS,
-  summarizeCommission,
-  type CommissionMode,
-  type DealStage,
-} from '@recrm/shared';
+import { COMMISSION_MODES, COMMISSION_STATUSES, DEAL_SIDES, DEAL_STAGES, OPEN_DEAL_STAGES, PAYMENT_METHODS, PERMISSIONS, summarizeCommission, type CommissionMode, type DealStage, EXTERNAL_SHARE_KINDS } from '@recrm/shared';
 import { clientApi, dealApi, exportApi, propertyApi } from '@/api/endpoints';
 import type { Deal } from '@/api/types';
 import { BranchField } from '@/components/branches';
@@ -22,6 +11,7 @@ import { ActivityPanel, DocumentsPanel, NotesPanel } from '@/components/domain/p
 import { AgreementsPanel } from '@/pages/AgreementPages';
 import { ChecklistPanel, NegotiationPanel } from '@/pages/Phase3Pages';
 import { ApprovalBanner } from '@/pages/Phase4Pages';
+import { ReceiptButton } from '@/pages/InstallmentPages';
 import { Badge, Button, Card, ConfirmDialog, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Table, Tabs, Textarea, type BadgeColor, type Column, ViewToggle, MetricTile } from '@/components/ui';
 import { formatDate, formatPkr } from '@/lib/format';
 import { useDebounce, useEnumOptions, useErrorText, useMembers, useOnError, useUrlState, useOpenOnNew } from '@/lib/hooks';
@@ -369,6 +359,9 @@ export function DealDetailPage() {
   const stage = useMutation({ mutationFn: (b: { stage: DealStage; lostReason?: string }) => dealApi.stage(id, b), onSuccess: () => (setLostOpen(false), refresh()), onError });
   const removePayment = useMutation({ mutationFn: (pid: string) => dealApi.removePayment(id, pid), onSuccess: refresh, onError });
   const markPaid = useMutation({ mutationFn: (pid: string) => dealApi.updatePayout(id, pid, { status: 'PAID' }), onSuccess: refresh, onError });
+  const approve = useMutation({ mutationFn: () => dealApi.approveCommission(id), onSuccess: () => (toast.success(t('finance5b.approved')), refresh()), onError });
+  const payExternal = useMutation({ mutationFn: (v: { shareId: string; amount: number }) => dealApi.payExternal(id, v.shareId, v.amount), onSuccess: refresh, onError });
+  const [sharesOpen, setSharesOpen] = useState(false);
   const remove = useMutation({ mutationFn: () => dealApi.remove(id), onSuccess: () => (toast.success(t('deal.deleted')), navigate('/deals')), onError });
   if (q.isLoading) return <PageLoader />;
   if (q.isError) return <ErrorState onRetry={() => q.refetch()} />;
@@ -414,7 +407,7 @@ export function DealDetailPage() {
         <MetricTile tone="brand" label={t('deal.expected')} value={formatPkr(s.expected.total)} />
         <MetricTile tone="good" label={t('deal.received')} value={formatPkr(s.received.total)} />
         <MetricTile tone="warn" label={t('deal.outstanding')} value={formatPkr(s.outstanding)} />
-        <MetricTile label={t('deal.commissionStatus')} value={<CommissionStatusBadge status={s.status} />} />
+        <MetricTile label={t('finance5b.lifecycle')} value={<span className="flex flex-wrap items-center gap-2"><Badge color={LIFECYCLE_COLOR[s.lifecycle] ?? 'gray'}>{t(`enums.commissionLifecycle.${s.lifecycle}`)}</Badge>{canMoney && !d.commissionApprovedAt && <Button size="sm" variant="secondary" loading={approve.isPending} onClick={() => approve.mutate()}>{t('finance5b.approve')}</Button>}</span>} />
       </div>
       <Tabs
         value={tab}
@@ -478,7 +471,10 @@ export function DealDetailPage() {
                         <span className="ltr-nums font-medium">{formatPkr(p.amount)}</span> · {t(`enums.dealSide.${p.side}`)} · {t(`enums.paymentMethod.${p.method}`)} · {formatDate(p.date)}
                         {p.reference && <span className="text-muted"> · {p.reference}</span>}
                       </span>
-                      {canMoney && <Button size="sm" variant="ghost" onClick={() => removePayment.mutate(p._id)} aria-label={t('common.delete')}><Trash2 className="h-3.5 w-3.5 text-red-600" /></Button>}
+                      <span className="flex items-center gap-1">
+                        <ReceiptButton kind="deal" id={d._id} paymentId={p._id} />
+                        {canMoney && <Button size="sm" variant="ghost" onClick={() => removePayment.mutate(p._id)} aria-label={t('common.delete')}><Trash2 className="h-3.5 w-3.5 text-red-600" /></Button>}
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -503,6 +499,26 @@ export function DealDetailPage() {
             </Card>
           </div>
         )}
+        {tab === 'commission' && (
+          <Card className="mt-4" title={t('finance5b.externalShares')} actions={canMoney && <Button size="sm" variant="secondary" onClick={() => setSharesOpen(true)}>{t('common.edit')}</Button>}>
+            {!s.external.length ? (
+              <p className="text-sm text-muted">{t('finance5b.noExternal')}</p>
+            ) : (
+              <ul className="divide-y divide-line text-sm">
+                {s.external.map((x) => (
+                  <li key={x._id ?? x.name} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                    <span><Badge color="gray">{t(`enums.externalShareKind.${x.kind}`)}</Badge> <span className="font-medium">{x.name}</span></span>
+                    <span className="ltr-nums flex items-center gap-2 text-xs text-muted">
+                      {t('deal.share')}: {formatPkr(x.expected)} · {t('finance5b.earned')} {formatPkr(x.earned)} · {t('deal.paidOut')} {formatPkr(x.paid)} · {t('deal.owed')} {formatPkr(x.owed)}
+                      {canMoney && x._id && x.owed > 0 && <Button size="sm" variant="secondary" loading={payExternal.isPending} onClick={() => payExternal.mutate({ shareId: x._id!, amount: x.owed })}>{t('finance5b.payOwed')}</Button>}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p className="mt-2 text-xs text-muted">{t('finance5b.agencyKeeps', { amount: formatPkr(s.agencyExpected) })}</p>
+          </Card>
+        )}
         {tab === 'agreements' && (
           <AgreementsPanel
             dealId={d._id}
@@ -518,11 +534,47 @@ export function DealDetailPage() {
       {editing && <DealFormDrawer open deal={d} onClose={() => setEditing(false)} />}
       {paying && <PaymentModal deal={d} onClose={() => setPaying(false)} />}
       {payout && <PayoutModal deal={d} onClose={() => setPayout(false)} />}
+      {sharesOpen && <ExternalSharesModal deal={d} onClose={() => setSharesOpen(false)} onDone={refresh} />}
       <Modal open={lostOpen} onClose={() => setLostOpen(false)} title={t('enums.dealStage.CLOSED_LOST')} footer={<Button disabled={!lostReason.trim()} loading={stage.isPending} onClick={() => stage.mutate({ stage: 'CLOSED_LOST', lostReason })}>{t('common.save')}</Button>}>
         <Textarea label={t('deal.lostReason')} value={lostReason} onChange={(e) => setLostReason(e.target.value)} />
       </Modal>
       <ConfirmDialog open={confirmDelete} title={t('common.delete')} message={t('deal.deleteConfirm', { no: d.dealNo })} loading={remove.isPending} onClose={() => setConfirmDelete(false)} onConfirm={() => remove.mutate()} />
     </div>
+  );
+}
+
+const LIFECYCLE_COLOR: Record<string, BadgeColor> = { EXPECTED: 'gray', APPROVED: 'blue', PARTIALLY_RECEIVED: 'amber', RECEIVED: 'green', DISTRIBUTED: 'purple', PAID: 'green' };
+
+/** Outside dealers / referrers / other branches who take a cut before the agency's agents. */
+function ExternalSharesModal({ deal, onClose, onDone }: { deal: Deal; onClose(): void; onDone(): void }) {
+  const { t } = useTranslation();
+  const onError = useOnError();
+  const kinds = useEnumOptions('externalShareKind', EXTERNAL_SHARE_KINDS);
+  const modes = useEnumOptions('commissionMode', COMMISSION_MODES);
+  type Row = { _id?: string; kind: string; name: string; mode: string; value: string; paid: number };
+  const [rows, setRows] = useState<Row[]>((deal.externalShares ?? []).map((x) => ({ _id: x._id, kind: x.kind, name: x.name, mode: x.mode, value: String(x.value), paid: x.paid })));
+  const upd = (i: number, k: keyof Row, v: string) => setRows((r) => r.map((x, j) => (j === i ? { ...x, [k]: v } : x)));
+  const save = useMutation({
+    mutationFn: () => dealApi.update(deal._id, { version: deal.version, externalShares: rows.filter((r) => r.name.trim() && r.value !== '').map((r) => ({ ...(r._id ? { _id: r._id } : {}), kind: r.kind, name: r.name.trim(), mode: r.mode, value: Number(r.value), paid: r.paid })) }),
+    onSuccess: () => (toast.success(t('common.saved')), onDone(), onClose()),
+    onError,
+  });
+  return (
+    <Modal open onClose={onClose} title={t('finance5b.externalShares')} footer={<Button loading={save.isPending} onClick={() => save.mutate()}>{t('common.save')}</Button>}>
+      <p className="mb-3 text-xs text-muted">{t('finance5b.externalHint')}</p>
+      <div className="space-y-2">
+        {rows.map((r, i) => (
+          <div key={i} className="grid grid-cols-2 gap-2 sm:grid-cols-[8rem_1fr_7rem_6rem_auto]">
+            <Select aria-label={t('common.type')} options={kinds} value={r.kind} onChange={(e) => upd(i, 'kind', e.target.value)} />
+            <Input aria-label={t('common.name')} placeholder={t('common.name')} value={r.name} onChange={(e) => upd(i, 'name', e.target.value)} />
+            <Select aria-label={t('deal.mode')} options={modes} value={r.mode} onChange={(e) => upd(i, 'mode', e.target.value)} />
+            <Input aria-label={t('rental.amount')} type="number" min={0} value={r.value} onChange={(e) => upd(i, 'value', e.target.value)} />
+            <Button size="sm" variant="ghost" disabled={r.paid > 0} onClick={() => setRows((x) => x.filter((_, j) => j !== i))} aria-label={t('common.delete')}><Trash2 className="h-3.5 w-3.5 text-red-600" /></Button>
+          </div>
+        ))}
+        <Button size="sm" variant="secondary" icon={<Plus className="h-3.5 w-3.5" />} onClick={() => setRows((x) => [...x, { kind: 'EXTERNAL_DEALER', name: '', mode: 'PERCENT', value: '', paid: 0 }])}>{t('finance5b.addShare')}</Button>
+      </div>
+    </Modal>
   );
 }
 

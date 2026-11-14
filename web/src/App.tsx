@@ -44,6 +44,9 @@ const SettingsPage = page(admin, 'SettingsPage');
 const PlatformPage = page(() => import('@/pages/Phase3Pages'), 'PlatformPage');
 const VerificationsPage = page(() => import('@/pages/Phase4Pages'), 'VerificationsPage');
 const rentals = () => import('@/pages/RentalPages');
+const installments = () => import('@/pages/InstallmentPages');
+const InstallmentsPage = page(installments, 'InstallmentsPage');
+const InstallmentDetailPage = page(installments, 'InstallmentDetailPage');
 const RentalsPage = page(rentals, 'RentalsPage');
 const LeaseDetailPage = page(rentals, 'LeaseDetailPage');
 
@@ -112,6 +115,8 @@ export function AppRoutes() {
         <Route path="verifications" element={<VerificationsPage />} />
         <Route path="leases" element={<RentalsPage />} />
         <Route path="leases/:id" element={<LeaseDetailPage />} />
+        <Route path="installments" element={<InstallmentsPage />} />
+        <Route path="installments/:id" element={<InstallmentDetailPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

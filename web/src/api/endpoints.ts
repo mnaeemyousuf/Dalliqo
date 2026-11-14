@@ -31,6 +31,10 @@ import type {
   Verification,
   SavedView,
   Lease,
+  InstallmentPlan,
+  CashFlowReport,
+  AgingReport,
+  AgentStatement,
   RentRoll,
   InventoryReport,
   ImportResult,
@@ -92,6 +96,8 @@ export const dealApi = {
   remove: (id: string) => api<null>({ method: 'DELETE', url: `/deals/${id}` }),
   addOffer: (id: string, body: Body) => api<Deal>({ method: 'POST', url: `/deals/${id}/offers`, data: body }),
   respondOffer: (id: string, offerId: string, status: 'ACCEPTED' | 'REJECTED' | 'WITHDRAWN') => api<Deal>({ method: 'POST', url: `/deals/${id}/offers/${offerId}/respond`, data: { status } }),
+  approveCommission: (id: string) => api<Deal>({ method: 'POST', url: `/deals/${id}/commission/approve` }),
+  payExternal: (id: string, shareId: string, amount: number) => api<Deal>({ method: 'POST', url: `/deals/${id}/external/${shareId}/pay`, data: { amount } }),
   decideApproval: (id: string, decision: 'APPROVED' | 'REJECTED', note?: string) => api<Deal>({ method: 'POST', url: `/deals/${id}/approval`, data: { decision, ...(note ? { note } : {}) } }),
   setChecklist: (id: string, key: string, done: boolean, label?: string) => api<Deal>({ method: 'POST', url: `/deals/${id}/checklist`, data: clean({ key, done, label }) }),
   report: (params: Params) => api<CommissionReport>({ url: '/reports/commissions', params: clean(params) }),
@@ -256,6 +262,25 @@ export const inventoryApi = {
   views: (page: string) => api<SavedView[]>({ url: '/saved-views', params: { page } }),
   createView: (body: Body) => api<SavedView>({ method: 'POST', url: '/saved-views', data: body }),
   removeView: (id: string) => api<null>({ method: 'DELETE', url: `/saved-views/${id}` }),
+};
+
+export const installmentApi = {
+  list: (params: Params) => apiPage<InstallmentPlan>('/installments', params),
+  get: (id: string) => api<InstallmentPlan>({ url: `/installments/${id}` }),
+  create: (body: Body) => api<InstallmentPlan>({ method: 'POST', url: '/installments', data: clean(body) }),
+  pay: (id: string, body: Body) => api<InstallmentPlan>({ method: 'POST', url: `/installments/${id}/payments`, data: clean(body) }),
+  cancel: (id: string, reason: string) => api<InstallmentPlan>({ method: 'POST', url: `/installments/${id}/cancel`, data: { reason } }),
+};
+
+export const financeReportApi = {
+  cashFlow: (params: Params) => api<CashFlowReport>({ url: '/reports/cash-flow', params: clean(params) }),
+  aging: () => api<AgingReport>({ url: '/reports/aging' }),
+  agentStatement: (params: Params) => api<AgentStatement>({ url: '/reports/agent-statement', params: clean(params) }),
+  agentStatementPdf: (userId: string) => blobDownload(`/reports/agent-statement?userId=${encodeURIComponent(userId)}&format=pdf`, 'commission-statement.pdf'),
+};
+
+export const receiptApi = {
+  download: (kind: 'lease' | 'installment' | 'deal', id: string, paymentId: string) => blobDownload(`/receipts/${kind}/${id}/${paymentId}`, `receipt-${paymentId.slice(0, 8)}.pdf`),
 };
 
 export const leaseApi = {

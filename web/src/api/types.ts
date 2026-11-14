@@ -382,6 +382,51 @@ export interface Lease {
   summary: LeaseSummary;
 }
 
+export interface InstallmentPlan {
+  _id: string;
+  uuid: string;
+  version: number;
+  planNo: string;
+  dealId?: string | { _id: string; dealNo: string; title?: string } | null;
+  clientId: string | { _id: string; fullName: string; mobileNumber?: string };
+  propertyId?: string | { _id: string; propertyId: string; society?: string; block?: string } | null;
+  title?: string;
+  status: 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+  totalAmount: number;
+  frequency: string;
+  graceDays: number;
+  items: { _id: string; kind: string; label: string; dueDate: string; amount: number; paid: number; status: RentItemStatus }[];
+  payments: { _id: string; date: string; amount: number; method: PaymentMethod; reference?: string | null; allocations: { itemId: string; amount: number }[] }[];
+  credit: number;
+  outstanding: number;
+  overdueAmount: number;
+  paidTotal: number;
+  nextDueDate?: string | null;
+  cancelReason?: string | null;
+  notes?: string;
+}
+
+export interface CashFlowReport {
+  from: string;
+  to: string;
+  months: { month: string; income: number; expense: number; net: number; cumulative: number }[];
+  totals: { income: number; expense: number; net: number };
+}
+
+type Buckets = Record<string, number>;
+export interface AgingReport {
+  receivables: { commission: Buckets; installments: Buckets; rent: Buckets; total: number };
+  payables: { agents: Buckets; external: Buckets; total: number };
+  receivableRows: { kind: string; ref: string; id: string; party: string; amount: number; dueDate: string; bucket: string }[];
+  payableRows: { kind: string; ref: string; id: string; party: string; amount: number; since: string; bucket: string }[];
+}
+
+export interface AgentStatement {
+  agent: { _id: string; fullName: string; email: string };
+  rows: { _id: string; dealNo: string; title?: string; stage: DealStage; sharePct: number; expected: number; earned: number; paidOut: number; owed: number }[];
+  totals: { expected: number; earned: number; paidOut: number; owed: number };
+}
+
 export interface RentRoll {
   activeLeases: number;
   monthlyRentRoll: number;
@@ -506,6 +551,8 @@ export interface Deal {
   commission: { buyer: { mode: CommissionMode; value: number }; seller: { mode: CommissionMode; value: number } };
   payments: { _id: string; side: DealSide; amount: number; date: string; method: PaymentMethod; reference?: string; notes?: string }[];
   payouts: { _id: string; userId: string; amount: number; date?: string | null; status: 'PENDING' | 'PAID'; notes?: string }[];
+  externalShares?: { _id: string; kind: 'EXTERNAL_DEALER' | 'REFERRAL' | 'BRANCH'; name: string; mode: CommissionMode; value: number; paid: number }[];
+  commissionApprovedAt?: string | null;
   expectedTotal: number;
   receivedTotal: number;
   outstanding: number;

@@ -13,6 +13,7 @@ export const AUTOMATION_RULE_KEYS = [
   'VERIFICATION_DUE',
   'RENT_DUE',
   'RENT_OVERDUE',
+  'INSTALLMENT_OVERDUE',
 ] as const;
 export type AutomationRuleKey = (typeof AUTOMATION_RULE_KEYS)[number];
 
@@ -36,6 +37,7 @@ export const AUTOMATION_RULES: Record<AutomationRuleKey, AutomationRuleDefinitio
   VERIFICATION_DUE: { key: 'VERIFICATION_DUE', unit: 'days', defaultThreshold: 7, min: 0, max: 60, notify: ['assignee'] },
   RENT_DUE: { key: 'RENT_DUE', unit: 'days', defaultThreshold: 3, min: 0, max: 15, notify: ['assignee'] },
   RENT_OVERDUE: { key: 'RENT_OVERDUE', unit: 'days', defaultThreshold: 1, min: 0, max: 30, notify: ['assignee', 'managers'] },
+  INSTALLMENT_OVERDUE: { key: 'INSTALLMENT_OVERDUE', unit: 'days', defaultThreshold: 3, min: 0, max: 60, notify: ['assignee', 'managers'] },
 };
 
 export interface AutomationRuleSetting {

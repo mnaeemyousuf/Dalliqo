@@ -209,6 +209,9 @@ export const ACTIVITY_TYPES = [
   'LEASE_UPDATED',
   'RENT_RECEIVED',
   'LEASE_ENDED',
+  'INSTALLMENT_PLAN_CREATED',
+  'INSTALLMENT_RECEIVED',
+  'COMMISSION_APPROVED',
 ] as const;
 export type ActivityType = (typeof ACTIVITY_TYPES)[number];
 

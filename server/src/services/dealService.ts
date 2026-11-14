@@ -13,6 +13,7 @@ import {
   type DealStage,
   DEAL_CHECKLIST_ITEMS,
   type OfferParty,
+  type ExternalShareKind,
   type OfferStatus,
   type PaymentMethod,
   type PayoutStatus,
@@ -78,6 +79,7 @@ export interface DealInput {
   offers?: OfferInput[];
   checklist?: ChecklistInput[];
   tokenAmount?: number;
+  externalShares?: { _id?: string; id?: string; kind: ExternalShareKind; name: string; mode: CommissionMode; value: number; paid?: number }[];
 }
 
 export interface PaymentInput {
@@ -170,7 +172,7 @@ export function ownDealsFilter(auth: { permissions?: readonly string[]; userId: 
 }
 
 /** The denormalised commission figures stored on the deal (lists, filters, reports). */
-function moneyFields(d: Pick<DealDoc, 'agreedPrice' | 'finalPrice' | 'commission' | 'agents' | 'payments' | 'payouts'>) {
+function moneyFields(d: Pick<DealDoc, 'agreedPrice' | 'finalPrice' | 'commission' | 'agents' | 'payments' | 'payouts'> & Partial<Pick<DealDoc, 'externalShares' | 'commissionApprovedAt'>>) {
   const s = summarizeCommission(d);
   return { expectedTotal: s.expected.total, receivedTotal: s.received.total, outstanding: s.outstanding, commissionStatus: s.status };
 }
@@ -206,6 +208,18 @@ function normalizePayments(list: PaymentInput[], auth: AuthContext, existing: De
       createdBy: prev?.createdBy ?? new Types.ObjectId(auth.userId),
     };
   });
+}
+
+function normalizeExternal(list: NonNullable<DealInput['externalShares']>, existing: DealDoc['externalShares']): DealDoc['externalShares'] {
+  const byId = new Map(existing.map((x) => [x._id, x]));
+  const out = list.map((x) => {
+    const id = x._id ?? x.id ?? randomUUID();
+    return { _id: id, kind: x.kind, name: x.name, mode: x.mode, value: x.value, paid: x.paid ?? byId.get(id)?.paid ?? 0 };
+  });
+  if (out.filter((x) => x.mode === 'PERCENT').reduce((s, x) => s + x.value, 0) > 100) {
+    throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'External shares cannot exceed 100% of the commission');
+  }
+  return out;
 }
 
 function normalizePayouts(list: PayoutInput[]): DealPayout[] {
@@ -253,7 +267,7 @@ export const dealService = {
     const payouts = input.payouts?.length && canManageMoney(auth) ? normalizePayouts(input.payouts) : [];
     const stage = input.stage ?? 'INQUIRY';
     const now = new Date();
-    const base = { agreedPrice: input.agreedPrice, finalPrice: input.finalPrice, commission, agents: agents as never, payments, payouts };
+    const base = { agreedPrice: input.agreedPrice, finalPrice: input.finalPrice, commission, agents: agents as never, payments, payouts, externalShares: input.externalShares?.length && canManageMoney(auth) ? normalizeExternal(input.externalShares, []) : [] };
 
     const deal = await withTransaction(async (session) => {
       const dealNo = formatDealNo(await nextSequence(auth.businessId, 'deal', session));
@@ -274,6 +288,7 @@ export const dealService = {
           finalPrice: input.finalPrice,
           initialAskingPrice: property?.askingPrice,
           tokenAmount: input.tokenAmount,
+          externalShares: input.externalShares?.length && canManageMoney(auth) ? normalizeExternal(input.externalShares, []) : [],
           offers: input.offers?.length ? normalizeOffers(input.offers, auth) : [],
           checklist: input.checklist?.length ? normalizeChecklist(input.checklist, auth) : defaultChecklist(),
           expectedCloseDate: input.expectedCloseDate ?? null,
@@ -375,6 +390,10 @@ export const dealService = {
       }
       if (input.payouts) set.payouts = normalizePayouts(input.payouts);
     }
+    if (input.externalShares) {
+      if (!canManageMoney(auth)) throw forbidden(ERROR_CODES.FORBIDDEN, 'You cannot change commission shares');
+      set.externalShares = normalizeExternal(input.externalShares, before.externalShares ?? []);
+    }
     if (input.offers) set.offers = normalizeOffers(input.offers, auth, before.offers ?? []);
     if (input.checklist) set.checklist = normalizeChecklist(input.checklist, auth, before.checklist?.length ? before.checklist : defaultChecklist());
     const merged = { ...before, ...set } as DealDoc;
@@ -414,6 +433,33 @@ export const dealService = {
     if (!updated) throw new AppError(409, ERROR_CODES.VERSION_CONFLICT, 'This deal was modified by someone else');
     await activityService.record(auth, 'DEAL_STAGE_CHANGED', `Deal ${updated.dealNo}: ${before.stage} → ${stage}${opts.note ? ` (${opts.note})` : ''}`, refs(updated), { from: before.stage, to: stage });
     await auditService.record(auth, { action: 'deal.stage_changed', entityType: 'deal', entityId: updated._id, entityLabel: updated.dealNo, changes: [{ field: 'stage', oldValue: before.stage, newValue: stage }], ip: opts.meta?.ip });
+    publishChange(auth, SOCKET_EVENTS.DEAL_UPDATED, 'deal', updated);
+    return updated;
+  },
+
+  /** Marks the expected commission as approved (lifecycle: Expected → Approved). */
+  async approveCommission(auth: AuthContext, id: string, meta: RequestMeta = {}) {
+    if (!canManageMoney(auth)) throw forbidden();
+    const before = await this.load(auth, id);
+    if (before.commissionApprovedAt) return before;
+    const set = { commissionApprovedAt: new Date(), commissionApprovedBy: new Types.ObjectId(auth.userId) };
+    const updated = await dealRepository.update(auth, id, { ...set, ...moneyFields({ ...before, ...set }) });
+    await activityService.record(auth, 'COMMISSION_APPROVED', `Commission on ${before.dealNo} approved (${formatPkr(updated.expectedTotal)})`, refs(updated));
+    await auditService.record(auth, { action: 'deal.commission_approved', entityType: 'deal', entityId: updated._id, entityLabel: updated.dealNo, meta: { expected: updated.expectedTotal }, ip: meta.ip });
+    publishChange(auth, SOCKET_EVENTS.DEAL_UPDATED, 'deal', updated);
+    return updated;
+  },
+
+  /** Records a payment to an outside dealer / referrer / branch. */
+  async payExternal(auth: AuthContext, id: string, shareId: string, amount: number, meta: RequestMeta = {}) {
+    if (!canManageMoney(auth)) throw forbidden();
+    const before = await this.load(auth, id);
+    const share = (before.externalShares ?? []).find((x) => x._id === shareId);
+    if (!share) throw notFound(ERROR_CODES.PAYMENT_NOT_FOUND, 'Share not found');
+    const externalShares = before.externalShares.map((x) => (x._id === shareId ? { ...x, paid: x.paid + amount } : x));
+    const updated = await dealRepository.update(auth, id, { externalShares, ...moneyFields({ ...before, externalShares }) });
+    await activityService.record(auth, 'COMMISSION_PAYOUT', `${formatPkr(amount)} paid to ${share.name} (${share.kind.toLowerCase().replace('_', ' ')}) on ${before.dealNo}`, refs(updated), { amount });
+    await auditService.record(auth, { action: 'deal.external_paid', entityType: 'deal', entityId: updated._id, entityLabel: updated.dealNo, meta: { shareId, name: share.name, amount }, ip: meta.ip });
     publishChange(auth, SOCKET_EVENTS.DEAL_UPDATED, 'deal', updated);
     return updated;
   },

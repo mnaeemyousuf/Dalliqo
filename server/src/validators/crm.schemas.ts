@@ -44,6 +44,8 @@ import {
   VERIFICATION_DECISIONS,
   VERIFICATION_STATUSES,
   LATE_FEE_TYPES,
+  EXTERNAL_SHARE_KINDS,
+  INSTALLMENT_FREQUENCIES,
   LEASE_STATUSES,
   INSPECTION_TYPES,
 } from '@recrm/shared';
@@ -309,6 +311,7 @@ export const offerSchema = z
   .object({ id: uuid.optional(), _id: uuid.optional(), party: z.enum(OFFER_PARTIES), amount: money.pipe(z.number().min(1)), note: optionalText(500), status: z.enum(['OPEN', 'ACCEPTED', 'REJECTED', 'COUNTERED', 'WITHDRAWN']).optional(), at: z.coerce.date().optional() })
   .strict();
 export const offerRespondSchema = z.object({ status: z.enum(['ACCEPTED', 'REJECTED', 'WITHDRAWN']) }).strict();
+export const externalPaySchema = z.object({ amount: money.pipe(z.number().min(1)) }).strict();
 export const dealApprovalSchema = z.object({ decision: z.enum(['APPROVED', 'REJECTED']), note: optionalText(500) }).strict();
 export const checklistItemSchema = z.object({ key: shortText(60).min(1), label: optionalText(120), done: z.boolean() }).strict();
 const commissionTerm = z.object({ mode: z.enum(COMMISSION_MODES), value: z.number().min(0).max(1e12) }).strict();
@@ -351,6 +354,10 @@ const dealFields = {
   notes: optionalText(2000),
   commission: z.object({ buyer: commissionTerm.optional(), seller: commissionTerm.optional() }).strict().optional(),
   tokenAmount: money.optional(),
+  externalShares: z
+    .array(z.object({ _id: z.string().max(64).optional(), id: z.string().max(64).optional(), kind: z.enum(EXTERNAL_SHARE_KINDS), name: shortText(120).min(2), mode: z.enum(COMMISSION_MODES), value: z.number().min(0).max(1e12), paid: money.optional() }).strict())
+    .max(10)
+    .optional(),
   offers: z.array(offerSchema).max(100).optional(),
   checklist: z.array(checklistItemSchema).max(50).optional(),
 };
@@ -557,6 +564,33 @@ export const leaseRenewSchema = z.object({ endDate: z.coerce.date(), monthlyRent
 export const leaseEndSchema = z
   .object({ status: z.enum(['ENDED', 'TERMINATED']), date: z.coerce.date().optional(), reason: optionalText(500), depositRefund: money.optional(), relist: z.boolean().optional() })
   .strict();
+
+// ── Installments & finance reports ──
+export const installmentPlanSchema = z
+  .object({
+    uuid: uuid.optional(),
+    branchId: branchRef,
+    dealId: objectId.nullable().optional(),
+    clientId: objectId,
+    propertyId: objectId.nullable().optional(),
+    title: optionalText(150),
+    totalAmount: money.pipe(z.number().min(1)),
+    bookingAmount: money.optional(),
+    downPayment: money.optional(),
+    possessionAmount: money.optional(),
+    frequency: z.enum(INSTALLMENT_FREQUENCIES),
+    count: z.number().int().min(1).max(240).optional(),
+    startDate: z.coerce.date(),
+    graceDays: z.number().int().min(0).max(90).optional(),
+    items: z.array(z.object({ kind: z.enum(['BOOKING', 'DOWN_PAYMENT', 'INSTALLMENT', 'BALLOON', 'POSSESSION']).optional(), label: shortText(80).min(1), dueDate: z.coerce.date(), amount: money.pipe(z.number().min(1)) }).strict()).max(240).optional(),
+    notes: optionalText(2000),
+  })
+  .strict();
+export const installmentListQuery = pagination.extend({ q: optionalText(100), status: z.enum(['ACTIVE', 'COMPLETED', 'CANCELLED']).optional(), clientId: objectId.optional(), dealId: objectId.optional(), overdue: bool.optional() });
+export const installmentCancelSchema = z.object({ reason: shortText(500).min(2) }).strict();
+export const periodQuery = z.object({ from: z.coerce.date().optional(), to: z.coerce.date().optional() });
+export const agentStatementQuery = periodQuery.extend({ userId: objectId, format: z.enum(['json', 'pdf']).optional() });
+export const receiptParams = z.object({ kind: z.enum(['lease', 'installment', 'deal']), id: objectId, paymentId: z.string().min(8).max(64) });
 
 export const propertyImportFields = z.object({ ownerId: objectId.optional(), agentId: objectId.optional() });
 

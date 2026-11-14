@@ -297,6 +297,16 @@ class DealDetailScreen extends ConsumerWidget {
                       '${d.term(side)['mode'] == 'PERCENT' ? '${d.term(side)['value']}% = ' : ''}${formatPkr(side == 'buyer' ? s.expectedBuyer : s.expectedSeller, urdu: l.isRtl)}'),
                 InfoRow(l.t('common.notes'), d.notes),
                 NegotiationSection(deal: d, canEdit: canEdit),
+                InfoRow(l.t('finance5b.lifecycle'), l.enumLabel('commissionLifecycle', s.lifecycle)),
+                if (s.external.isNotEmpty) ...[
+                  SectionHeader(l.t('finance5b.externalShares')),
+                  for (final x in s.external)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text('${x.name} · ${l.enumLabel('externalShareKind', x.kind)}'),
+                      subtitle: Ltr('${l.t('deal.share')} ${formatPkr(x.expected)} · ${l.t('finance5b.earned')} ${formatPkr(x.earned)} · ${l.t('deal.owed')} ${formatPkr(x.owed)}'),
+                    ),
+                ],
                 SectionHeader(l.t('deal.agents')),
                 for (final a in s.agents)
                   ListTile(

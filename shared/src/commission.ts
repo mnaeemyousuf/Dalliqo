@@ -59,7 +59,27 @@ export interface DealMoney {
   agents?: { userId: unknown; sharePct: number }[] | null;
   payments?: { side: DealSide; amount: number }[] | null;
   payouts?: { userId: unknown; amount: number; status: PayoutStatus }[] | null;
+  /** Outside parties paid from the commission before the agency's agents (dealer, referrer, other branch). */
+  externalShares?: ExternalShareInput[] | null;
+  commissionApprovedAt?: Date | string | null;
 }
+
+export const EXTERNAL_SHARE_KINDS = ['EXTERNAL_DEALER', 'REFERRAL', 'BRANCH'] as const;
+export type ExternalShareKind = (typeof EXTERNAL_SHARE_KINDS)[number];
+
+export interface ExternalShareInput {
+  _id?: string;
+  kind: ExternalShareKind;
+  name: string;
+  /** PERCENT = % of the total commission; FIXED = rupees. */
+  mode: CommissionMode;
+  value: number;
+  paid?: number;
+}
+
+/** Commission lifecycle shown on deals and statements. */
+export const COMMISSION_LIFECYCLE = ['EXPECTED', 'APPROVED', 'PARTIALLY_RECEIVED', 'RECEIVED', 'DISTRIBUTED', 'PAID'] as const;
+export type CommissionLifecycle = (typeof COMMISSION_LIFECYCLE)[number];
 
 export interface CommissionSummary {
   /** Price commission percentages are applied to: final price, else agreed price. */
@@ -70,6 +90,12 @@ export interface CommissionSummary {
   status: CommissionStatus;
   /** Per agent: share of the expected and received commission, and what was paid out to them. */
   agents: { userId: string; sharePct: number; expected: number; received: number; paidOut: number; owed: number }[];
+  /** Outside parties' shares (expected on the total, earned in proportion to what was received). */
+  external: { _id?: string; kind: ExternalShareKind; name: string; expected: number; earned: number; paid: number; owed: number }[];
+  /** Commission the agency keeps before agent shares (total minus external shares). */
+  agencyExpected: number;
+  agencyReceived: number;
+  lifecycle: CommissionLifecycle;
 }
 
 const round = (n: number) => Math.round(n);
@@ -95,19 +121,49 @@ export function summarizeCommission(deal: DealMoney): CommissionSummary {
   const rBuyer = paid('BUYER');
   const rSeller = paid('SELLER');
   const received = rBuyer + rSeller;
+  // External shares come off the top; agents split what the agency keeps.
+  const receivedRatio = total > 0 ? Math.min(1, received / total) : 0;
+  const external = (deal.externalShares ?? []).map((x) => {
+    const expected = x.mode === 'FIXED' ? round(x.value) : round((total * x.value) / 100);
+    const earned = round(expected * receivedRatio);
+    const paid = round(x.paid ?? 0);
+    return { _id: x._id, kind: x.kind, name: x.name, expected, earned, paid, owed: Math.max(0, earned - paid) };
+  });
+  const externalExpected = external.reduce((s, x) => s + x.expected, 0);
+  const externalEarned = external.reduce((s, x) => s + x.earned, 0);
+  const agencyExpected = Math.max(0, total - externalExpected);
+  const agencyReceived = Math.max(0, received - externalEarned);
   const agents = (deal.agents ?? []).map((a) => {
     const id = String(a.userId && typeof a.userId === 'object' && '_id' in (a.userId as object) ? (a.userId as { _id: unknown })._id : a.userId);
     const paidOut = (deal.payouts ?? []).filter((p) => String(p.userId) === id && p.status === 'PAID').reduce((s, p) => s + (p.amount || 0), 0);
-    const share = round((received * a.sharePct) / 100);
-    return { userId: id, sharePct: a.sharePct, expected: round((total * a.sharePct) / 100), received: share, paidOut, owed: Math.max(0, share - paidOut) };
+    const share = round((agencyReceived * a.sharePct) / 100);
+    return { userId: id, sharePct: a.sharePct, expected: round((agencyExpected * a.sharePct) / 100), received: share, paidOut, owed: Math.max(0, share - paidOut) };
   });
+  const status = commissionStatus(total, received);
+  const allPayoutsRecorded = agents.every((a) => (deal.payouts ?? []).filter((p) => String(p.userId) === a.userId).reduce((s, p) => s + p.amount, 0) >= a.received);
+  const lifecycle: CommissionLifecycle =
+    status === 'PENDING'
+      ? deal.commissionApprovedAt
+        ? 'APPROVED'
+        : 'EXPECTED'
+      : status === 'PARTIALLY_RECEIVED'
+        ? 'PARTIALLY_RECEIVED'
+        : agents.every((a) => a.owed === 0) && external.every((x) => x.owed === 0)
+          ? 'PAID'
+          : allPayoutsRecorded
+            ? 'DISTRIBUTED'
+            : 'RECEIVED';
   return {
     basePrice,
     expected: { buyer, seller, total },
     received: { buyer: rBuyer, seller: rSeller, total: received },
     outstanding: Math.max(0, total - received),
-    status: commissionStatus(total, received),
+    status,
     agents,
+    external,
+    agencyExpected,
+    agencyReceived,
+    lifecycle,
   };
 }
 

@@ -6,6 +6,7 @@ import { CalendarClock, ClipboardCheck, KeyRound, Plus, RefreshCcw, Wallet } fro
 import { INSPECTION_TYPES, LATE_FEE_TYPES, LEASE_STATUSES, PAYMENT_METHODS, PERMISSIONS, type RentItemStatus } from '@recrm/shared';
 import { clientApi, leaseApi, propertyApi } from '@/api/endpoints';
 import type { Lease } from '@/api/types';
+import { ReceiptButton } from '@/pages/InstallmentPages';
 import { Badge, Button, Card, DataTable, Drawer, EmptyState, ErrorState, Input, MetricTile, Modal, PageHeader, PageLoader, Select, Tabs, Textarea, type BadgeColor, type Column } from '@/components/ui';
 import { formatDate, formatPkr, toLocalInput } from '@/lib/format';
 import { useDebounce, useEnumOptions, useOnError, useOpenOnNew, useUrlState } from '@/lib/hooks';
@@ -239,6 +240,7 @@ export function LeaseDetailPage() {
                     <Badge color="gray">{t(`enums.paymentMethod.${p.method}`)}</Badge>
                     {p.reference && <span className="text-xs text-muted">{p.reference}</span>}
                     <span className="ltr-nums ms-auto text-xs text-muted">{formatDate(p.date)} · {p.allocations.map((a) => l.schedule.find((i) => i._id === a.itemId)?.period).filter(Boolean).join(', ')}</span>
+                    <ReceiptButton kind="lease" id={l._id} paymentId={p._id} />
                   </li>
                 ))}
               </ul>

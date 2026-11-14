@@ -56,6 +56,19 @@ New components live in `web/src/pages/Phase3Pages.tsx` (LeadPanel, TemperatureBa
 | Alerts | `automationService.rentAlerts` (RENT_DUE, RENT_OVERDUE) |
 | UI | `web/src/pages/RentalPages.tsx`, `mobile/lib/features/rentals/rental_screens.dart` |
 
+## Phase 5B — installments & finance
+| Concern | Where |
+|---|---|
+| Installment schedule, aging buckets, amount in words | `shared/src/installments.ts` |
+| Commission split with outside shares, lifecycle | `shared/src/commission.ts` (mirrored in `mobile/lib/core/commission/commission.dart`) |
+| Installment plans (create, pay, cancel, scheduled refresh) | `server/src/services/installmentService.ts`, `models/InstallmentPlan.ts` |
+| Approve commission, pay outside share | `dealService.approveCommission`, `dealService.payExternal` |
+| Cash flow, aging, agent statement (JSON/PDF), receipts (PDF) | `server/src/services/financeReportService.ts` |
+| Alerts | `automationService.installmentAlerts` (INSTALLMENT_OVERDUE) |
+| UI | `web/src/pages/InstallmentPages.tsx` (also the report cards and `ReceiptButton`), `DealPages.tsx` outside-shares card |
+
+Payment allocation reuses the rental helpers (`allocatePayment`, `statusFor`). Installment items keep `lateFee: 0` so the same code applies. Receipts are generated on demand from the stored payment and never stored.
+
 ## Configuration
 | Variable | Purpose |
 |---|---|

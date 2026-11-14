@@ -8,6 +8,7 @@ import { Client, type ClientDoc } from '../models/Client';
 import { Deal, type DealDoc } from '../models/Deal';
 import { Document as DocumentAsset } from '../models/FileAsset';
 import { Lease, type LeaseDoc } from '../models/Lease';
+import { InstallmentPlan, type InstallmentPlanDoc } from '../models/InstallmentPlan';
 import { Property, type PropertyDoc } from '../models/Property';
 import type { TenantContext } from '../types/context';
 import { activityService } from './activityService';
@@ -77,6 +78,7 @@ export const automationService = {
       ...(await this.expiringAgreements(ctx, rules, managers, now)),
       ...(await this.verificationsDue(ctx, rules, now)),
       ...(await this.rentAlerts(ctx, rules, managers, now)),
+      ...(await this.installmentAlerts(ctx, rules, managers, now)),
     ];
     for (const a of alerts) {
       if (!a.userIds.length) continue;
@@ -301,6 +303,33 @@ export const automationService = {
         if (rules.RENT_OVERDUE.enabled && now.getTime() - due >= rules.RENT_OVERDUE.threshold * DAY) {
           out.push({ userIds: ids(l.managerId ?? l.createdBy, ...managers), category: 'AUTOMATION', title: 'Rent overdue', body: `${l.leaseNo}: ${tenant} has not paid Rs ${bal.toLocaleString('en-PK')} for ${it.period}.`, deepLink: `/leases/${l._id}`, key: `RENT_OVERDUE:${l._id}:${it._id}` });
         }
+      }
+    }
+    return out;
+  },
+
+  /** Installments unpaid this many days after their due date. */
+  async installmentAlerts(ctx: TenantContext, rules: AutomationSettings, managers: string[], now: Date): Promise<Alert[]> {
+    const r = rules.INSTALLMENT_OVERDUE;
+    if (!r.enabled) return [];
+    const plans = await InstallmentPlan.find({ businessId: ctx.businessId, deletedAt: null, status: 'ACTIVE', overdueAmount: { $gt: 0 } })
+      .select('planNo items createdBy clientId')
+      .populate({ path: 'clientId', select: 'fullName', options: { skipTenantGuard: true } })
+      .limit(500)
+      .lean<InstallmentPlanDoc[]>();
+    const out: Alert[] = [];
+    for (const p of plans) {
+      for (const it of p.items) {
+        const bal = it.status === 'WAIVED' ? 0 : it.amount - (it.paid ?? 0);
+        if (bal <= 0 || now.getTime() - new Date(it.dueDate).getTime() < r.threshold * DAY) continue;
+        out.push({
+          userIds: ids(p.createdBy, ...managers),
+          category: 'AUTOMATION',
+          title: 'Installment overdue',
+          body: `${p.planNo}: ${(p.clientId as unknown as { fullName?: string })?.fullName ?? ''} has not paid ${it.label} (Rs ${bal.toLocaleString('en-PK')}).`,
+          deepLink: `/installments/${p._id}`,
+          key: `INSTALLMENT_OVERDUE:${p._id}:${it._id}`,
+        });
       }
     }
     return out;

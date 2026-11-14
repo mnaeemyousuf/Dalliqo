@@ -956,6 +956,24 @@
       "GOOD": "اچھی",
       "FAIR": "مناسب",
       "POOR": "خراب"
+    },
+    "commissionLifecycle": {
+      "EXPECTED": "متوقع",
+      "APPROVED": "منظور شدہ",
+      "PARTIALLY_RECEIVED": "جزوی وصول",
+      "RECEIVED": "وصول",
+      "DISTRIBUTED": "تقسیم شدہ",
+      "PAID": "مکمل ادا"
+    },
+    "externalShareKind": {
+      "EXTERNAL_DEALER": "بیرونی ڈیلر",
+      "REFERRAL": "ریفرل",
+      "BRANCH": "دوسری برانچ"
+    },
+    "installmentPlanStatus": {
+      "ACTIVE": "فعال",
+      "COMPLETED": "مکمل",
+      "CANCELLED": "منسوخ"
     }
   },
   "errors": {
@@ -1503,5 +1521,52 @@
     "depositRefund": "واپس ڈپازٹ (روپے)",
     "relist": "پراپرٹی دوبارہ مارکیٹ میں ڈالیں",
     "condition": "حالت"
+  },
+  "finance5b": {
+    "title": "اقساط کے پلان",
+    "subtitle": "خریدار کے ادائیگی پلان — بکنگ، ڈاؤن پیمنٹ، اقساط اور قبضہ",
+    "add": "نیا پلان",
+    "search": "پلان نمبر، خریدار، پراپرٹی تلاش کریں…",
+    "allPlans": "تمام پلان",
+    "empty": "ابھی کوئی اقساط پلان نہیں",
+    "emptyHint": "جب خریدار قسطوں میں ادائیگی کرے تو پلان بنائیں؛ ڈلیکو ہر تاریخ کا حساب رکھے گا اور تاخیر پر خبردار کرے گا۔",
+    "plan": "پلان",
+    "buyer": "خریدار",
+    "total": "کل رقم",
+    "booking": "بکنگ رقم",
+    "downPayment": "ڈاؤن پیمنٹ",
+    "possession": "قبضے پر",
+    "frequency": "وقفہ",
+    "count": "اقساط کی تعداد",
+    "preview": "شیڈول کا جائزہ ({{count}} ادائیگیاں)",
+    "created": "اقساط پلان بن گیا",
+    "recordPayment": "ادائیگی درج کریں",
+    "paymentRecorded": "ادائیگی درج ہو گئی",
+    "cancel": "پلان منسوخ کریں",
+    "cancelReason": "منسوخی کی وجہ",
+    "outstanding": "بقایا",
+    "installment": "قسط",
+    "receipt": "رسید",
+    "cashFlow": "کیش فلو",
+    "cashFlowHint": "لیجر سے پچھلے 12 ماہ",
+    "net": "خالص",
+    "aging": "وصولیوں اور ادائیگیوں کی عمر",
+    "agingHint": "رقم کتنی دیر سے واجب ہے",
+    "receivables": "وصولیاں (ہمیں ملنی ہیں)",
+    "payables": "ادائیگیاں (ہم نے دینی ہیں)",
+    "nothingOutstanding": "کچھ بقایا نہیں۔",
+    "statement": "ایجنٹ کمیشن اسٹیٹمنٹ",
+    "statementHint": "کمایا، ادا کیا اور واجب",
+    "earned": "کمایا",
+    "lifecycle": "کمیشن",
+    "approve": "منظور کریں",
+    "approved": "کمیشن منظور ہو گیا",
+    "externalShares": "بیرونی ڈیلر اور ریفرل",
+    "noExternal": "کوئی بیرونی حصہ نہیں — پورا کمیشن ایجنسی کا ہے۔",
+    "externalHint": "دوسرے ڈیلرز، ریفرل یا برانچ کا حصہ ایجنٹس سے پہلے نکالا جاتا ہے۔ فیصد کل کمیشن کا ہے۔",
+    "addShare": "حصہ شامل کریں",
+    "payOwed": "واجب ادا کریں",
+    "agencyKeeps": "بیرونی حصوں کے بعد ایجنسی کا حصہ: {{amount}}",
+    "schedule": "ادائیگی کا شیڈول"
   }
 }

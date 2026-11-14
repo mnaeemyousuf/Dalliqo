@@ -42,8 +42,8 @@ Legend: ✅ implemented · 🟡 partial · ❌ missing · **P3** = delivered in 
 | 7 | Closing checklist (configurable) | ❌ | ✅ **P3** | 10 defaults + custom items, who/when recorded |
 | 7 | Token amount, initial asking price, cancellation reason | 🟡 | ✅ **P3** | |
 | 7 | Approval workflows for deal changes | ❌ | ✅ **P4** | Close-won approval (optional setting) |
-| 8 | Commission lifecycle (approved, distributed), external dealer / referral shares, statements | 🟡 | 🟡 | Phase 5 |
-| 9 | Installments, receipts/vouchers, receivables/payables aging, cash flow | 🟡 income/expense | 🟡 | Phase 5 |
+| 8 | Commission lifecycle (approved, distributed), external dealer / referral shares, statements | ✅ | ✅ | Phase 5B done |
+| 9 | Installments, receipts/vouchers, receivables/payables aging, cash flow | ✅ | ✅ | Phase 5B done (Android: installments viewed on web for now) |
 | 10 | Rental management (tenants, leases, rent schedules, late fees) | ❌ (rent agreements only) | ✅ **P5A** | Leases, schedules, partial payments, late fees, inspections, renewals, rent roll, reminders; maintenance expenses via finance |
 | 11 | Public listings, inquiry → lead automation, campaigns/ROI, WhatsApp Business API | ❌ (brochures/share only) | 🟡 | Campaign attribution field added; rest Phase 6 (needs WhatsApp Business credentials) |
 | 12 | AI layer (assistant, descriptions, forecasting) | ❌ | ❌ | Phase 7 (needs AI provider key; module `ai` reserved) |

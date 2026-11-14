@@ -20,6 +20,18 @@ class AgentShareSummary {
   final int owed;
 }
 
+/// An outside dealer, referrer or other branch paid from the commission before the agents.
+class ExternalShareSummary {
+  const ExternalShareSummary({this.id, required this.kind, required this.name, required this.expected, required this.earned, required this.paid, required this.owed});
+  final String? id;
+  final String kind;
+  final String name;
+  final int expected;
+  final int earned;
+  final int paid;
+  final int owed;
+}
+
 class CommissionSummary {
   const CommissionSummary({
     required this.basePrice,
@@ -28,6 +40,10 @@ class CommissionSummary {
     required this.receivedBuyer,
     required this.receivedSeller,
     required this.agents,
+    this.external = const [],
+    this.agencyExpected = 0,
+    this.agencyReceived = 0,
+    this.lifecycle = 'EXPECTED',
   });
 
   final num basePrice;
@@ -36,6 +52,12 @@ class CommissionSummary {
   final int receivedBuyer;
   final int receivedSeller;
   final List<AgentShareSummary> agents;
+  final List<ExternalShareSummary> external;
+  final int agencyExpected;
+  final int agencyReceived;
+
+  /// EXPECTED / APPROVED / PARTIALLY_RECEIVED / RECEIVED / DISTRIBUTED / PAID (same rule as the API).
+  final String lifecycle;
 
   int get expected => expectedBuyer + expectedSeller;
   int get received => receivedBuyer + receivedSeller;
@@ -66,15 +88,50 @@ CommissionSummary summarizeCommission(Map<String, dynamic> deal) {
   final rSeller = paid('SELLER');
   final total = buyer + seller;
   final received = rBuyer + rSeller;
+  // Outside shares come off the top; agents split what the agency keeps.
+  final ratio = total > 0 ? (received / total).clamp(0, 1) : 0;
+  final external = ((deal['externalShares'] as List?) ?? const []).whereType<Map>().map((x) {
+    final value = (x['value'] as num?) ?? 0;
+    final expected = x['mode'] == 'FIXED' ? value.round() : (total * value / 100).round();
+    final earned = (expected * ratio).round();
+    final paid = ((x['paid'] as num?) ?? 0).round();
+    return ExternalShareSummary(id: x['_id'] as String?, kind: '${x['kind']}', name: '${x['name'] ?? ''}', expected: expected, earned: earned, paid: paid, owed: earned - paid > 0 ? earned - paid : 0);
+  }).toList();
+  final extExpected = external.fold(0, (s, x) => s + x.expected);
+  final extEarned = external.fold(0, (s, x) => s + x.earned);
+  final agencyExpected = total - extExpected > 0 ? total - extExpected : 0;
+  final agencyReceived = received - extEarned > 0 ? received - extEarned : 0;
   final payouts = ((deal['payouts'] as List?) ?? const []).whereType<Map>();
   final agents = ((deal['agents'] as List?) ?? const []).whereType<Map>().map((a) {
     final id = _id(a['userId']);
     final pct = (a['sharePct'] as num?) ?? 0;
     final paidOut = payouts.where((p) => _id(p['userId']) == id && p['status'] == 'PAID').fold(0, (s, p) => s + ((p['amount'] as num?) ?? 0).round());
-    final share = (received * pct / 100).round();
-    return AgentShareSummary(userId: id, sharePct: pct, expected: (total * pct / 100).round(), received: share, paidOut: paidOut, owed: share - paidOut > 0 ? share - paidOut : 0);
+    final share = (agencyReceived * pct / 100).round();
+    return AgentShareSummary(userId: id, sharePct: pct, expected: (agencyExpected * pct / 100).round(), received: share, paidOut: paidOut, owed: share - paidOut > 0 ? share - paidOut : 0);
   }).toList();
-  return CommissionSummary(basePrice: base, expectedBuyer: buyer, expectedSeller: seller, receivedBuyer: rBuyer, receivedSeller: rSeller, agents: agents);
+  final status = received <= 0 ? 'PENDING' : (received >= total && total > 0 ? 'RECEIVED' : 'PARTIALLY_RECEIVED');
+  final allRecorded = agents.every((a) => payouts.where((p) => _id(p['userId']) == a.userId).fold<num>(0, (s, p) => s + ((p['amount'] as num?) ?? 0)) >= a.received);
+  final lifecycle = status == 'PENDING'
+      ? (deal['commissionApprovedAt'] != null ? 'APPROVED' : 'EXPECTED')
+      : status == 'PARTIALLY_RECEIVED'
+          ? 'PARTIALLY_RECEIVED'
+          : agents.every((a) => a.owed == 0) && external.every((x) => x.owed == 0)
+              ? 'PAID'
+              : allRecorded
+                  ? 'DISTRIBUTED'
+                  : 'RECEIVED';
+  return CommissionSummary(
+    basePrice: base,
+    expectedBuyer: buyer,
+    expectedSeller: seller,
+    receivedBuyer: rBuyer,
+    receivedSeller: rSeller,
+    agents: agents,
+    external: external,
+    agencyExpected: agencyExpected,
+    agencyReceived: agencyReceived,
+    lifecycle: lifecycle,
+  );
 }
 
 /// Agent shares must add up to 100% (0.01 tolerance) and each be above zero.

@@ -5,6 +5,7 @@ import { JobLock } from '../models/SyncRecord';
 import { automationService } from '../services/automationService';
 import { followUpService } from '../services/followUpService';
 import { leaseService } from '../services/leaseService';
+import { installmentService } from '../services/installmentService';
 
 const OWNER = `${hostname()}:${process.pid}:${randomUUID().slice(0, 8)}`;
 
@@ -40,6 +41,7 @@ export const JOBS: Job[] = [
   { name: 'automation-rules', everyMs: 10 * 60_000, run: () => automationService.runAll() },
   { name: 'lead-rescore', everyMs: 30 * 60_000, run: () => automationService.rescoreStaleLeads() },
   { name: 'lease-refresh', everyMs: 60 * 60_000, run: () => leaseService.refreshAll() },
+  { name: 'installment-refresh', everyMs: 60 * 60_000, run: () => installmentService.refreshAll() },
 ];
 
 export function startScheduler(): () => void {

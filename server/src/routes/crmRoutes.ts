@@ -10,6 +10,8 @@ import {
   leadController,
   verificationController,
   leaseController,
+  installmentController,
+  financeReportController,
   inventoryToolsController,
   negotiationController,
   dealController,
@@ -82,6 +84,8 @@ r.get('/deals/:id', can(P.DEALS_READ), id, h(dealController.get));
 r.patch('/deals/:id', can(P.DEALS_UPDATE), validate({ params: idParams, body: s.dealUpdateSchema }), h(dealController.update));
 r.post('/deals/:id/offers', can(P.DEALS_UPDATE), validate({ params: idParams, body: s.offerSchema }), h(negotiationController.addOffer));
 r.post('/deals/:id/offers/:subId/respond', can(P.DEALS_UPDATE), validate({ params: s.subIdParams, body: s.offerRespondSchema }), h(negotiationController.respond));
+r.post('/deals/:id/commission/approve', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), id, h(negotiationController.approveCommission));
+r.post('/deals/:id/external/:subId/pay', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), validate({ params: s.subIdParams, body: s.externalPaySchema }), h(negotiationController.payExternal));
 r.post('/deals/:id/approval', can(P.DEALS_APPROVE), validate({ params: idParams, body: s.dealApprovalSchema }), h(negotiationController.approval));
 r.post('/deals/:id/checklist', can(P.DEALS_UPDATE), validate({ params: idParams, body: s.checklistItemSchema }), h(negotiationController.checklist));
 r.post('/deals/:id/stage', can(P.DEALS_UPDATE), validate({ params: idParams, body: s.dealStageSchema }), h(dealController.stage));
@@ -133,6 +137,15 @@ r.post('/properties/:id/verification/submit', can(P.VERIFICATION_SUBMIT), valida
 r.post('/properties/:id/verification/assign', can(P.VERIFICATION_SUBMIT), validate({ params: idParams, body: s.verificationAssignSchema }), h(verificationController.assign));
 r.post('/properties/:id/verification/checklist', can(P.VERIFICATION_SUBMIT), validate({ params: idParams, body: s.verificationChecklistSchema }), h(verificationController.checklist));
 r.post('/properties/:id/verification/decide', can(P.VERIFICATION_DECIDE), validate({ params: idParams, body: s.verificationDecideSchema }), h(verificationController.decide));
+r.get('/installments', can(P.FINANCE_READ), validate({ query: s.installmentListQuery }), h(installmentController.list));
+r.post('/installments', can(P.FINANCE_CREATE), validate({ body: s.installmentPlanSchema }), h(installmentController.create));
+r.get('/installments/:id', can(P.FINANCE_READ), id, h(installmentController.get));
+r.post('/installments/:id/payments', can(P.FINANCE_CREATE), validate({ params: idParams, body: s.rentPaymentSchema }), h(installmentController.pay));
+r.post('/installments/:id/cancel', can(P.FINANCE_UPDATE), validate({ params: idParams, body: s.installmentCancelSchema }), h(installmentController.cancel));
+r.get('/reports/cash-flow', can(P.FINANCE_READ, P.REPORTS_READ), validate({ query: s.periodQuery }), h(financeReportController.cashFlow));
+r.get('/reports/aging', can(P.FINANCE_READ, P.REPORTS_READ), h(financeReportController.aging));
+r.get('/reports/agent-statement', can(P.DEALS_READ), validate({ query: s.agentStatementQuery }), h(financeReportController.agentStatement));
+r.get('/receipts/:kind/:id/:paymentId', validate({ params: s.receiptParams }), h(financeReportController.receipt));
 r.get('/leases', can(P.RENTALS_READ), validate({ query: s.leaseListQuery }), h(leaseController.list));
 r.get('/leases/rent-roll', can(P.RENTALS_READ), h(leaseController.rentRoll));
 r.post('/leases', can(P.RENTALS_MANAGE), validate({ body: s.leaseCreateSchema }), h(leaseController.create));

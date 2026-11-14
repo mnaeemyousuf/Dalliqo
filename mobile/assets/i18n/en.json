@@ -956,6 +956,24 @@
       "GOOD": "Good",
       "FAIR": "Fair",
       "POOR": "Poor"
+    },
+    "commissionLifecycle": {
+      "EXPECTED": "Expected",
+      "APPROVED": "Approved",
+      "PARTIALLY_RECEIVED": "Partly received",
+      "RECEIVED": "Received",
+      "DISTRIBUTED": "Distributed",
+      "PAID": "Fully paid"
+    },
+    "externalShareKind": {
+      "EXTERNAL_DEALER": "Outside dealer",
+      "REFERRAL": "Referral",
+      "BRANCH": "Other branch"
+    },
+    "installmentPlanStatus": {
+      "ACTIVE": "Active",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
     }
   },
   "errors": {
@@ -1503,5 +1521,52 @@
     "depositRefund": "Deposit refunded (PKR)",
     "relist": "Put the property back on the market",
     "condition": "Condition"
+  },
+  "finance5b": {
+    "title": "Installment plans",
+    "subtitle": "Buyer payment plans — booking, down payment, installments and possession",
+    "add": "New plan",
+    "search": "Search plan no, buyer, property…",
+    "allPlans": "All plans",
+    "empty": "No installment plans yet",
+    "emptyHint": "Create a plan when a buyer pays in installments; Dalliqo tracks every due date and flags late payments.",
+    "plan": "Plan",
+    "buyer": "Buyer",
+    "total": "Total",
+    "booking": "Booking amount",
+    "downPayment": "Down payment",
+    "possession": "On possession",
+    "frequency": "Frequency",
+    "count": "Number of installments",
+    "preview": "Schedule preview ({{count}} payments)",
+    "created": "Installment plan created",
+    "recordPayment": "Record payment",
+    "paymentRecorded": "Payment recorded",
+    "cancel": "Cancel plan",
+    "cancelReason": "Cancellation reason",
+    "outstanding": "Outstanding",
+    "installment": "Installment",
+    "receipt": "Receipt",
+    "cashFlow": "Cash flow",
+    "cashFlowHint": "last 12 months from the ledger",
+    "net": "Net",
+    "aging": "Receivables & payables aging",
+    "agingHint": "how late money is",
+    "receivables": "Receivables (owed to us)",
+    "payables": "Payables (we owe)",
+    "nothingOutstanding": "Nothing outstanding.",
+    "statement": "Agent commission statement",
+    "statementHint": "earned, paid out and owed",
+    "earned": "Earned",
+    "lifecycle": "Commission",
+    "approve": "Approve",
+    "approved": "Commission approved",
+    "externalShares": "Outside dealers & referrals",
+    "noExternal": "No outside shares — the full commission goes to the agency.",
+    "externalHint": "Shares paid to other dealers, referrers or branches come off the top, before agent shares. Percent is of the total commission.",
+    "addShare": "Add share",
+    "payOwed": "Pay owed",
+    "agencyKeeps": "Agency share after outside parties: {{amount}}",
+    "schedule": "Payment schedule"
   }
 }

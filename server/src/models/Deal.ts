@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { Schema, model, type Types } from 'mongoose';
 import {
   APPROVAL_STATUSES,
+  EXTERNAL_SHARE_KINDS,
+  type ExternalShareKind,
   type ApprovalStatus,
   OFFER_PARTIES,
   OFFER_STATUSES,
@@ -82,6 +84,9 @@ export interface DealDoc extends SyncDoc {
   offers: DealOffer[];
   tokenAmount?: number;
   checklist: DealChecklistEntry[];
+  externalShares: { _id: string; kind: ExternalShareKind; name: string; mode: CommissionMode; value: number; paid: number }[];
+  commissionApprovedAt?: Date | null;
+  commissionApprovedBy?: Types.ObjectId | null;
   /** Pending request to close the deal as won (when approvals are required). */
   approval?: { status: ApprovalStatus; action: 'CLOSE_WON'; requestedBy?: Types.ObjectId; requestedAt?: Date; decidedBy?: Types.ObjectId | null; decidedAt?: Date | null; note?: string | null } | null;
   agreedPrice?: number;
@@ -144,6 +149,21 @@ const schema = new Schema<DealDoc>(
       default: [],
     },
     tokenAmount: { type: Number, min: 0 },
+    externalShares: {
+      type: [
+        {
+          _id: { type: String, default: () => randomUUID() },
+          kind: { type: String, enum: EXTERNAL_SHARE_KINDS, required: true },
+          name: { type: String, required: true, maxlength: 120 },
+          mode: { type: String, enum: COMMISSION_MODES, default: 'PERCENT' },
+          value: { type: Number, required: true, min: 0 },
+          paid: { type: Number, default: 0, min: 0 },
+        },
+      ],
+      default: [],
+    },
+    commissionApprovedAt: { type: Date, default: null },
+    commissionApprovedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     approval: {
       type: new Schema(
         {

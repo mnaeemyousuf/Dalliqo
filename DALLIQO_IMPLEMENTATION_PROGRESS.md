@@ -74,8 +74,39 @@ Server 236 passed (9 new) · Web 38 passed · Flutter 79 passed · typecheck/ana
 ### Tests
 Server 242 passed (6 new rental tests: schedule maths, allocation, summary, full lease lifecycle, scheduled overdue refresh, permissions) · Web 38 · Flutter 79.
 
+## Phase 5B — Installments, commission lifecycle, finance reports ✅ (14 Nov 2026)
+
+### Features implemented
+- **Installment plans** for buyers: booking, down payment, monthly / quarterly / half-yearly / yearly installments (remainder on the last one) and an on-possession payment; or a custom list of items. The items must add up to the total. Plan numbers `IP-000001`.
+- Payments go to the oldest unpaid installment first, with partial payments, advances kept as credit and safe retries. A plan is marked COMPLETED when nothing is left. Plans can be cancelled with a reason. An hourly job marks late installments, and the "Installment overdue" automation rule alerts the creator and managers.
+- **Commission lifecycle:** Expected → Approved → Partly received → Received → Distributed → Fully paid.
+  - Approval is an explicit, audited action.
+  - Outside dealer, referral and other-branch shares (percent of the total commission, or a fixed amount) come off the top. Agents split what the agency keeps. Outside shares are earned in proportion to what has been received and can be paid and tracked.
+- **Finance reports:**
+  - 12-month cash flow (income, expense, net, cumulative) from the ledger.
+  - Receivables and payables aging in five buckets (not yet due, 1–30, 31–60, 61–90, 90+ days). Receivables cover commission still due, late installments and late rent; payables cover agent shares and outside parties owed.
+  - Agent commission statement, as JSON or PDF. Agents see only their own; managers with `deals:read_all` see anyone's.
+- **Receipts:** a PDF receipt for any recorded payment (rent, installment or deal commission), with the amount in words in lakh/crore. Every receipt generated is audited.
+- **Web:**
+  - New Installments section: a list, a create drawer with a live schedule preview, and a detail page with the schedule, payments, receipts, record payment and cancel.
+  - The Reports page gains Cash flow, Aging and Agent statement cards.
+  - Deal detail gains the lifecycle badge, an Approve button, and an outside-shares card with an editor and a "pay owed" action.
+  - Receipt buttons on lease, installment and deal payments.
+- **Android:** commission maths mirror updated (outside shares and lifecycle); the deal screen shows the lifecycle and outside shares.
+
+### Database / APIs
+- New collection `installmentPlans` (items and payments embedded; 6 indexes). Deals gain `externalShares[]`, `commissionApprovedAt` and `commissionApprovedBy`. These are additive, so no migration is needed.
+- `GET|POST /installments`, `GET /installments/:id`, `POST /installments/:id/payments`, `POST /installments/:id/cancel`
+- `POST /deals/:id/commission/approve`, `POST /deals/:id/external/:shareId/pay`
+- `GET /reports/cash-flow`, `GET /reports/aging`, `GET /reports/agent-statement?userId=&format=json|pdf`
+- `GET /receipts/:kind(lease|installment|deal)/:id/:paymentId` (PDF)
+- Plan gating: installments, cash flow and aging belong to the `finance` module; the agent statement belongs to `deals`.
+
+### Tests
+- Server: 248 passed, 6 of them new (schedule maths, commission split and lifecycle, amounts in words and aging buckets, full installment flow with receipt PDF, approval with outside-dealer payment and statement permissions, cash flow).
+- Web: 38. Flutter: 81 (2 new commission parity tests).
+
 ## Next phases (planned order)
 - **Phase 4 follow-ups:** role-specific dashboards (branch/sales/finance), co-owner and listing-agent pickers in the forms (API ready), verification screens on Android (status shown today).
-- **Phase 5B:** installment plans, receipts/vouchers, receivables/payables aging, cash flow, commission lifecycle (approved → distributed), external dealer/referral shares, agent statements.
 - **Phase 6:** public listing pages + inquiry → lead automation, campaigns and ROI, agent/agency landing pages, client & owner portals, email notifications, WhatsApp Business integration.
 - **Phase 7:** AI layer (permission-aware assistant, descriptions, summaries, forecasting, indicative pricing — clearly labelled estimates).
