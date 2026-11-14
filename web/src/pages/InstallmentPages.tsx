@@ -338,7 +338,7 @@ export function AgingCard() {
                 <p className={`ltr-nums text-sm font-semibold ${b === '90_PLUS' && bucketSum(b) ? 'text-red-600' : ''}`}>{formatPkr(bucketSum(b))}</p>
               </div>
             ))}
-            <div className="rounded-lg bg-brand-50 p-2 dark:bg-brand-900/30">
+            <div className="rounded-lg bg-brand-50 p-2 dark:bg-brand-600/20">
               <p className="text-2xs text-muted">{t('finance5b.total')}</p>
               <p className="ltr-nums text-sm font-bold">{formatPkr(d[side].total)}</p>
             </div>

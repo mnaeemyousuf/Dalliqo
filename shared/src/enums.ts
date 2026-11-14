@@ -212,6 +212,12 @@ export const ACTIVITY_TYPES = [
   'INSTALLMENT_PLAN_CREATED',
   'INSTALLMENT_RECEIVED',
   'COMMISSION_APPROVED',
+  'WEBSITE_INQUIRY',
+  'LISTING_PUBLISHED',
+  'PORTAL_LINK_CREATED',
+  'PORTAL_REQUEST',
+  'WHATSAPP_SENT',
+  'WHATSAPP_RECEIVED',
 ] as const;
 export type ActivityType = (typeof ACTIVITY_TYPES)[number];
 
@@ -224,7 +230,7 @@ export type DocumentEntityType = (typeof DOCUMENT_ENTITY_TYPES)[number];
 export const COMMUNICATION_CHANNELS = ['CALL', 'WHATSAPP', 'SMS', 'EMAIL'] as const;
 export type CommunicationChannel = (typeof COMMUNICATION_CHANNELS)[number];
 
-export const NOTIFICATION_CATEGORIES = ['FOLLOWUP', 'MATCH', 'PROPERTY', 'SYSTEM', 'LEAD', 'DEAL', 'AUTOMATION'] as const;
+export const NOTIFICATION_CATEGORIES = ['FOLLOWUP', 'MATCH', 'PROPERTY', 'SYSTEM', 'LEAD', 'DEAL', 'AUTOMATION', 'MARKETING'] as const;
 export type NotificationCategory = (typeof NOTIFICATION_CATEGORIES)[number];
 
 export const MEDIA_KINDS = ['image', 'video', 'pdf', 'other'] as const;

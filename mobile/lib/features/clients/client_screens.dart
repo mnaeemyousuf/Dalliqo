@@ -13,6 +13,7 @@ import '../../core/widgets/app_widgets.dart';
 import '../../core/widgets/domain_widgets.dart';
 import '../../data/repositories.dart';
 import '../auth/auth_controller.dart';
+import '../marketing/marketing_actions.dart';
 import '../branches/branch_screens.dart';
 import '../deals/deal_screens.dart';
 import '../common/record_panels.dart';
@@ -277,6 +278,7 @@ class ClientDetailScreen extends ConsumerWidget {
             appBar: AppBar(
               title: Text(c.fullName),
               actions: [
+                PortalLinkButton(kind: 'CLIENT', partyServerId: c.serverId, name: c.fullName, phone: c.whatsappNumber ?? c.mobileNumber),
                 if (auth.can('clients:update')) IconButton(icon: const Icon(Icons.edit_outlined), onPressed: () => context.push('/clients/${c.id}/edit')),
                 if (auth.can('clients:delete'))
                   IconButton(

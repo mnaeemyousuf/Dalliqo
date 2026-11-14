@@ -81,6 +81,8 @@ export interface ClientDoc extends SyncDoc {
   // ── Lead management ──
   /** Campaign / ad / listing the lead came from (free text, used for attribution). */
   campaign?: string;
+  /** Campaign the lead came from (website inquiries carry the campaign code). */
+  campaignId?: Types.ObjectId | null;
   buyingTimeline?: BuyingTimeline;
   /** HOT/WARM/COLD set by a person; when empty the score decides. */
   temperatureOverride?: LeadTemperature | null;
@@ -157,6 +159,7 @@ const schema = new Schema<ClientDoc>(
     matchCount: { type: Number, default: 0 },
     lastContactedAt: Date,
     campaign: { type: String, trim: true, maxlength: 120 },
+    campaignId: { type: Schema.Types.ObjectId, ref: 'Campaign', default: null },
     buyingTimeline: { type: String, enum: BUYING_TIMELINES },
     temperatureOverride: { type: String, enum: [...LEAD_TEMPERATURES, null], default: null },
     temperature: { type: String, enum: LEAD_TEMPERATURES, default: 'WARM' },
@@ -196,6 +199,7 @@ schema.index({ businessId: 1, source: 1, createdAt: -1 });
 schema.index({ businessId: 1, 'requirements.purpose': 1, 'requirements.active': 1 });
 schema.index({ businessId: 1, 'requirements.blocks': 1 });
 schema.index({ businessId: 1, searchText: 1 });
+schema.index({ businessId: 1, campaignId: 1 }, { partialFilterExpression: { campaignId: { $type: 'objectId' } } });
 schema.plugin(tenantGuardPlugin);
 
 export const Client = model<ClientDoc>('Client', schema, 'clients');

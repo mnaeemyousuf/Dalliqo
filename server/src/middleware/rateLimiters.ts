@@ -34,6 +34,9 @@ const bearerKey = (req: Request) => {
   return h?.startsWith('Bearer ') ? `tok:${createHash('sha256').update(h.slice(7)).digest('hex').slice(0, 32)}` : `ip:${ipKey(req)}`;
 };
 const isHealthCheck = (req: Request) => req.path === '/health';
+/** Public forms (website inquiries, portal messages): a person sends a handful, bots send thousands. */
+export const inquiryLimiter = rateLimit({ ...base, windowMs: 15 * 60_000, limit: 10, keyGenerator: ipKey });
+
 export const apiLimiter = [
   rateLimit({ ...base, windowMs: 15 * 60_000, limit: 3000, keyGenerator: bearerKey, skip: (req) => !env.RATE_LIMIT_ENABLED || isHealthCheck(req) }),
   rateLimit({ ...base, windowMs: 15 * 60_000, limit: 30_000, keyGenerator: ipKey, skip: (req) => !env.RATE_LIMIT_ENABLED || isHealthCheck(req) }),

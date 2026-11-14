@@ -106,7 +106,62 @@ Server 242 passed (6 new rental tests: schedule maths, allocation, summary, full
 - Server: 248 passed, 6 of them new (schedule maths, commission split and lifecycle, amounts in words and aging buckets, full installment flow with receipt PDF, approval with outside-dealer payment and statement permissions, cash flow).
 - Web: 38. Flutter: 81 (2 new commission parity tests).
 
+## Phase 6 — Website, inquiries, campaigns, portals, email, WhatsApp ✅ (14 Nov 2026)
+
+### Features implemented
+- **Agency website** at `/w/<address>`: listings page with search, filters, sorting and pages; a page per listing with photos, details, call and WhatsApp buttons and an inquiry form; about and contact sections. English/Urdu; works on phones.
+  - Only published listings that are available, reserved or under negotiation appear.
+  - Owner, plot / street / unit number, minimum price and the exact location are never sent. The map link is rounded to about 200 m.
+  - Each listing counts its views and inquiries.
+- **Inquiry → lead:** a website inquiry (or a WhatsApp message) matches an existing client by phone or creates a lead (source WEBSITE / WHATSAPP).
+  - The lead is assigned to the listing's agent and gets a follow-up within the hour (one at a time; repeats don't pile up).
+  - The assignee, or the owner and managers if nobody is assigned, is notified.
+  - The raw inquiry is kept; an email acknowledgement goes out when an email was given.
+  - Abuse protection: honeypot field and 10 submissions per 15 minutes per IP. IPs are stored only as salted hashes.
+- **Campaigns and ROI:** channel, status, budget, spend and a link code (`?c=code`, carried from the site to the inquiry). Per campaign: leads, inquiries, wins, commission actually received, cost per lead, conversion, cost per win and ROI. The Reports page adds campaign and lead-source cards.
+- **Client and owner portals:** private links with no account needed; only a hash of the token is stored. Links are valid for 7–365 days, can be revoked and count how often they were opened.
+  - Clients see their deals, installment plans (schedule, payments) and leases (schedule, overdue), and can download their own receipts as PDFs.
+  - Owners see their listings (status, verification, on the website, views and inquiries), leases (collected, overdue) and deal progress.
+  - Both can message their agent: this records activity and notifies the agent. Expired or revoked links return 410.
+- **Email notifications:** a per-user switch (Settings → Profile) emails a copy of every in-app notification, with a link back to the record. SMTP is required in production; in development mail goes to the dev outbox.
+- **WhatsApp Business (Cloud API):**
+  - Each business enters its phone number id; the deployment holds the Meta access token, app secret and verify token.
+  - "Send WhatsApp" sends from the business number when connected, otherwise it opens wa.me with the text ready. Either way it is recorded as activity.
+  - The webhook (verification handshake plus HMAC-SHA256 signature check) turns inbound messages into leads and inquiries. Meta's retries are de-duplicated by message id.
+- **Web:** a new Marketing section (Inquiries, Campaigns, Website, WhatsApp); "Publish" on property detail; "Portal link" on client and owner detail (copy or send on WhatsApp); "Send WhatsApp" on client detail; the email switch in Profile; public pages for the site, listings and portal.
+- **Android:** publish / unpublish from property detail; create and share portal links from client and owner detail (opens WhatsApp with the message, or the share sheet).
+- **Permissions and plans:**
+  - New `marketing:manage` (website, campaigns, WhatsApp settings). Migration `007-marketing` grants it to members who could manage settings and to managers / marketing managers.
+  - Campaigns are in the `marketing` module (Business and Enterprise plans). The website, inquiries and portals work on every plan.
+- **Demo data:** website `/w/yousuf-estate-demo` with 10 published listings, two campaigns (one with attributed leads and a won deal) and a website inquiry.
+
+### Database / APIs
+- **New collections:** `campaigns`, `inquiries` (unique per-business `externalId` for WhatsApp) and `portalLinks` (unique token hash).
+- **New fields:**
+  - Business: `website{enabled,slug(unique),tagline,about,phone,whatsapp,email,showAgents}` and `whatsapp{phoneNumberId,displayNumber}`.
+  - Property: `publicListing{published,publishedAt,headline,views,inquiries}`.
+  - Client: `campaignId`.
+  - User: `preferences.emailNotifications`.
+- **Signed in:**
+  - `GET|PUT /website`, `POST /properties/:id/publish`
+  - `GET /inquiries`, `PATCH /inquiries/:id`
+  - `/campaigns` CRUD, `GET /reports/campaigns`
+  - `POST|GET /portal-links`, `DELETE /portal-links/:id`
+  - `GET|PUT /whatsapp`, `POST /whatsapp/send`
+  - `PATCH /auth/me` accepts `preferences.emailNotifications`
+- **Public, no sign-in:**
+  - `GET /public/sites/:slug`, `GET /public/sites/:slug/listings`, `GET /public/sites/:slug/listings/:id`, `POST /public/sites/:slug/inquiries`
+  - `GET /public/portal/:token`, `GET /public/portal/:token/receipts/:kind/:id/:paymentId`, `POST /public/portal/:token/requests`
+  - `GET|POST /public/whatsapp/webhook`
+
+### Credentials needed for WhatsApp Business
+`WHATSAPP_ACCESS_TOKEN` (permanent system-user token), `WHATSAPP_APP_SECRET` and `WHATSAPP_VERIFY_TOKEN`, set on the API service. Then register the webhook `https://<api>/api/public/whatsapp/webhook` in the Meta app, and each business enters its phone number id under Marketing → WhatsApp. Without these, everything works with wa.me links.
+
+### Tests
+- Server: 10 new marketing tests; 258 passed + 1 skipped in total.
+- Web: 38. Flutter: 81. `flutter analyze` clean; web build OK.
+
 ## Next phases (planned order)
 - **Phase 4 follow-ups:** role-specific dashboards (branch/sales/finance), co-owner and listing-agent pickers in the forms (API ready), verification screens on Android (status shown today).
-- **Phase 6:** public listing pages + inquiry → lead automation, campaigns and ROI, agent/agency landing pages, client & owner portals, email notifications, WhatsApp Business integration.
+- **Phase 6 follow-ups:** a per-agent landing page (the API already filters listings by `agentId`), WhatsApp message templates for messages outside the 24-hour window, campaign spend imported from expense entries.
 - **Phase 7:** AI layer (permission-aware assistant, descriptions, summaries, forecasting, indicative pricing — clearly labelled estimates).

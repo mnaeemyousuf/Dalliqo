@@ -45,12 +45,12 @@ Legend: ✅ implemented · 🟡 partial · ❌ missing · **P3** = delivered in 
 | 8 | Commission lifecycle (approved, distributed), external dealer / referral shares, statements | ✅ | ✅ | Phase 5B done |
 | 9 | Installments, receipts/vouchers, receivables/payables aging, cash flow | ✅ | ✅ | Phase 5B done (Android: installments viewed on web for now) |
 | 10 | Rental management (tenants, leases, rent schedules, late fees) | ❌ (rent agreements only) | ✅ **P5A** | Leases, schedules, partial payments, late fees, inspections, renewals, rent roll, reminders; maintenance expenses via finance |
-| 11 | Public listings, inquiry → lead automation, campaigns/ROI, WhatsApp Business API | ❌ (brochures/share only) | 🟡 | Campaign attribution field added; rest Phase 6 (needs WhatsApp Business credentials) |
+| 11 | Public listings, inquiry → lead automation, campaigns/ROI, WhatsApp Business API | ✅ | ✅ | Phase 6 done |
 | 12 | AI layer (assistant, descriptions, forecasting) | ❌ | ❌ | Phase 7 (needs AI provider key; module `ai` reserved) |
 | 13 | Role dashboards, agent performance | 🟡 owner dashboard + team table | 🟡 | Lead/inventory reports added; per-role dashboards Phase 4 |
-| 14 | Client / owner portals | ❌ | ❌ | Phase 6 |
+| 14 | Client / owner portals | ✅ | ✅ | Phase 6 done |
 | 15 | Configurable automation rules | ❌ | ✅ **P3** | 6 rules, thresholds, on/off, de-duplicated alerts |
-| 15 | Email / WhatsApp notifications | 🟡 email for auth | 🟡 | Phase 6 |
+| 15 | Email / WhatsApp notifications | ✅ | ✅ | Phase 6 done |
 | 16 | Branch features, record-level permissions | ✅ | ✅ | |
 | 16 | Named roles (Branch Manager, Finance Manager, Verification Officer…) | 🟡 templates | ✅ **P4** | 12 templates incl. all roles in the brief |
 | 17 | Offline sync with conflicts, status visibility | ✅ | ✅ | Offers/checklist also work offline (**P3**) |

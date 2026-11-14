@@ -15,6 +15,7 @@ import crmRoutes from './crmRoutes';
 import fileRoutes from './fileRoutes';
 import { platformRoutes, subscriptionRoutes } from './subscriptionRoutes';
 import { entitlementGuard } from '../middleware/entitlements';
+import { marketingRoutes, publicRoutes } from './marketingRoutes';
 
 const api = Router();
 
@@ -26,6 +27,8 @@ api.get('/health', (_req, res) => {
 api.use('/auth', authRoutes);
 // Signed / unguessable links to locally stored files (local storage driver only).
 api.use('/files', fileRoutes);
+// Agency websites, portals and provider webhooks (no sign-in; each route checks its own token / slug).
+api.use('/public', publicRoutes);
 
 // Everything below requires a signed-in user with a non-temporary password.
 // Each router enforces its own permissions; tenant scoping happens in repositories.
@@ -44,8 +47,10 @@ const CRM_PREFIXES = [
   '/documents', '/uploads', '/notes', '/activities', '/matches', '/settings', '/followups', '/notifications',
   '/devices', '/exports', '/sync', '/deals', '/reports', '/transactions', '/transaction-categories', '/agreements', '/agreement-templates',
   '/verifications', '/saved-views', '/leases', '/installments', '/receipts',
+  '/website', '/inquiries', '/campaigns', '/portal-links', '/whatsapp',
 ];
 api.use(CRM_PREFIXES, ...secured, entitlementGuard);
+api.use(marketingRoutes);
 api.use(crmRoutes);
 
 export default api;

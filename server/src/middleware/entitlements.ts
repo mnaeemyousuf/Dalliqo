@@ -11,6 +11,8 @@ import { unauthorized } from '../utils/AppError';
 export const MODULE_PREFIXES: [string, Module][] = [
   ['/deals', 'deals'],
   ['/leases', 'rentals'],
+  ['/campaigns', 'marketing'],
+  ['/reports/campaigns', 'marketing'],
   ['/installments', 'finance'],
   ['/reports/cash-flow', 'finance'],
   ['/reports/aging', 'finance'],

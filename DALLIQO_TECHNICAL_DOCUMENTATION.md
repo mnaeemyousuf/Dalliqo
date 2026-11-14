@@ -69,7 +69,24 @@ New components live in `web/src/pages/Phase3Pages.tsx` (LeadPanel, TemperatureBa
 
 Payment allocation reuses the rental helpers (`allocatePayment`, `statusFor`). Installment items keep `lateFee: 0` so the same code applies. Receipts are generated on demand from the stored payment and never stored.
 
+## Phase 6 — marketing, portals, WhatsApp
+| Concern | Where |
+|---|---|
+| Channels, ROI maths, slugs, wa.me links | `shared/src/marketing.ts` |
+| Inquiry → lead (match by phone, assign listing agent, call-back, notify, acknowledgement) | `server/src/services/leadIntakeService.ts` (`systemAuth` acts for the business owner) |
+| Website settings, publishing, public listings (field allow-list `toPublic`) | `server/src/services/websiteService.ts` |
+| Campaigns and ROI (computed from clients → won deals → received commission) | `server/src/services/campaignService.ts` |
+| Portal links (SHA-256 token hash, expiry / revoke, own-record receipts) | `server/src/services/portalService.ts`, `models/PortalLink.ts` |
+| WhatsApp Cloud API send, webhook verify / signature, inbound → lead | `server/src/services/whatsappService.ts` (raw body kept in `app.ts` for `/api/public/whatsapp`) |
+| Email copies of notifications | `notificationService.emailCopies` (opt-in `preferences.emailNotifications`) |
+| Routes | `server/src/routes/marketingRoutes.ts` (`marketingRoutes` signed in, `publicRoutes` at `/api/public`) |
+| UI | `web/src/pages/MarketingPages.tsx`, `web/src/pages/PublicPages.tsx` (own axios instance, no auth), `mobile/lib/features/marketing/marketing_actions.dart` |
+
+Public endpoints never take a business id from the caller: sites resolve by slug (website on, business active), portals by token hash, and webhooks by the Meta phone number id.
+
 ## Configuration
+WhatsApp Business (optional): `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_API_VERSION` (default v21.0). Email: `SMTP_*` (inquiry acknowledgements, notification copies).
+
 | Variable | Purpose |
 |---|---|
 | `PLATFORM_ADMIN_EMAILS` | Comma-separated Dalliqo staff emails allowed to manage subscriptions |

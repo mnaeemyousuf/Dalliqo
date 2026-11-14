@@ -70,7 +70,15 @@ export function createApp(): Express {
     }),
   );
   app.use(compression());
-  app.use(express.json({ limit: '1mb' }));
+  // Keep the raw bytes of webhook bodies: their HMAC signatures are computed over them.
+  app.use(
+    express.json({
+      limit: '1mb',
+      verify: (req, _res, buf) => {
+        if ((req as { url?: string }).url?.startsWith('/api/public/whatsapp')) (req as unknown as { rawBody?: Buffer }).rawBody = Buffer.from(buf);
+      },
+    }),
+  );
   app.use(cookieParser());
 
   app.use('/api', apiLimiter, apiRoutes);

@@ -45,6 +45,12 @@ const PlatformPage = page(() => import('@/pages/Phase3Pages'), 'PlatformPage');
 const VerificationsPage = page(() => import('@/pages/Phase4Pages'), 'VerificationsPage');
 const rentals = () => import('@/pages/RentalPages');
 const installments = () => import('@/pages/InstallmentPages');
+const marketing = () => import('@/pages/MarketingPages');
+const MarketingPage = page(marketing, 'MarketingPage');
+const publicPages = () => import('@/pages/PublicPages');
+const PublicSitePage = page(publicPages, 'PublicSitePage');
+const PublicListingPage = page(publicPages, 'PublicListingPage');
+const PortalPage = page(publicPages, 'PortalPage');
 const InstallmentsPage = page(installments, 'InstallmentsPage');
 const InstallmentDetailPage = page(installments, 'InstallmentDetailPage');
 const RentalsPage = page(rentals, 'RentalsPage');
@@ -89,6 +95,10 @@ export function AppRoutes() {
       <Route path="/register" element={<PublicOnly><RegisterPage /></PublicOnly>} />
       <Route path="/forgot-password" element={<PublicOnly><ForgotPasswordPage /></PublicOnly>} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      {/* Public: agency websites and client / owner portals (no sign-in). */}
+      <Route path="/w/:slug" element={<PublicSitePage />} />
+      <Route path="/w/:slug/p/:id" element={<PublicListingPage />} />
+      <Route path="/portal/:token" element={<PortalPage />} />
       <Route element={<Protected><AppLayout /></Protected>}>
         <Route index element={<DashboardPage />} />
         <Route path="my-day" element={<MyDayPage />} />
@@ -117,6 +127,7 @@ export function AppRoutes() {
         <Route path="leases/:id" element={<LeaseDetailPage />} />
         <Route path="installments" element={<InstallmentsPage />} />
         <Route path="installments/:id" element={<InstallmentDetailPage />} />
+        <Route path="marketing" element={<MarketingPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

@@ -11,6 +11,7 @@ import '../../core/widgets/app_widgets.dart';
 import '../../core/widgets/domain_widgets.dart';
 import '../../data/repositories.dart';
 import '../auth/auth_controller.dart';
+import '../marketing/marketing_actions.dart';
 import '../branches/branch_screens.dart';
 import '../common/record_panels.dart';
 
@@ -95,6 +96,7 @@ class OwnerDetailScreen extends ConsumerWidget {
             appBar: AppBar(
               title: Text(o.fullName),
               actions: [
+                PortalLinkButton(kind: 'OWNER', partyServerId: o.serverId, name: o.fullName, phone: o.whatsappNumber ?? o.mobileNumber),
                 if (auth.can('owners:update')) IconButton(icon: const Icon(Icons.edit_outlined), onPressed: () => context.push('/owners/${o.id}/edit')),
                 if (auth.can('owners:delete'))
                   IconButton(

@@ -32,6 +32,9 @@ import { dealService } from '../services/dealService';
 import { transactionService } from '../services/transactionService';
 import { agreementService } from '../services/agreementService';
 import { leaseService } from '../services/leaseService';
+import { websiteService } from '../services/websiteService';
+import { campaignService } from '../services/campaignService';
+import { Client } from '../models/Client';
 import { demoDocumentPdf, demoPropertyImage } from './demoImages';
 import type { AuthContext } from '../types/context';
 import { normalizePhone } from '../utils/phone';
@@ -385,6 +388,18 @@ export async function seed(opts: { reset?: boolean } = {}): Promise<Record<strin
     kind: 'TOKEN_RECEIPT', language: 'ur', clientId: clients[2]._id.toString(), propertyId: mainProps[2]._id.toString(),
     ownerId: mainProps[2].ownerId ? String(mainProps[2].ownerId) : null, amount: mainProps[2].askingPrice, tokenAmount: 500_000, endDate: day(-30),
   });
+
+  // Marketing: the agency website with published listings, two campaigns and a website inquiry.
+  await websiteService.updateSettings(father, {
+    enabled: true, slug: 'yousuf-estate-demo', tagline: 'Plots, homes and rentals across Karachi since 1998',
+    about: 'A family-run estate agency in Gulshan-e-Iqbal. Every listing is checked with the owner before it goes online.', whatsapp: '+923001234567', phone: '+923001234567', showAgents: true,
+  });
+  const live = properties.filter((p) => p.status === 'AVAILABLE').slice(0, 10);
+  for (const p of live) await websiteService.publish(father, String(p._id), { published: true });
+  const fb = await campaignService.create(father, { name: 'Facebook — Gulshan plots', channel: 'FACEBOOK', budget: 60_000, spend: 42_000, startDate: day(60) });
+  await campaignService.create(father, { name: 'Zameen premium listing', channel: 'PORTAL', budget: 25_000, spend: 25_000, startDate: day(90) });
+  await Client.updateMany({ businessId: father.businessId, _id: { $in: clients.slice(0, 5).map((c) => c._id) } }, { $set: { campaignId: fb._id, campaign: fb.name } });
+  await websiteService.inquire('yousuf-estate-demo', { name: 'Faraz Siddiqui', phone: '03451239876', message: 'Is this plot still available? I can visit on Saturday.', propertyId: String(live[0]._id), campaign: fb.code });
 
   return {
     users: 1 + team.length,

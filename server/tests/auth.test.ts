@@ -239,6 +239,6 @@ describe('change password and sessions', () => {
       .set(bearer(owner.accessToken))
       .send({ preferences: { language: 'ur', theme: 'dark' } });
     expect(res.status).toBe(200);
-    expect(res.body.data.preferences).toEqual({ language: 'ur', theme: 'dark' });
+    expect(res.body.data.preferences).toEqual({ language: 'ur', theme: 'dark', emailNotifications: false });
   });
 });

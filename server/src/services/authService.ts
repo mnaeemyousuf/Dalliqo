@@ -333,13 +333,14 @@ export const authService = {
 
   async updateProfile(
     auth: AuthContext,
-    input: { fullName?: string; mobileNumber?: string; preferences?: { language?: Language; theme?: ThemePreference } },
+    input: { fullName?: string; mobileNumber?: string; preferences?: { language?: Language; theme?: ThemePreference; emailNotifications?: boolean } },
   ) {
     const update: Record<string, unknown> = {};
     if (input.fullName !== undefined) update.fullName = input.fullName;
     if (input.mobileNumber !== undefined) update.mobileNumber = input.mobileNumber;
     if (input.preferences?.language) update['preferences.language'] = input.preferences.language;
     if (input.preferences?.theme) update['preferences.theme'] = input.preferences.theme;
+    if (input.preferences?.emailNotifications !== undefined) update['preferences.emailNotifications'] = input.preferences.emailNotifications;
     const user = await userRepository.updateById(auth.userId, update as Partial<UserDoc>);
     if (!user) throw unauthorized();
     return toPublicUser(user);

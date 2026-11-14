@@ -39,6 +39,16 @@ const schema = z
     SMTP_PASS: optional,
     MAIL_FROM: z.string().default('Dalliqo <no-reply@localhost>'),
 
+    /**
+     * WhatsApp Business Cloud API (Meta). One Meta app for the platform; each business stores its
+     * own phone number id (Settings → WhatsApp). Without these, WhatsApp falls back to wa.me links.
+     */
+    WHATSAPP_ACCESS_TOKEN: optional,
+    WHATSAPP_APP_SECRET: optional,
+    WHATSAPP_VERIFY_TOKEN: optional,
+    WHATSAPP_API_VERSION: z.string().default('v21.0'),
+    WHATSAPP_GRAPH_URL: z.string().url().default('https://graph.facebook.com'),
+
     // Later phases (media, push, maps). Optional so Phase 1 runs without them.
     CLOUDINARY_CLOUD_NAME: optional,
     CLOUDINARY_API_KEY: optional,

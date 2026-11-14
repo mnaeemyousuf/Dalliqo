@@ -75,6 +75,8 @@ export interface PropertyDoc extends SyncDoc {
   agentIds?: Types.ObjectId[];
   priceHistory?: { price: number; at: Date; by?: Types.ObjectId; note?: string }[];
   verification?: PropertyVerification;
+  /** Shown on the agency website when published. */
+  publicListing?: { published: boolean; publishedAt?: Date | null; headline?: string | null; views: number; inquiries: number };
   size: number;
   sizeUnit: SizeUnit;
   sizeSqft: number;
@@ -136,6 +138,13 @@ const schema = new Schema<PropertyDoc>(
     priceHistory: {
       type: [{ _id: false, price: Number, at: Date, by: { type: Schema.Types.ObjectId, ref: 'User' }, note: String }],
       default: [],
+    },
+    publicListing: {
+      published: { type: Boolean, default: false },
+      publishedAt: { type: Date, default: null },
+      headline: { type: String, trim: true, maxlength: 120, default: null },
+      views: { type: Number, default: 0 },
+      inquiries: { type: Number, default: 0 },
     },
     verification: {
       status: { type: String, enum: VERIFICATION_STATUSES, default: 'NOT_SUBMITTED' },
@@ -204,6 +213,7 @@ schema.index({ businessId: 1, ownerId: 1 });
 schema.index({ businessId: 1, status: 1, lastVerifiedAt: 1 });
 schema.index({ businessId: 1, searchText: 1 });
 schema.index({ location: '2dsphere' }, { sparse: true });
+schema.index({ businessId: 1, 'publicListing.published': 1, status: 1, deletedAt: 1 });
 schema.plugin(tenantGuardPlugin);
 
 export const Property = model<PropertyDoc>('Property', schema, 'properties');

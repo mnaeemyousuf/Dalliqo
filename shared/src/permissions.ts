@@ -74,6 +74,9 @@ export const PERMISSIONS = {
   RENTALS_READ: 'rentals:read',
   RENTALS_MANAGE: 'rentals:manage',
 
+  /** Agency website, campaigns and WhatsApp Business settings. */
+  MARKETING_MANAGE: 'marketing:manage',
+
   REPORTS_READ: 'reports:read',
   EXPORTS_CREATE: 'exports:create',
 
@@ -135,6 +138,7 @@ export const PERMISSION_GROUPS: Record<string, readonly Permission[]> = {
     PERMISSIONS.TEMPLATES_MANAGE,
   ],
   rentals: [PERMISSIONS.RENTALS_READ, PERMISSIONS.RENTALS_MANAGE],
+  marketing: [PERMISSIONS.MARKETING_MANAGE],
   reports: [PERMISSIONS.REPORTS_READ, PERMISSIONS.EXPORTS_CREATE],
   administration: [
     PERMISSIONS.MEMBERS_READ,

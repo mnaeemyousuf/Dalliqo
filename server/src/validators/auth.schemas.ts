@@ -36,7 +36,7 @@ export const updateProfileSchema = z
     fullName: personName.optional(),
     mobileNumber: phone.optional(),
     preferences: z
-      .object({ language: z.enum(LANGUAGES).optional(), theme: z.enum(THEMES).optional() })
+      .object({ language: z.enum(LANGUAGES).optional(), theme: z.enum(THEMES).optional(), emailNotifications: z.boolean().optional() })
       .strict()
       .optional(),
   })

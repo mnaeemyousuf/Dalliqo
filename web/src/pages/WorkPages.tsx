@@ -12,6 +12,7 @@ import { BranchField } from '@/components/branches';
 import { CommissionReport, DealsPanel } from '@/pages/DealPages';
 import { FinanceReport } from '@/pages/FinancePages';
 import { AgentStatementCard, AgingCard, CashFlowCard } from '@/pages/InstallmentPages';
+import { CampaignReportCard, PortalLinkButton } from '@/pages/MarketingPages';
 import { InventoryReportCard, LeadReportCard } from '@/pages/Phase3Pages';
 import { Badge, Button, Card, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column, Avatar } from '@/components/ui';
 import { formatBytes, formatDate, formatPkr } from '@/lib/format';
@@ -151,6 +152,7 @@ export function OwnerDetailPage() {
         actions={
           <>
             <ContactActions phone={o.mobileNumber} whatsapp={o.whatsappNumber} />
+            <PortalLinkButton kind="OWNER" partyId={o._id} name={o.fullName} phone={o.whatsappNumber || o.mobileNumber} />
             {canEdit && <Button variant="secondary" icon={<Pencil className="h-4 w-4" />} onClick={() => setEditing(true)}>{t('common.edit')}</Button>}
             {canDelete && <Button variant="ghost" onClick={() => setConfirmDelete(true)} aria-label={t('common.delete')}><Trash2 className="h-4 w-4 text-red-600" /></Button>}
           </>
@@ -463,6 +465,7 @@ export function ReportsPage() {
       {canFinance && <CashFlowCard />}
       {canFinance && <AgingCard />}
       {canDeals && <AgentStatementCard />}
+      <CampaignReportCard />
       <Card>
         <div className="grid gap-4 sm:grid-cols-2">
           <Select label={t('report.resource')} options={resources} value={resource} onChange={(e) => (setResource(e.target.value), setFilters({}))} />

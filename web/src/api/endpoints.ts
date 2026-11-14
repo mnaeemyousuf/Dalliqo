@@ -32,6 +32,12 @@ import type {
   SavedView,
   Lease,
   InstallmentPlan,
+  WebsiteSettings,
+  Inquiry,
+  Campaign,
+  CampaignReport,
+  PortalLinkInfo,
+  WhatsAppStatus,
   CashFlowReport,
   AgingReport,
   AgentStatement,
@@ -262,6 +268,38 @@ export const inventoryApi = {
   views: (page: string) => api<SavedView[]>({ url: '/saved-views', params: { page } }),
   createView: (body: Body) => api<SavedView>({ method: 'POST', url: '/saved-views', data: body }),
   removeView: (id: string) => api<null>({ method: 'DELETE', url: `/saved-views/${id}` }),
+};
+
+export const websiteApi = {
+  get: () => api<WebsiteSettings>({ url: '/website' }),
+  update: (body: Body) => api<WebsiteSettings>({ method: 'PUT', url: '/website', data: body }),
+  publish: (propertyId: string, body: Body) => api<Property>({ method: 'POST', url: `/properties/${propertyId}/publish`, data: body }),
+};
+
+export const inquiryApi = {
+  list: (params: Params) => apiPage<Inquiry>('/inquiries', params),
+  setStatus: (id: string, status: string) => api<Inquiry>({ method: 'PATCH', url: `/inquiries/${id}`, data: { status } }),
+};
+
+export const campaignApi = {
+  list: (params: Params) => apiPage<Campaign>('/campaigns', params),
+  get: (id: string) => api<Campaign>({ url: `/campaigns/${id}` }),
+  create: (body: Body) => api<Campaign>({ method: 'POST', url: '/campaigns', data: clean(body) }),
+  update: (id: string, body: Body) => api<Campaign>({ method: 'PATCH', url: `/campaigns/${id}`, data: body }),
+  remove: (id: string) => api<null>({ method: 'DELETE', url: `/campaigns/${id}` }),
+  report: () => api<CampaignReport>({ url: '/reports/campaigns' }),
+};
+
+export const portalApi = {
+  create: (body: Body) => api<{ _id: string; url: string; expiresAt: string; phone?: string | null }>({ method: 'POST', url: '/portal-links', data: body }),
+  list: (kind: string, partyId: string) => api<PortalLinkInfo[]>({ url: '/portal-links', params: { kind, partyId } }),
+  revoke: (id: string) => api<PortalLinkInfo>({ method: 'DELETE', url: `/portal-links/${id}` }),
+};
+
+export const whatsappApi = {
+  status: () => api<WhatsAppStatus>({ url: '/whatsapp' }),
+  update: (body: Body) => api<WhatsAppStatus>({ method: 'PUT', url: '/whatsapp', data: body }),
+  send: (body: Body) => api<{ mode: 'link'; url: string } | { mode: 'cloud'; messageId: string | null }>({ method: 'POST', url: '/whatsapp/send', data: body }),
 };
 
 export const installmentApi = {

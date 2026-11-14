@@ -78,7 +78,7 @@ export interface User {
   mobileNumber?: string;
   status: string;
   mustChangePassword: boolean;
-  preferences: { language: 'en' | 'ur'; theme: 'light' | 'dark' | 'system' };
+  preferences: { language: 'en' | 'ur'; theme: 'light' | 'dark' | 'system'; emailNotifications?: boolean };
   lastLoginAt?: string;
 }
 
@@ -302,6 +302,7 @@ export interface Property extends Versioned {
   coverImageUrl?: string;
   coverThumbnailUrl?: string;
   lastVerifiedAt?: string;
+  publicListing?: { published: boolean; publishedAt?: string | null; headline?: string | null; views?: number; inquiries?: number };
   lastVerifiedBy?: string;
   matchCount: number;
   phase?: string;
@@ -380,6 +381,86 @@ export interface Lease {
   nextDueDate?: string | null;
   endReason?: string | null;
   summary: LeaseSummary;
+}
+
+export interface WebsiteSettings {
+  enabled: boolean;
+  slug: string | null;
+  suggestedSlug: string;
+  tagline: string | null;
+  about: string | null;
+  phone: string | null;
+  whatsapp: string | null;
+  email: string | null;
+  showAgents: boolean;
+  publishedListings: number;
+  newInquiries: number;
+}
+
+export interface Inquiry {
+  _id: string;
+  channel: 'WEBSITE' | 'WHATSAPP';
+  propertyId?: string | { _id: string; propertyId: string; society?: string; block?: string } | null;
+  campaignId?: string | { _id: string; name: string } | null;
+  clientId?: string | null;
+  createdLead: boolean;
+  name: string;
+  phone: string;
+  email?: string | null;
+  message?: string | null;
+  status: 'NEW' | 'CONTACTED' | 'SPAM';
+  assignedTo?: string | { _id: string; fullName: string } | null;
+  createdAt: string;
+}
+
+export interface CampaignMetrics {
+  spend: number;
+  leads: number;
+  won: number;
+  revenue: number;
+  inquiries: number;
+  costPerLead: number | null;
+  conversionPct: number | null;
+  costPerWin: number | null;
+  roiPct: number | null;
+}
+
+export interface Campaign {
+  _id: string;
+  name: string;
+  channel: string;
+  status: string;
+  code: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  budget: number;
+  spend: number;
+  notes?: string | null;
+  metrics: CampaignMetrics;
+}
+
+export interface CampaignReport {
+  rows: (Omit<CampaignMetrics, 'inquiries'> & { _id: string; name: string; channel: string; status: string; code: string; inquiries: number })[];
+  totals: Omit<CampaignMetrics, 'inquiries'>;
+  bySource: { source: string; leads: number }[];
+}
+
+export interface PortalLinkInfo {
+  _id: string;
+  kind: 'CLIENT' | 'OWNER';
+  expiresAt: string;
+  revokedAt?: string | null;
+  lastUsedAt?: string | null;
+  useCount: number;
+  createdAt: string;
+}
+
+export interface WhatsAppStatus {
+  platformConfigured: boolean;
+  webhookConfigured: boolean;
+  phoneNumberId: string | null;
+  displayNumber: string | null;
+  mode: 'cloud' | 'link';
 }
 
 export interface InstallmentPlan {

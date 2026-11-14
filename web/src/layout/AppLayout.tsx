@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
-import { Bell, Building2, CalendarCheck, ChevronsLeft, CornerDownLeft, FileText, FolderOpen, Handshake, Home, LayoutDashboard, Languages, LogOut, Menu, Moon, Plus, Search, Settings, ShieldCheck, Sun, SunMoon, UserCog, UserPlus, Users, X, Sparkles, HandCoins, Wallet, FileSignature, CalendarPlus, HousePlus, KeyRound, CalendarRange } from 'lucide-react';
+import { Bell, Building2, CalendarCheck, ChevronsLeft, CornerDownLeft, FileText, FolderOpen, Handshake, Home, LayoutDashboard, Languages, LogOut, Menu, Moon, Plus, Search, Settings, ShieldCheck, Sun, SunMoon, UserCog, UserPlus, Users, X, Sparkles, HandCoins, Wallet, FileSignature, CalendarPlus, HousePlus, KeyRound, CalendarRange, Megaphone } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -56,6 +56,7 @@ function useNav(): { label: string; items: NavItem[] }[] {
         { to: '/leases', label: t('nav.rentals'), icon: <KeyRound className={i} />, perm: PERMISSIONS.RENTALS_READ, module: 'rentals' },
         { to: '/installments', label: t('nav.installments'), icon: <CalendarRange className={i} />, perm: PERMISSIONS.FINANCE_READ, module: 'finance' },
         { to: '/finance', label: t('nav.finance'), icon: <Wallet className={i} />, perm: PERMISSIONS.FINANCE_READ, module: 'finance' },
+        { to: '/marketing', label: t('nav.marketing'), icon: <Megaphone className={i} />, perm: PERMISSIONS.CLIENTS_READ },
         { to: '/documents', label: t('nav.documents'), icon: <FolderOpen className={i} />, perm: PERMISSIONS.DOCUMENTS_READ },
         { to: '/reports', label: t('nav.reports'), icon: <FileText className={i} />, perm: PERMISSIONS.REPORTS_READ, module: 'reports' },
       ],

@@ -6,6 +6,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { BUYING_TIMELINES, CLIENT_PURPOSES, CLIENT_SOURCES, CLIENT_STATUSES, LEAD_TEMPERATURES, LOST_REASONS, PERMISSIONS, PRIORITIES, PROPERTY_TYPES, SIZE_UNITS } from '@recrm/shared';
 import { LeadImportModal, LeadPanel, TemperatureBadge } from '@/pages/Phase3Pages';
 import { SavedViews } from '@/pages/Phase4Pages';
+import { PortalLinkButton, WhatsAppSendButton } from '@/pages/MarketingPages';
 import { toApiError } from '@/api/client';
 import { clientApi } from '@/api/endpoints';
 import type { Client, Requirement } from '@/api/types';
@@ -518,6 +519,8 @@ export function ClientDetailPage() {
         actions={
           <>
             <ContactActions phone={c.mobileNumber} whatsapp={c.whatsappNumber} onContact={(ch) => contact.mutate(ch)} />
+            <WhatsAppSendButton clientId={c._id} phone={c.whatsappNumber || c.mobileNumber} />
+            <PortalLinkButton kind="CLIENT" partyId={c._id} name={c.fullName} phone={c.whatsappNumber || c.mobileNumber} />
             <Button variant="secondary" icon={<CalendarPlus className="h-4 w-4" />} onClick={() => setFollowUp(true)}>
               {t('followup.single')}
             </Button>

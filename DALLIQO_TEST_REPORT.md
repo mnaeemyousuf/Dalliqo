@@ -54,6 +54,33 @@ Run date: 14 Nov 2026 (latest: Phase 5B — see per-phase sections for current t
 - **Full results:** server 248 passed (1 skipped), web 38, Flutter 81, `flutter analyze` clean, web build OK.
 - **Visual check** of the installment plan detail, the Reports page (cash flow, aging, statement) and the deal detail (lifecycle, Approve, outside shares) on the demo data.
 
+## Phase 6 tests (`server/tests/marketing.test.ts`)
+- **Shared:** ROI / cost per lead / conversion maths, slugs, wa.me links.
+- **Website:**
+  - A web address is required to go online; reserved addresses are refused; a duplicate address gets 409 SLUG_TAKEN; an agent can't change settings (403).
+  - Only published, live listings are listed; sold and unpublished ones are hidden (404).
+  - The response never contains the plot number, minimum price, owner or exact coordinates.
+- **Inquiry → lead:**
+  - A new lead is created with source WEBSITE, assigned to the listing agent and linked to the campaign by code, with one call-back follow-up, a notification and an acknowledgement email.
+  - A repeat inquiry from the same phone creates no duplicate client and no second follow-up.
+  - The honeypot is accepted silently and creates nothing.
+- **Campaign ROI:** after the lead's deal closes with Rs 150,000 received, the campaign reports leads 1, won 1, cost per lead Rs 20,000 and ROI 650%. The campaign report and lead sources also check out.
+- **Plans and permissions:** a Professional plan gets 403 MODULE_NOT_IN_PLAN for campaigns; an agent can't create campaigns.
+- **Portals:**
+  - A client sees only their own installment plan and can download its receipt PDF; another client's receipt returns 404.
+  - A message to the agent creates a notification.
+  - A revoked link returns 410 LINK_EXPIRED; an unknown token returns 404.
+  - An owner sees their listing on the website; a viewer can't create links (403).
+- **WhatsApp:**
+  - Without credentials, sending returns a wa.me link.
+  - With credentials (mocked Graph API), a message is sent to the phone number id.
+  - Webhook verification passes with the right token and returns 403 with a wrong one.
+  - A bad signature returns 401.
+  - A signed inbound message creates a WHATSAPP lead and inquiry; Meta's retry is de-duplicated.
+- **Email:** a member who opted in gets an email copy of "New lead assigned to you".
+- **Full results:** server 258 passed (1 skipped), web 38, Flutter 81, `flutter analyze` clean, web build OK.
+- **Visual check** (Chrome, 1280 px and 390 px): agency site, listing page, client portal with lease and receipt, Marketing → Campaigns with ROI.
+
 ## Manual / visual verification
 Demo API (`npm run demo`) + web, headless Chrome screenshots at 1440 px: client list with lead scores and temperature filter, client lead panel, Reports (leads + inventory aging), Settings → Subscription. All rendered correctly with real demo data.
 

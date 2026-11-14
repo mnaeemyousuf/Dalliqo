@@ -21,7 +21,7 @@ export interface UserDoc {
   failedLoginAttempts: number;
   lockUntil?: Date | null;
   lastLoginAt?: Date;
-  preferences: { language: Language; theme: ThemePreference };
+  preferences: { language: Language; theme: ThemePreference; emailNotifications?: boolean };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,6 +42,8 @@ const userSchema = new Schema<UserDoc>(
     preferences: {
       language: { type: String, enum: LANGUAGES, default: 'en' },
       theme: { type: String, enum: THEMES, default: 'system' },
+      /** Also send each in-app notification by email. */
+      emailNotifications: { type: Boolean, default: false },
     },
   },
   {

@@ -12,6 +12,7 @@ import { Badge, Button, Card, Checkbox, ConfirmDialog, EmptyState, ErrorState, I
 import { AutomationSettings, SubscriptionSettings } from '@/pages/Phase3Pages';
 import { formatDate, relativeTime } from '@/lib/format';
 import { useEnumOptions, useOnError, useUrlState } from '@/lib/hooks';
+import { EmailNotificationsSetting } from '@/pages/MarketingPages';
 import { useAuth, useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
 import { useUi } from '@/store/ui';
@@ -513,7 +514,12 @@ export function SettingsPage() {
         tabs={(['profile', 'business', 'branches', 'categories', 'matching', 'automation', 'subscription', 'security', 'appearance', 'about'] as const).map((v) => ({ value: v, label: t(`settings.${v}`) }))}
       />
       <div className="mt-4">
-        {tab === 'profile' && <ProfileSettings />}
+        {tab === 'profile' && (
+          <div className="space-y-4">
+            <ProfileSettings />
+            <EmailNotificationsSetting />
+          </div>
+        )}
         {tab === 'business' && <BusinessSettings />}
         {tab === 'branches' && <BranchSettings />}
         {tab === 'categories' && <CategorySettings />}

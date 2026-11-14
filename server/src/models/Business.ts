@@ -18,6 +18,25 @@ export interface BillingEvent {
   at: Date;
 }
 
+/** Public agency website (listings + inquiry form) at /w/<slug>. */
+export interface WebsiteSettings {
+  enabled: boolean;
+  slug?: string | null;
+  tagline?: string | null;
+  about?: string | null;
+  phone?: string | null;
+  whatsapp?: string | null;
+  email?: string | null;
+  /** Show the listing agents (name + WhatsApp) on listing pages. */
+  showAgents: boolean;
+}
+
+/** WhatsApp Business Cloud API: the business's phone number registered under the platform's Meta app. */
+export interface WhatsAppSettings {
+  phoneNumberId?: string | null;
+  displayNumber?: string | null;
+}
+
 export interface SubscriptionDoc {
   plan: PlanKey;
   status: SubscriptionStatus;
@@ -42,6 +61,8 @@ export interface BusinessDoc {
   defaultSizeUnit: SizeUnit;
   status: (typeof BUSINESS_STATUSES)[number];
   subscription?: SubscriptionDoc;
+  website?: WebsiteSettings;
+  whatsapp?: WhatsAppSettings;
   createdBy: Types.ObjectId;
   updatedBy: Types.ObjectId;
   createdAt: Date;
@@ -86,6 +107,20 @@ const businessSchema = new Schema<BusinessDoc>(
         default: [],
       },
     },
+    website: {
+      enabled: { type: Boolean, default: false },
+      slug: { type: String, trim: true, lowercase: true, maxlength: 60, default: null },
+      tagline: { type: String, trim: true, maxlength: 160, default: null },
+      about: { type: String, trim: true, maxlength: 3000, default: null },
+      phone: { type: String, trim: true, maxlength: 20, default: null },
+      whatsapp: { type: String, trim: true, maxlength: 20, default: null },
+      email: { type: String, trim: true, lowercase: true, maxlength: 200, default: null },
+      showAgents: { type: Boolean, default: true },
+    },
+    whatsapp: {
+      phoneNumberId: { type: String, trim: true, maxlength: 40, default: null },
+      displayNumber: { type: String, trim: true, maxlength: 20, default: null },
+    },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true, immutable: true },
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   },
@@ -93,5 +128,7 @@ const businessSchema = new Schema<BusinessDoc>(
 );
 
 businessSchema.index({ ownerUserId: 1 });
+businessSchema.index({ 'website.slug': 1 }, { unique: true, partialFilterExpression: { 'website.slug': { $type: 'string' } } });
+businessSchema.index({ 'whatsapp.phoneNumberId': 1 }, { partialFilterExpression: { 'whatsapp.phoneNumberId': { $type: 'string' } } });
 
 export const Business = model<BusinessDoc>('Business', businessSchema);

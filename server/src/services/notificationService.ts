@@ -1,6 +1,10 @@
 import { ERROR_CODES, SOCKET_EVENTS, type NotificationCategory } from '@recrm/shared';
 import { logger } from '../config/logger';
 import { Notification, type NotificationDoc } from '../models/Notification';
+import { Business } from '../models/Business';
+import { User } from '../models/User';
+import { env } from '../config/env';
+import { mailService } from './mailService';
 import type { TenantContext } from '../types/context';
 import { notFound } from '../utils/AppError';
 import { eventBus } from '../utils/eventBus';
@@ -15,6 +19,27 @@ export interface NewNotification {
   data?: Record<string, unknown>;
   /** At most one notification per user with this key (automation alerts). */
   dedupeKey?: string;
+}
+
+/** Email copies for members who switched them on (Profile → Notifications). Best effort. */
+async function emailCopies(ctx: TenantContext, userIds: string[], n: NewNotification): Promise<void> {
+  try {
+    const users = await User.find({ _id: { $in: userIds }, status: 'ACTIVE', 'preferences.emailNotifications': true }).select('email fullName').lean();
+    if (!users.length) return;
+    const business = await Business.findById(ctx.businessId).select('name').lean();
+    const link = n.deepLink ? `${env.APP_WEB_URL.replace(/\/$/, '')}${n.deepLink}` : env.APP_WEB_URL;
+    await Promise.all(
+      users.map((u) =>
+        mailService.send({
+          to: u.email,
+          subject: `${n.title}${business ? ` — ${business.name}` : ''}`,
+          text: `${n.body}\n\nOpen in Dalliqo: ${link}\n\nYou receive these emails because email notifications are on in your profile.`,
+        }),
+      ),
+    );
+  } catch (err) {
+    logger.warn({ err }, 'Notification email failed');
+  }
 }
 
 export const notificationService = {
@@ -63,6 +88,7 @@ export const notificationService = {
         data: { category: n.category, deepLink: n.deepLink ?? '', ...(followUpId ? { followUpId } : {}) },
         followUpId,
       });
+      void emailCopies(ctx, userIds, n);
       if (delivered > 0) {
         await Notification.updateMany({ businessId: ctx.businessId, _id: { $in: docs.map((d) => d._id) } }, { $set: { pushedAt: new Date() } });
       }

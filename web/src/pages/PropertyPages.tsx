@@ -12,6 +12,7 @@ import { BranchField, useBranchName, useBranches } from '@/components/branches';
 import { DealsPanel } from '@/pages/DealPages';
 import { PropertyExtraDetails, PropertyExtraFields } from '@/pages/Phase3Pages';
 import { PropertyImportModal, PropertyQrButton, SavedViews, VerificationBadgeSmall, VerificationPanel } from '@/pages/Phase4Pages';
+import { PublishButton } from '@/pages/MarketingPages';
 import { toApiError } from '@/api/client';
 import { BrochureDialog } from '@/components/domain/BrochureDialog';
 import { Badge, Button, Card, Checkbox, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column, FilterBar, ViewToggle } from '@/components/ui';
@@ -634,6 +635,7 @@ export function PropertyDetailPage() {
                 {t('property.verify')}
               </Button>
             )}
+            {canEdit && <PublishButton property={p} />}
             <Button variant="secondary" icon={<MessageCircle className="h-4 w-4 text-emerald-600" />} onClick={shareWhatsApp}>
               WhatsApp
             </Button>
