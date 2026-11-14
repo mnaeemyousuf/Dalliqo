@@ -186,6 +186,8 @@ class MoreScreen extends ConsumerWidget {
           if (auth.can('agreements:read')) tile(Icons.description_rounded, const Color(0xFF4F46E5), context.t('nav.agreements'), '/agreements'),
           if (auth.can('rentals:read')) tile(Icons.key_rounded, const Color(0xFF0D9488), context.t('nav.rentals'), '/leases'),
           if (auth.can('finance:read')) tile(Icons.account_balance_wallet_rounded, const Color(0xFF059669), context.t('nav.finance'), '/finance'),
+          if (auth.can('finance:read')) tile(Icons.date_range_rounded, const Color(0xFF0891B2), context.t('nav.installments'), '/installments'),
+          tile(Icons.auto_awesome_rounded, const Color(0xFF2563EB), context.t('nav.assistant'), '/assistant'),
         ], 3),
         group(context.t('mobile.ui.app'), [
           if (auth.can('branches:manage') || ref.watch(branchScopeProvider).hasChoice)

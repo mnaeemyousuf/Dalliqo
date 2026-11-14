@@ -52,6 +52,7 @@ const publicPages = () => import('@/pages/PublicPages');
 const PublicSitePage = page(publicPages, 'PublicSitePage');
 const PublicListingPage = page(publicPages, 'PublicListingPage');
 const PortalPage = page(publicPages, 'PortalPage');
+const PublicAgentPage = page(publicPages, 'PublicAgentPage');
 const InstallmentsPage = page(installments, 'InstallmentsPage');
 const InstallmentDetailPage = page(installments, 'InstallmentDetailPage');
 const RentalsPage = page(rentals, 'RentalsPage');
@@ -99,6 +100,7 @@ export function AppRoutes() {
       {/* Public: agency websites and client / owner portals (no sign-in). */}
       <Route path="/w/:slug" element={<PublicSitePage />} />
       <Route path="/w/:slug/p/:id" element={<PublicListingPage />} />
+      <Route path="/w/:slug/a/:id" element={<PublicAgentPage />} />
       <Route path="/portal/:token" element={<PortalPage />} />
       <Route element={<Protected><AppLayout /></Protected>}>
         <Route index element={<DashboardPage />} />

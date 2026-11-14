@@ -272,7 +272,7 @@ export const inventoryApi = {
 
 export const aiApi = {
   status: () => api<{ configured: boolean; model: string | null; usedThisMonth: number; monthlyLimit: number; tools: string[] }>({ url: '/ai/status' }),
-  assistant: (messages: { role: 'user' | 'assistant'; content: string }[]) => api<{ answer: string; toolsUsed: string[] }>({ method: 'POST', url: '/ai/assistant', data: { messages }, timeout: 180_000 }),
+  assistant: (messages: { role: 'user' | 'assistant'; content: string }[]) => api<{ answer: string; toolsUsed: string[]; proposals?: unknown[] }>({ method: 'POST', url: '/ai/assistant', data: { messages }, timeout: 180_000 }),
   describe: (propertyId: string, language: 'en' | 'ur') => api<{ headline: string; description: string; source: 'ai' | 'template' }>({ method: 'POST', url: `/ai/properties/${propertyId}/description`, data: { language }, timeout: 120_000 }),
   priceEstimate: (propertyId: string) => api<{ low?: number; mid?: number | null; high?: number; perSqft?: number; comparables: number; sold?: number; confidence?: 'LOW' | 'MEDIUM' | 'HIGH'; scope?: string; position?: 'ABOVE' | 'BELOW' | 'WITHIN'; askingPrice?: number; disclaimer: string }>({ url: `/ai/properties/${propertyId}/price-estimate` }),
   brief: (clientId: string, language: 'en' | 'ur') => api<{ summary: string; nextAction: string; message: string; risks: string[]; source: 'ai' | 'rules' }>({ method: 'POST', url: `/ai/clients/${clientId}/brief`, data: { language }, timeout: 120_000 }),
@@ -309,6 +309,7 @@ export const whatsappApi = {
   status: () => api<WhatsAppStatus>({ url: '/whatsapp' }),
   update: (body: Body) => api<WhatsAppStatus>({ method: 'PUT', url: '/whatsapp', data: body }),
   send: (body: Body) => api<{ mode: 'link'; url: string } | { mode: 'cloud'; messageId: string | null }>({ method: 'POST', url: '/whatsapp/send', data: body }),
+  syncTemplates: () => api<WhatsAppStatus>({ method: 'POST', url: '/whatsapp/templates/sync' }),
 };
 
 export const installmentApi = {
@@ -439,6 +440,7 @@ export const notificationApi = {
 export const dashboardApi = {
   summary: () => api<DashboardSummary>({ url: '/dashboard' }),
   analytics: (range: string) => api<Analytics>({ url: '/dashboard/analytics', params: { range } }),
+  team: () => api<{ rows: { userId: string; fullName: string; role: string; leads: number; hotLeads: number; overdueFollowUps: number; followUpsDoneThisWeek: number; openDeals: number; wonThisMonth: number; commissionThisMonth: number }[]; totals: Record<string, number> }>({ url: '/dashboard/team' }),
   myDay: (scope: 'mine' | 'all') => api<MyDay>({ url: '/my-day', params: { scope } }),
   search: (q: string) => api<{ clients: Client[]; properties: Property[]; owners: Owner[]; matches: Match[] }>({ url: '/search', params: { q } }),
 };

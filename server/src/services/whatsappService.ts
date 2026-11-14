@@ -37,16 +37,20 @@ export const whatsappService = {
       phoneNumberId: b?.whatsapp?.phoneNumberId ?? null,
       displayNumber: b?.whatsapp?.displayNumber ?? null,
       mode: whatsappPlatformReady() && b?.whatsapp?.phoneNumberId ? 'cloud' : 'link',
+      businessAccountId: b?.whatsapp?.businessAccountId ?? null,
+      templates: b?.whatsapp?.templates ?? [],
+      templatesSyncedAt: b?.whatsapp?.templatesSyncedAt ?? null,
     };
   },
 
-  async updateSettings(auth: AuthContext, input: { phoneNumberId?: string | null; displayNumber?: string | null }) {
+  async updateSettings(auth: AuthContext, input: { phoneNumberId?: string | null; displayNumber?: string | null; businessAccountId?: string | null }) {
     if (input.phoneNumberId) {
       const taken = await Business.exists({ 'whatsapp.phoneNumberId': input.phoneNumberId, _id: { $ne: auth.businessId } });
       if (taken) throw badRequest(ERROR_CODES.DUPLICATE_KEY, 'This WhatsApp number is already connected to another business');
     }
     const set: Record<string, unknown> = {};
     if (input.phoneNumberId !== undefined) set['whatsapp.phoneNumberId'] = input.phoneNumberId || null;
+    if (input.businessAccountId !== undefined) set['whatsapp.businessAccountId'] = input.businessAccountId || null;
     if (input.displayNumber !== undefined) set['whatsapp.displayNumber'] = input.displayNumber || null;
     await Business.updateOne({ _id: auth.businessId }, { $set: set });
     await auditService.record(auth, { action: 'whatsapp.settings_updated', entityType: 'business', entityId: new Types.ObjectId(auth.businessId) });
@@ -59,7 +63,7 @@ export const whatsappService = {
    * customer's last message — outside that window an approved template is required, and Meta's
    * error is passed back to the user.
    */
-  async send(auth: AuthContext, input: { to: string; text: string; clientId?: string }) {
+  async send(auth: AuthContext, input: { to: string; text: string; clientId?: string; template?: { name: string; language: string; params: string[] } }) {
     const to = normalizePhone(input.to) ?? input.to;
     const b = await Business.findById(auth.businessId).select('whatsapp').lean<BusinessDoc>();
     const client = input.clientId ? await Client.findOne({ businessId: auth.businessId, _id: input.clientId, deletedAt: null }).select('fullName').lean() : null;
@@ -74,7 +78,21 @@ export const whatsappService = {
     const res = await fetch(`${env.WHATSAPP_GRAPH_URL}/${env.WHATSAPP_API_VERSION}/${b.whatsapp.phoneNumberId}/messages`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${env.WHATSAPP_ACCESS_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: to.replace(/\D/g, ''), type: 'text', text: { preview_url: true, body: input.text } }),
+      body: JSON.stringify(
+        input.template
+          ? {
+              messaging_product: 'whatsapp',
+              recipient_type: 'individual',
+              to: to.replace(/\D/g, ''),
+              type: 'template',
+              template: {
+                name: input.template.name,
+                language: { code: input.template.language },
+                ...(input.template.params.length ? { components: [{ type: 'body', parameters: input.template.params.map((p) => ({ type: 'text', text: p })) }] } : {}),
+              },
+            }
+          : { messaging_product: 'whatsapp', recipient_type: 'individual', to: to.replace(/\D/g, ''), type: 'text', text: { preview_url: true, body: input.text } },
+      ),
     });
     const body = (await res.json().catch(() => ({}))) as { messages?: { id: string }[]; error?: { message?: string; code?: number } };
     if (!res.ok) {
@@ -83,6 +101,27 @@ export const whatsappService = {
     }
     await record('sent');
     return { mode: 'cloud' as const, messageId: body.messages?.[0]?.id ?? null };
+  },
+
+  /** Reads the business's APPROVED message templates from Meta and stores them for the composer. */
+  async syncTemplates(auth: AuthContext) {
+    const b = await Business.findById(auth.businessId).select('whatsapp').lean<BusinessDoc>();
+    if (!whatsappPlatformReady() || !b?.whatsapp?.businessAccountId) {
+      throw new AppError(400, ERROR_CODES.INTEGRATION_NOT_CONFIGURED, 'Connect WhatsApp Business and enter the business account id first.');
+    }
+    const res = await fetch(`${env.WHATSAPP_GRAPH_URL}/${env.WHATSAPP_API_VERSION}/${b.whatsapp.businessAccountId}/message_templates?status=APPROVED&limit=200&fields=name,language,category,components`, {
+      headers: { Authorization: `Bearer ${env.WHATSAPP_ACCESS_TOKEN}` },
+    });
+    const body = (await res.json().catch(() => ({}))) as { data?: { name: string; language: string; category: string; components?: { type: string; text?: string }[] }[]; error?: { message?: string } };
+    if (!res.ok) throw new AppError(502, ERROR_CODES.INTEGRATION_NOT_CONFIGURED, `WhatsApp did not return the templates: ${body.error?.message ?? res.statusText}`);
+    const templates = (body.data ?? []).map((t) => {
+      const text = t.components?.find((c) => c.type === 'BODY')?.text ?? '';
+      const params = new Set((text.match(/\{\{(\d+)\}\}/g) ?? []).map((m) => m)).size;
+      return { name: t.name, language: t.language, category: t.category, body: text.slice(0, 1024), params };
+    });
+    await Business.updateOne({ _id: auth.businessId }, { $set: { 'whatsapp.templates': templates, 'whatsapp.templatesSyncedAt': new Date() } });
+    await auditService.record(auth, { action: 'whatsapp.templates_synced', entityType: 'business', entityId: new Types.ObjectId(auth.businessId), meta: { count: templates.length } });
+    return whatsappService.status(auth);
   },
 
   /** Meta's webhook verification handshake. */

@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bot, Copy, Gauge, MessageCircle, Send, Sparkles, TrendingUp, Wand2 } from 'lucide-react';
 import { PERMISSIONS, whatsappLink } from '@recrm/shared';
-import { aiApi, propertyApi } from '@/api/endpoints';
+import { Link } from 'react-router-dom';
+import { aiApi, followUpApi, noteApi, propertyApi } from '@/api/endpoints';
 import type { Property } from '@/api/types';
 import { Badge, Button, Card, MetricTile, Modal, PageHeader, Segmented, Textarea, type BadgeColor } from '@/components/ui';
-import { formatPkr } from '@/lib/format';
+import { formatDate, formatPkr } from '@/lib/format';
 import { useErrorText, useOnError } from '@/lib/hooks';
 import { useCan, useModule } from '@/store/auth';
 import { toast } from '@/store/toast';
@@ -30,7 +31,28 @@ function Answer({ text }: { text: string }) {
 
 /* ═════════════ Assistant page ═════════════ */
 
-type Turn = { role: 'user' | 'assistant'; content: string; tools?: string[] };
+type Proposal = { kind: 'FOLLOW_UP'; clientId: string; clientName: string; type: string; dueAt: string; notes: string } | { kind: 'NOTE'; clientId: string; clientName: string; content: string };
+type Turn = { role: 'user' | 'assistant'; content: string; tools?: string[]; proposals?: Proposal[] };
+
+function ProposalCard({ p }: { p: Proposal }) {
+  const { t } = useTranslation();
+  const onError = useOnError();
+  const qc = useQueryClient();
+  const save = useMutation({
+    mutationFn: (): Promise<unknown> => (p.kind === 'NOTE' ? noteApi.create('client', p.clientId, p.content) : followUpApi.create({ uuid: crypto.randomUUID(), clientId: p.clientId, type: p.type, dueAt: p.dueAt, notes: p.notes || undefined })),
+    onSuccess: () => (toast.success(t('ai.saved')), void qc.invalidateQueries({ queryKey: p.kind === 'NOTE' ? ['notes'] : ['followups'] })),
+    onError,
+  });
+  return (
+    <div className="mt-2 rounded-lg border border-line bg-surface p-3 text-sm">
+      <p className="text-2xs font-semibold uppercase tracking-wider text-muted">{p.kind === 'NOTE' ? t('ai.proposeNote') : t('ai.proposeFollowUp')} · <Link className="normal-case hover:text-brand-600" to={`/clients/${p.clientId}`}>{p.clientName}</Link></p>
+      {p.kind === 'NOTE' ? <p className="mt-1 whitespace-pre-wrap">{p.content}</p> : <p className="mt-1">{t(`enums.followUpType.${p.type}`)} · <span className="ltr-nums">{formatDate(p.dueAt, true)}</span>{p.notes ? ` — ${p.notes}` : ''}</p>}
+      <div className="mt-2">
+        {save.isSuccess ? <Badge color="green">{t('ai.saved')}</Badge> : <Button size="sm" loading={save.isPending} onClick={() => save.mutate()}>{t('ai.confirm')}</Button>}
+      </div>
+    </div>
+  );
+}
 
 export function AssistantPage() {
   const { t } = useTranslation();
@@ -41,7 +63,7 @@ export function AssistantPage() {
   const end = useRef<HTMLDivElement>(null);
   const ask = useMutation({
     mutationFn: (history: Turn[]) => aiApi.assistant(history.map(({ role, content }) => ({ role, content }))),
-    onSuccess: (r) => setTurns((x) => [...x, { role: 'assistant', content: r.answer, tools: r.toolsUsed }]),
+    onSuccess: (r) => setTurns((x) => [...x, { role: 'assistant', content: r.answer, tools: r.toolsUsed, proposals: r.proposals as Proposal[] }]),
     onError: (e) => setTurns((x) => [...x, { role: 'assistant', content: `⚠ ${errorText(e)}` }]),
   });
   useEffect(() => {
@@ -57,7 +79,7 @@ export function AssistantPage() {
     ask.mutate(history);
   };
   const s = status.data;
-  const suggestions = [t('ai.q1'), t('ai.q2'), t('ai.q3'), t('ai.q4')];
+  const suggestions = [t('ai.q1'), t('ai.q2'), t('ai.q3'), t('ai.q4'), t('ai.q5')];
   return (
     <div className="mx-auto flex h-[calc(100vh-9rem)] max-w-3xl flex-col">
       <PageHeader
@@ -80,6 +102,7 @@ export function AssistantPage() {
           <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${m.role === 'user' ? 'bg-brand-600 text-on-brand' : 'bg-surface-2'}`}>
               {m.role === 'user' ? <p className="whitespace-pre-wrap text-sm">{m.content}</p> : <Answer text={m.content} />}
+              {m.proposals?.map((p, j) => <ProposalCard key={j} p={p} />)}
               {!!m.tools?.length && <p className="mt-1.5 text-2xs text-muted">{t('ai.looked', { tools: m.tools.map((x) => t(`ai.tool.${x}`, { defaultValue: x })).join(', ') })}</p>}
             </div>
           </div>

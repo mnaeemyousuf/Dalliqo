@@ -4,6 +4,7 @@ import { Campaign, type CampaignDoc } from '../models/Campaign';
 import { Client } from '../models/Client';
 import { Deal } from '../models/Deal';
 import { Inquiry } from '../models/Inquiry';
+import { Transaction } from '../models/Transaction';
 import { createTenantRepository } from '../repositories/tenantRepository';
 import type { AuthContext, TenantContext } from '../types/context';
 import { conflict } from '../utils/AppError';
@@ -46,8 +47,13 @@ async function figures(ctx: TenantContext, ids: Types.ObjectId[]) {
     ? await Deal.find({ businessId: bid, deletedAt: null, stage: 'CLOSED_WON', clientId: { $in: [...clientToCampaign.keys()].map((x) => new Types.ObjectId(x)) } }).select('clientId receivedTotal').lean()
     : [];
   const inquiries = await Inquiry.aggregate<{ _id: Types.ObjectId; n: number }>([{ $match: { businessId: bid, campaignId: { $in: ids } } }, { $group: { _id: '$campaignId', n: { $sum: 1 } } }]);
-  const out = new Map<string, { leads: number; won: number; revenue: number; inquiries: number }>();
-  for (const id of ids) out.set(String(id), { leads: 0, won: 0, revenue: 0, inquiries: 0 });
+  const booked = await Transaction.aggregate<{ _id: Types.ObjectId; total: number }>([
+    { $match: { businessId: bid, deletedAt: null, type: 'EXPENSE', campaignId: { $in: ids } } },
+    { $group: { _id: '$campaignId', total: { $sum: '$amount' } } },
+  ]);
+  const out = new Map<string, { leads: number; won: number; revenue: number; inquiries: number; bookedSpend: number }>();
+  for (const id of ids) out.set(String(id), { leads: 0, won: 0, revenue: 0, inquiries: 0, bookedSpend: 0 });
+  for (const b of booked) out.get(String(b._id))!.bookedSpend = b.total;
   for (const l of leads) out.get(String(l._id))!.leads = l.leads;
   const wonClients = new Map<string, Set<string>>();
   for (const d of deals) {
@@ -62,17 +68,23 @@ async function figures(ctx: TenantContext, ids: Types.ObjectId[]) {
   return out;
 }
 
+type Figures = { leads: number; won: number; revenue: number; inquiries: number; bookedSpend: number };
+/** Spend = the amount typed on the campaign plus expenses booked against it. */
+function withMetrics(c: CampaignDoc, f: Figures) {
+  const spend = (c.spend ?? 0) + f.bookedSpend;
+  return { ...c, metrics: { ...campaignMetrics({ spend, leads: f.leads, won: f.won, revenue: f.revenue }), inquiries: f.inquiries, otherSpend: c.spend ?? 0, bookedSpend: f.bookedSpend } };
+}
+
 export const campaignService = {
   async list(ctx: TenantContext, q: { status?: CampaignStatus; page: number; limit: number }) {
     const { items, total } = await campaignRepository.list(ctx, q.status ? { status: q.status } : {}, { page: q.page, limit: q.limit, sort: { createdAt: -1, _id: -1 } });
     const f = await figures(ctx, items.map((c) => c._id));
-    return { items: items.map((c) => ({ ...c, metrics: { ...campaignMetrics({ spend: c.spend, ...f.get(String(c._id))! }), inquiries: f.get(String(c._id))!.inquiries } })), total };
+    return { items: items.map((c) => withMetrics(c, f.get(String(c._id))!)), total };
   },
 
   async get(ctx: TenantContext, id: string) {
     const c = await campaignRepository.getById(ctx, id, 'Campaign not found');
-    const f = (await figures(ctx, [c._id])).get(String(c._id))!;
-    return { ...c, metrics: { ...campaignMetrics({ spend: c.spend, ...f }), inquiries: f.inquiries } };
+    return withMetrics(c, (await figures(ctx, [c._id])).get(String(c._id))!);
   },
 
   async create(auth: AuthContext, input: CampaignInput) {
@@ -104,7 +116,7 @@ export const campaignService = {
   async report(ctx: TenantContext) {
     const all = await Campaign.find({ businessId: ctx.businessId, deletedAt: null }).sort({ createdAt: -1 }).limit(200).lean<CampaignDoc[]>();
     const f = await figures(ctx, all.map((c) => c._id));
-    const rows = all.map((c) => ({ _id: c._id, name: c.name, channel: c.channel, status: c.status, code: c.code, ...campaignMetrics({ spend: c.spend, ...f.get(String(c._id))! }), inquiries: f.get(String(c._id))!.inquiries }));
+    const rows = all.map((c) => ({ _id: c._id, name: c.name, channel: c.channel, status: c.status, code: c.code, ...withMetrics(c, f.get(String(c._id))!).metrics }));
     const totals = campaignMetrics(rows.reduce((t, r) => ({ spend: t.spend + r.spend, leads: t.leads + r.leads, won: t.won + r.won, revenue: t.revenue + r.revenue }), { spend: 0, leads: 0, won: 0, revenue: 0 }));
     const bySource = await Client.aggregate<{ _id: string | null; leads: number }>([
       { $match: { businessId: new Types.ObjectId(ctx.businessId), deletedAt: null } },

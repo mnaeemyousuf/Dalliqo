@@ -423,6 +423,8 @@ export interface CampaignMetrics {
   conversionPct: number | null;
   costPerWin: number | null;
   roiPct: number | null;
+  otherSpend?: number;
+  bookedSpend?: number;
 }
 
 export interface Campaign {
@@ -461,6 +463,9 @@ export interface WhatsAppStatus {
   phoneNumberId: string | null;
   displayNumber: string | null;
   mode: 'cloud' | 'link';
+  businessAccountId: string | null;
+  templates: { name: string; language: string; category: string; body: string; params: number }[];
+  templatesSyncedAt: string | null;
 }
 
 export interface InstallmentPlan {

@@ -103,6 +103,48 @@ function ListingCard({ l, slug }: { l: PublicListing; slug: string }) {
   );
 }
 
+export function PublicAgentPage() {
+  const { t } = useTranslation();
+  const { slug = '', id = '' } = useParams();
+  useCampaign();
+  const [page, setPage] = useState(1);
+  const q = useQuery({ queryKey: ['public-agent', slug, id], queryFn: () => get<{ site: Site; agent: { _id: string; fullName: string; mobileNumber?: string | null; listingCount: number } }>(`/sites/${slug}/agents/${id}`), retry: false });
+  const listings = useQuery({ queryKey: ['public-agent-listings', slug, id, page], queryFn: () => getPage<PublicListing[]>(`/sites/${slug}/listings`, { agentId: id, page, limit: 12 }), enabled: q.isSuccess, placeholderData: (p) => p });
+  useEffect(() => { if (q.data) document.title = `${q.data.agent.fullName} — ${q.data.site.name}`; }, [q.data]);
+  if (q.isError) return <Missing message={t('site.agentGone')} />;
+  if (!q.data) return <Shell><div className="h-48 animate-pulse rounded-xl bg-surface-2" /></Shell>;
+  const { site, agent } = q.data;
+  const initials = agent.fullName.split(' ').map((x) => x[0]).slice(0, 2).join('');
+  const meta = listings.data?.meta;
+  return (
+    <Shell site={site}>
+      <Link to={`/w/${slug}`} className="mb-3 inline-block text-sm text-muted hover:text-brand-600">← {t('site.allListings')}</Link>
+      <Card className="mb-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-600 text-xl font-bold text-white">{initials}</span>
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold">{agent.fullName}</h1>
+            <p className="text-sm text-muted">{t('site.agentAt', { name: site.name })} · {t('site.heroCount', { count: agent.listingCount })}</p>
+          </div>
+          <span className="ms-auto flex flex-wrap gap-2">
+            {agent.mobileNumber && <a href={`tel:${agent.mobileNumber}`} className="btn btn-secondary"><Phone className="h-4 w-4" />{t('site.call')}</a>}
+            {agent.mobileNumber && <a href={whatsappLink(agent.mobileNumber, t('site.waHello', { name: site.name }))} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"><MessageCircle className="h-4 w-4" />WhatsApp</a>}
+          </span>
+        </div>
+      </Card>
+      {!listings.data ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 3 }, (_, i) => <div key={i} className="aspect-[4/3] animate-pulse rounded-xl bg-surface-2" />)}</div>
+      ) : (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{listings.data.data.map((l) => <ListingCard key={l._id} l={l} slug={slug} />)}</div>
+          {meta && meta.totalPages > 1 && <div className="mt-4"><Pagination page={meta.page} totalPages={meta.totalPages} total={meta.total} limit={meta.limit} onChange={setPage} /></div>}
+        </>
+      )}
+      <Card className="mt-6" title={t('site.contact')}><InquiryForm slug={slug} /></Card>
+    </Shell>
+  );
+}
+
 export function PublicSitePage() {
   const { t } = useTranslation();
   const { slug = '' } = useParams();
@@ -150,6 +192,14 @@ export function PublicSitePage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{listings.data.data.map((l) => <ListingCard key={l._id} l={l} slug={slug} />)}</div>
           {meta && meta.totalPages > 1 && <div className="mt-4"><Pagination page={meta.page} totalPages={meta.totalPages} total={meta.total} limit={meta.limit} onChange={(p) => set('page', String(p))} /></div>}
         </>
+      )}
+      {!!s.agents.length && (
+        <div className="mt-8">
+          <p className="mb-2 text-sm font-semibold">{t('site.ourAgents')}</p>
+          <div className="flex flex-wrap gap-2">
+            {s.agents.map((a) => <Link key={a._id} to={`/w/${slug}/a/${a._id}`} className="chip ring-1 ring-inset ring-line hover:bg-surface-2">{a.fullName}</Link>)}
+          </div>
+        </div>
       )}
       <div className="mt-8 grid gap-4 md:grid-cols-[2fr_1fr]">
         {s.about && <Card title={t('site.about', { name: s.name })}><p className="whitespace-pre-wrap text-sm text-muted">{s.about}</p></Card>}
@@ -257,7 +307,7 @@ export function PublicListingPage() {
             {!!l.agents?.length && (
               <div className="mt-4 border-t border-line pt-3 text-sm">
                 <p className="text-xs text-muted">{t('site.agent')}</p>
-                {l.agents.map((a) => <p key={a._id} className="font-medium">{a.fullName}{a.mobileNumber && <a className="ltr-nums ms-2 text-xs text-brand-600" href={`tel:${a.mobileNumber}`}>{a.mobileNumber}</a>}</p>)}
+                {l.agents.map((a) => <p key={a._id} className="font-medium"><Link className="hover:text-brand-600" to={`/w/${slug}/a/${a._id}`}>{a.fullName}</Link>{a.mobileNumber && <a className="ltr-nums ms-2 text-xs text-brand-600" href={`tel:${a.mobileNumber}`}>{a.mobileNumber}</a>}</p>)}
               </div>
             )}
           </Card>

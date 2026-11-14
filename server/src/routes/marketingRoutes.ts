@@ -57,6 +57,7 @@ r.delete('/portal-links/:id', can(P.CLIENTS_UPDATE), id, h(async (req, res) => s
 
 r.get('/whatsapp', can(P.CLIENTS_READ), h(async (req, res) => sendSuccess(res, await whatsappService.status(authOf(req)))));
 r.put('/whatsapp', can(P.MARKETING_MANAGE), validate({ body: s.whatsappSettingsSchema }), h(async (req, res) => sendSuccess(res, await whatsappService.updateSettings(authOf(req), req.body))));
+r.post('/whatsapp/templates/sync', can(P.MARKETING_MANAGE), h(async (req, res) => sendSuccess(res, await whatsappService.syncTemplates(authOf(req)), { message: 'Templates updated' })));
 r.post('/whatsapp/send', can(P.CLIENTS_UPDATE), validate({ body: s.whatsappSendSchema }), h(async (req, res) => sendSuccess(res, await whatsappService.send(authOf(req), req.body))));
 
 /** Public routes (no sign-in): the agency website, inquiries, portals and the WhatsApp webhook. */
@@ -68,6 +69,7 @@ pr.get('/sites/:slug/listings', validate({ params: s.slugParams, query: s.public
   const x = q<Record<string, never>>(req);
   paged(res, x.page, x.limit, await websiteService.listings(req.params.slug, x));
 }));
+pr.get('/sites/:slug/agents/:id', validate({ params: s.slugIdParams }), h(async (req, res) => sendSuccess(res, await websiteService.agent(req.params.slug, req.params.id))));
 pr.get('/sites/:slug/listings/:id', validate({ params: s.slugIdParams }), h(async (req, res) => sendSuccess(res, await websiteService.listing(req.params.slug, req.params.id))));
 pr.post('/sites/:slug/inquiries', inquiryLimiter, validate({ params: s.slugParams, body: s.publicInquirySchema }), h(async (req, res) => sendSuccess(res, await websiteService.inquire(req.params.slug, req.body, req.ip), { status: 201, message: 'Thank you — we will contact you shortly' })));
 

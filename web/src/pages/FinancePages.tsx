@@ -4,14 +4,14 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { PAYMENT_METHODS, PERMISSIONS, TRANSACTION_TYPES, type TransactionType } from '@recrm/shared';
-import { exportApi, transactionApi } from '@/api/endpoints';
+import { campaignApi, exportApi, transactionApi } from '@/api/endpoints';
 import type { Transaction, TransactionCategory } from '@/api/types';
 import { BranchField } from '@/components/branches';
 import { DocumentsPanel } from '@/components/domain/panels';
 import { Badge, Button, Card, ConfirmDialog, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Table, Tabs, type Column, MetricTile } from '@/components/ui';
 import { formatDate, formatPkr } from '@/lib/format';
 import { useDebounce, useEnumOptions, useErrorText, useOnError, useUrlState, useOpenOnNew } from '@/lib/hooks';
-import { useCan } from '@/store/auth';
+import { useCan, useModule } from '@/store/auth';
 import { toast } from '@/store/toast';
 
 const refName = (v: unknown, key: string) => (v && typeof v === 'object' ? String((v as Record<string, unknown>)[key] ?? '') : '');
@@ -52,7 +52,10 @@ export function TransactionFormDrawer({ onClose, entry, defaults }: { onClose():
     method: entry?.method ?? 'CASH',
     description: entry?.description ?? '',
     reference: entry?.reference ?? '',
+    campaignId: (entry as { campaignId?: string | null } | undefined)?.campaignId ?? '',
   });
+  const hasMarketing = useModule('marketing');
+  const campaigns = useQuery({ queryKey: ['campaigns', 'pick'], queryFn: () => campaignApi.list({ limit: 100 }), enabled: hasMarketing && form.type === 'EXPENSE', staleTime: 60_000 });
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const options = (cats.data ?? []).filter((c) => c.type === form.type).map((c) => ({ value: c._id, label: label(c) }));
   const save = useMutation({
@@ -66,6 +69,7 @@ export function TransactionFormDrawer({ onClose, entry, defaults }: { onClose():
         method: form.method,
         description: form.description || undefined,
         reference: form.reference || undefined,
+        ...(form.type === 'EXPENSE' && hasMarketing ? { campaignId: form.campaignId || null } : {}),
         ...(!entry && defaults?.dealId ? { dealId: defaults.dealId } : {}),
         ...(!entry && defaults?.clientId ? { clientId: defaults.clientId } : {}),
       };
@@ -101,6 +105,9 @@ export function TransactionFormDrawer({ onClose, entry, defaults }: { onClose():
           <Input label={t('common.date')} type="date" value={form.date} onChange={set('date')} />
           <Select label={t('deal.method')} options={methods} value={form.method} onChange={set('method')} />
           <Input label={t('deal.reference')} value={form.reference} onChange={set('reference')} />
+          {form.type === 'EXPENSE' && !!campaigns.data?.items.length && (
+            <Select label={t('marketing.campaign')} placeholder={t('finance.noCampaign')} options={campaigns.data.items.map((c) => ({ value: c._id, label: c.name }))} value={form.campaignId} onChange={set('campaignId')} wrapperClassName="sm:col-span-2" />
+          )}
         </div>
         <Input label={t('finance.description')} value={form.description} onChange={set('description')} />
       </form>

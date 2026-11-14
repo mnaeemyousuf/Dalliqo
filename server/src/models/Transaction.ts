@@ -19,6 +19,8 @@ export interface TransactionDoc extends SyncDoc {
   dealId?: Types.ObjectId | null;
   propertyId?: Types.ObjectId | null;
   clientId?: Types.ObjectId | null;
+  /** Marketing expense booked against a campaign (counts toward its spend / ROI). */
+  campaignId?: Types.ObjectId | null;
   description?: string;
   reference?: string;
   source: TransactionSource;
@@ -43,6 +45,7 @@ const schema = new Schema<TransactionDoc>(
     dealId: { type: Schema.Types.ObjectId, ref: 'Deal', default: null },
     propertyId: { type: Schema.Types.ObjectId, ref: 'Property', default: null },
     clientId: { type: Schema.Types.ObjectId, ref: 'Client', default: null },
+    campaignId: { type: Schema.Types.ObjectId, ref: 'Campaign', default: null },
     description: { type: String, maxlength: 500 },
     reference: { type: String, maxlength: 100 },
     source: { type: String, enum: TRANSACTION_SOURCES, default: 'MANUAL' },
@@ -58,6 +61,7 @@ schema.index({ businessId: 1, deletedAt: 1, date: -1 });
 schema.index({ businessId: 1, type: 1, date: -1 });
 schema.index({ businessId: 1, categoryId: 1, date: -1 });
 schema.index({ businessId: 1, dealId: 1 });
+schema.index({ businessId: 1, campaignId: 1 }, { partialFilterExpression: { campaignId: { $type: 'objectId' } } });
 // One income entry per commission payment, even if the hook runs twice.
 schema.index({ businessId: 1, sourceKey: 1 }, { unique: true, partialFilterExpression: { sourceKey: { $type: 'string' } } });
 schema.plugin(tenantGuardPlugin);

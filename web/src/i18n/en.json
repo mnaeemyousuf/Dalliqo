@@ -436,7 +436,11 @@
       "view": "Map",
       "summary": "{{shown}} of {{total}} listings have a location.",
       "missing": "Add coordinates in the property form to show the rest."
-    }
+    },
+    "coOwners": "Co-owners",
+    "addCoOwner": "Add a co-owner (search above)",
+    "listingAgents": "Listing agents",
+    "addAgent": "Add an agent"
   },
   "owner": {
     "title": "Owners",
@@ -1297,7 +1301,8 @@
     "deleteTitle": "Delete this entry?",
     "deleteMessage": "It will be removed from reports. Receipts attached to it stay in documents.",
     "autoIncome": "Record commission received as income automatically",
-    "autoIncomeHint": "Each commission payment on a deal adds one income entry (never twice); removing the payment removes it."
+    "autoIncomeHint": "Each commission payment on a deal adds one income entry (never twice); removing the payment removes it.",
+    "noCampaign": "Not a campaign expense"
   },
   "agreement": {
     "title": "Agreements",
@@ -1797,7 +1802,7 @@
     "noCampaigns": "No campaigns yet",
     "spend": "Spend",
     "budget": "Budget",
-    "spendHint": "Total spent so far",
+    "spendHint": "Spent outside the books — expenses booked against this campaign in Income & expense are added automatically",
     "leads": "Leads",
     "inquiriesShort": "inq.",
     "costPerLead": "Cost per lead",
@@ -1870,7 +1875,17 @@
     "bySource": "Leads by source",
     "emailTitle": "Email notifications",
     "emailLabel": "Also email my notifications to {{email}}",
-    "emailHint": "You still get them in the app and on your phone."
+    "emailHint": "You still get them in the app and on your phone.",
+    "spendBreakdown": "{{other}} typed + {{booked}} from expenses",
+    "waAccountId": "WhatsApp Business Account id",
+    "waAccountIdHint": "Meta Business → WhatsApp → API setup → WhatsApp Business Account ID (for templates)",
+    "templates": "Message templates",
+    "syncTemplates": "Sync from Meta",
+    "noTemplates": "No approved templates yet. Create them in Meta Business Manager, then sync. Templates let you message customers after 24 hours of silence.",
+    "templatesSynced": "{{count}} approved templates",
+    "syncedAt": "Last synced {{date}}",
+    "template": "Template",
+    "freeText": "Free text (within 24 hours of their last message)"
   },
   "site": {
     "waHello": "Assalam-o-Alaikum, I found {{name}} online and have a question.",
@@ -1921,7 +1936,10 @@
     "negotiable": "Negotiable",
     "call": "Call",
     "approxMap": "Approximate area on the map",
-    "agent": "Your agent"
+    "agent": "Your agent",
+    "agentGone": "This agent page is not available",
+    "agentAt": "Agent at {{name}}",
+    "ourAgents": "Our agents"
   },
   "portal": {
     "title": "Your property portal",
@@ -1943,7 +1961,7 @@
     "off": "AI off",
     "usage": "{{used}} / {{limit}} this month",
     "notConfigured": "The AI assistant needs an Anthropic API key on the server. Price estimates, forecasts and template descriptions still work.",
-    "intro": "Ask in English, Urdu or Roman Urdu. The assistant can only read what you are allowed to see, and never changes anything.",
+    "intro": "Ask in English, Urdu or Roman Urdu. The assistant reads only what you are allowed to see. It can suggest follow-ups and notes — nothing is saved until you confirm.",
     "q1": "What should I focus on today?",
     "q2": "Which hot leads have not been contacted this week?",
     "q3": "How much commission is expected next month?",
@@ -1961,7 +1979,9 @@
       "my_day": "your day",
       "deal_pipeline": "deals",
       "collections": "collections",
-      "forecast": "forecast"
+      "forecast": "forecast",
+      "propose_follow_up": "suggested follow-up",
+      "propose_note": "suggested note"
     },
     "priceTitle": "Price estimate",
     "writeDescription": "Write description",
@@ -2001,6 +2021,29 @@
     "legendInstallments": "Installments",
     "legendRent": "Rent",
     "expectedLeads": "about {{count}} new leads next month",
-    "forecastMethod": "Commission is weighted by how likely each deal stage is to close; installments and rent are what is scheduled and still unpaid."
+    "forecastMethod": "Commission is weighted by how likely each deal stage is to close; installments and rent are what is scheduled and still unpaid.",
+    "proposeNote": "Suggested note",
+    "proposeFollowUp": "Suggested follow-up",
+    "confirm": "Confirm & save",
+    "saved": "Saved",
+    "q5": "Schedule a call tomorrow with my hottest lead"
+  },
+  "roleDash": {
+    "myCommission": "My commission",
+    "statement": "Full statement",
+    "openDeals": "Open deals",
+    "owedToYou": "Owed to you",
+    "team": "Team this month",
+    "member": "Member",
+    "leads": "Leads",
+    "hot": "Hot",
+    "overdue": "Overdue",
+    "doneWeek": "Done (7 days)",
+    "won": "Won",
+    "commission": "Commission",
+    "collections": "Collections",
+    "details": "Details",
+    "lateInstallments": "Late installments",
+    "lateRent": "Late rent"
   }
 }

@@ -34,6 +34,7 @@ import { useAuth, useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
 import { useUi } from '@/store/ui';
 import { useQueryClient } from '@tanstack/react-query';
+import { RoleDashboards } from '@/pages/RoleDashboards';
 
 // Chart colours start from the Dalliqo palette (primary blue, amber accent, status colours).
 const PALETTE = [BRAND.color.primary['500'], BRAND.color.accent['500'], BRAND.color.status.success, '#8B5CF6', BRAND.color.status.danger, '#0891B2', '#64748B', '#DB2777', '#65A30D'];
@@ -160,6 +161,8 @@ export function DashboardPage() {
           </div>
         </div>
       </div>
+
+      <RoleDashboards />
 
       <KpiGroup title={t('dashboard.groups.portfolio')} style={st(1)}>
         <KpiRow>

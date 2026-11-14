@@ -122,7 +122,7 @@ function CampaignsTab() {
   const columns: Column<Campaign>[] = [
     { key: 'name', header: t('marketing.campaign'), render: (c) => <span><span className="font-medium">{c.name}</span><span className="block text-xs text-muted">{t(`enums.campaignChannel.${c.channel}`)} · <span className="ltr-nums">{c.code}</span></span></span> },
     { key: 'status', header: t('common.status'), render: (c) => <Badge color={STATUS_COLOR[c.status]}>{t(`enums.campaignStatus.${c.status}`)}</Badge> },
-    { key: 'spend', header: t('marketing.spend'), render: (c) => <span className="ltr-nums whitespace-nowrap">{formatPkr(c.spend)}{c.budget ? <span className="text-xs text-muted"> / {formatPkr(c.budget)}</span> : null}</span> },
+    { key: 'spend', header: t('marketing.spend'), render: (c) => <span className="ltr-nums whitespace-nowrap" title={t('marketing.spendBreakdown', { other: formatPkr(c.metrics.otherSpend ?? c.spend), booked: formatPkr(c.metrics.bookedSpend ?? 0) })}>{formatPkr(c.metrics.spend)}{c.budget ? <span className="text-xs text-muted"> / {formatPkr(c.budget)}</span> : null}</span> },
     { key: 'leads', header: t('marketing.leads'), render: (c) => <span className="ltr-nums whitespace-nowrap">{c.metrics.leads}<span className="text-xs text-muted"> · {c.metrics.inquiries} {t('marketing.inquiriesShort')}</span></span> },
     { key: 'cpl', header: t('marketing.costPerLead'), render: (c) => <span className="ltr-nums">{c.metrics.costPerLead === null ? '—' : formatPkr(c.metrics.costPerLead)}</span> },
     { key: 'won', header: t('marketing.won'), render: (c) => <span className="ltr-nums whitespace-nowrap">{c.metrics.won} <span className="text-xs text-muted">({pct(c.metrics.conversionPct)})</span></span> },
@@ -244,11 +244,12 @@ function WhatsAppTab() {
   const onError = useOnError();
   const canManage = useCan(PERMISSIONS.MARKETING_MANAGE);
   const q = useQuery({ queryKey: ['whatsapp'], queryFn: whatsappApi.status });
-  const [f, setF] = useState<{ phoneNumberId: string; displayNumber: string } | null>(null);
+  const [f, setF] = useState<{ phoneNumberId: string; displayNumber: string; businessAccountId: string } | null>(null);
   useEffect(() => {
-    if (q.data && !f) setF({ phoneNumberId: q.data.phoneNumberId ?? '', displayNumber: q.data.displayNumber ?? '' });
+    if (q.data && !f) setF({ phoneNumberId: q.data.phoneNumberId ?? '', displayNumber: q.data.displayNumber ?? '', businessAccountId: q.data.businessAccountId ?? '' });
   }, [q.data, f]);
-  const save = useMutation({ mutationFn: () => whatsappApi.update({ phoneNumberId: f!.phoneNumberId || null, displayNumber: f!.displayNumber || null }), onSuccess: (d) => (toast.success(t('common.saved')), qc.setQueryData(['whatsapp'], d)), onError });
+  const save = useMutation({ mutationFn: () => whatsappApi.update({ phoneNumberId: f!.phoneNumberId || null, displayNumber: f!.displayNumber || null, businessAccountId: f!.businessAccountId || null }), onSuccess: (d) => (toast.success(t('common.saved')), qc.setQueryData(['whatsapp'], d)), onError });
+  const sync = useMutation({ mutationFn: whatsappApi.syncTemplates, onSuccess: (d) => (toast.success(t('marketing.templatesSynced', { count: d.templates.length })), qc.setQueryData(['whatsapp'], d)), onError });
   if (q.isError) return <ErrorState onRetry={() => q.refetch()} />;
   if (!q.data || !f) return <PageLoader />;
   const s = q.data;
@@ -267,8 +268,24 @@ function WhatsAppTab() {
         <div className="grid gap-3">
           <Input label={t('marketing.waPhoneNumberId')} disabled={!canManage} value={f.phoneNumberId} onChange={(e) => setF({ ...f, phoneNumberId: e.target.value.trim() })} hint={t('marketing.waPhoneNumberIdHint')} />
           <Input label={t('marketing.waDisplayNumber')} disabled={!canManage} value={f.displayNumber} onChange={(e) => setF({ ...f, displayNumber: e.target.value })} />
+          <Input label={t('marketing.waAccountId')} disabled={!canManage} value={f.businessAccountId} onChange={(e) => setF({ ...f, businessAccountId: e.target.value.trim() })} hint={t('marketing.waAccountIdHint')} />
         </div>
         {canManage && <div className="mt-4 flex justify-end"><Button loading={save.isPending} onClick={() => save.mutate()}>{t('common.save')}</Button></div>}
+      </Card>
+      <Card className="lg:col-span-2" title={t('marketing.templates')} actions={canManage && s.mode === 'cloud' && <Button size="sm" variant="secondary" loading={sync.isPending} disabled={!s.businessAccountId} onClick={() => sync.mutate()}>{t('marketing.syncTemplates')}</Button>}>
+        {!s.templates.length ? (
+          <p className="text-sm text-muted">{t('marketing.noTemplates')}</p>
+        ) : (
+          <ul className="divide-y divide-line text-sm">
+            {s.templates.map((tp) => (
+              <li key={tp.name + tp.language} className="py-2">
+                <p className="font-medium">{tp.name} <span className="text-xs font-normal text-muted">· {tp.language} · {tp.category}</span></p>
+                <p className="whitespace-pre-wrap text-xs text-muted">{tp.body}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+        {s.templatesSyncedAt && <p className="mt-2 text-2xs text-muted">{t('marketing.syncedAt', { date: formatDate(s.templatesSyncedAt, true) })}</p>}
       </Card>
     </div>
   );
@@ -376,8 +393,14 @@ export function WhatsAppSendButton({ clientId, phone }: { clientId: string; phon
   const can = useCan(PERMISSIONS.CLIENTS_UPDATE);
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
+  const wa = useQuery({ queryKey: ['whatsapp'], queryFn: whatsappApi.status, enabled: open, staleTime: 60_000 });
+  const templates = wa.data?.mode === 'cloud' ? wa.data.templates : [];
+  const [tpl, setTpl] = useState('');
+  const [params, setParams] = useState<string[]>([]);
+  const chosen = templates.find((x) => `${x.name}|${x.language}` === tpl);
+  const preview = chosen ? chosen.body.replace(/\{\{(\d+)\}\}/g, (_m, n) => params[Number(n) - 1] || `{{${n}}}`) : text;
   const send = useMutation({
-    mutationFn: () => whatsappApi.send({ to: phone, text, clientId }),
+    mutationFn: () => whatsappApi.send({ to: phone, text: preview, clientId, ...(chosen ? { template: { name: chosen.name, language: chosen.language, params: params.slice(0, chosen.params) } } : {}) }),
     onSuccess: (r) => {
       if (r.mode === 'link') window.open(r.url, '_blank', 'noopener');
       else toast.success(t('marketing.waSent'));
@@ -391,8 +414,20 @@ export function WhatsAppSendButton({ clientId, phone }: { clientId: string; phon
   return (
     <>
       <Button variant="secondary" icon={<Send className="h-4 w-4 text-emerald-600" />} onClick={() => setOpen(true)}>{t('marketing.waCompose')}</Button>
-      <Modal open={open} onClose={() => setOpen(false)} title={t('marketing.waCompose')} footer={<Button disabled={!text.trim()} loading={send.isPending} onClick={() => send.mutate()}>{t('marketing.send')}</Button>}>
-        <Textarea label={t('marketing.message')} rows={5} value={text} onChange={(e) => setText(e.target.value)} />
+      <Modal open={open} onClose={() => setOpen(false)} title={t('marketing.waCompose')} footer={<Button disabled={chosen ? params.slice(0, chosen.params).filter((x) => x?.trim()).length < chosen.params : !text.trim()} loading={send.isPending} onClick={() => send.mutate()}>{t('marketing.send')}</Button>}>
+        {!!templates.length && (
+          <Select label={t('marketing.template')} placeholder={t('marketing.freeText')} options={templates.map((x) => ({ value: `${x.name}|${x.language}`, label: `${x.name} (${x.language})` }))} value={tpl} onChange={(e) => (setTpl(e.target.value), setParams([]))} wrapperClassName="mb-3" />
+        )}
+        {chosen ? (
+          <div className="space-y-2">
+            {Array.from({ length: chosen.params }, (_, n) => (
+              <Input key={n} label={`{{${n + 1}}}`} value={params[n] ?? ''} onChange={(e) => setParams((p) => Object.assign([...p], { [n]: e.target.value }))} />
+            ))}
+            <p className="whitespace-pre-wrap rounded-lg bg-surface-2 p-3 text-sm">{preview}</p>
+          </div>
+        ) : (
+          <Textarea label={t('marketing.message')} rows={5} value={text} onChange={(e) => setText(e.target.value)} />
+        )}
         <p className="mt-2 text-xs text-muted">{t('marketing.waComposeHint')}</p>
       </Modal>
     </>

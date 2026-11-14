@@ -396,6 +396,8 @@ export async function seed(opts: { reset?: boolean } = {}): Promise<Record<strin
   });
   const live = properties.filter((p) => p.status === 'AVAILABLE').slice(0, 10);
   for (const p of live) await websiteService.publish(father, String(p._id), { published: true });
+  // The demo agent handles half of the published listings (agent landing page on the site).
+  await Property.updateMany({ businessId: father.businessId, _id: { $in: live.filter((_, i) => i % 2 === 0).map((p) => p._id) } }, { $addToSet: { agentIds: agent.userId } });
   const fb = await campaignService.create(father, { name: 'Facebook — Gulshan plots', channel: 'FACEBOOK', budget: 60_000, spend: 42_000, startDate: day(60) });
   await campaignService.create(father, { name: 'Zameen premium listing', channel: 'PORTAL', budget: 25_000, spend: 25_000, startDate: day(90) });
   await Client.updateMany({ businessId: father.businessId, _id: { $in: clients.slice(0, 5).map((c) => c._id) } }, { $set: { campaignId: fb._id, campaign: fb.name } });

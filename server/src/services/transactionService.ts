@@ -18,6 +18,7 @@ import { diffFields } from '../utils/diff';
 import { escapeRegex, searchBlob } from '../utils/text';
 import { activityService, type ActivityRef } from './activityService';
 import { auditService } from './auditService';
+import { Campaign } from '../models/Campaign';
 import { dealHooks, dealRepository } from './dealService';
 import { publishChange } from './publish';
 import { settingsService } from './settingsService';
@@ -36,6 +37,7 @@ export interface TransactionInput {
   dealId?: string | null;
   propertyId?: string | null;
   clientId?: string | null;
+  campaignId?: string | null;
   description?: string;
   reference?: string;
 }
@@ -53,7 +55,7 @@ export interface TransactionQuery {
   limit: number;
 }
 
-const EDITABLE = ['branchId', 'type', 'categoryId', 'amount', 'date', 'method', 'dealId', 'propertyId', 'clientId', 'description', 'reference'] as const;
+const EDITABLE = ['branchId', 'type', 'categoryId', 'amount', 'date', 'method', 'dealId', 'propertyId', 'clientId', 'campaignId', 'description', 'reference'] as const;
 const money = (n: number) => `Rs ${n.toLocaleString('en-PK')}`;
 const kind = (t: TransactionDoc) => (t.type === 'INCOME' ? 'Income' : 'Expense');
 const refsOf = (t: TransactionDoc): ActivityRef[] => [
@@ -71,6 +73,10 @@ async function assertCategory(ctx: TenantContext, categoryId: string, type: Tran
 
 async function assertLinks(ctx: TenantContext, input: Partial<TransactionInput>) {
   if (input.dealId && !(await dealRepository.findById(ctx, input.dealId))) throw badRequest(ERROR_CODES.DEAL_NOT_FOUND, 'Deal not found');
+  if (input.campaignId) {
+    if (input.type !== 'EXPENSE') throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'Only expenses can be booked against a campaign');
+    if (!(await Campaign.exists({ businessId: ctx.businessId, _id: input.campaignId, deletedAt: null }))) throw badRequest(ERROR_CODES.NOT_FOUND, 'Campaign not found');
+  }
   if (input.propertyId && !(await propertyRepository.findById(ctx, input.propertyId))) throw badRequest(ERROR_CODES.PROPERTY_NOT_FOUND, 'Property not found');
   if (input.clientId && !(await clientRepository.findById(ctx, input.clientId))) throw badRequest(ERROR_CODES.CLIENT_NOT_FOUND, 'Client not found');
 }

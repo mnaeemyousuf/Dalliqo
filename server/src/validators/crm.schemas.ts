@@ -403,6 +403,7 @@ const transactionFields = {
   dealId: objectId.nullable().optional(),
   propertyId: objectId.nullable().optional(),
   clientId: objectId.nullable().optional(),
+  campaignId: objectId.nullable().optional(),
   description: optionalText(500),
   reference: optionalText(100),
 };

@@ -6,6 +6,7 @@ import { PropertyMedia } from '../models/FileAsset';
 import { Inquiry, type InquiryDoc } from '../models/Inquiry';
 import { Property, type PropertyDoc } from '../models/Property';
 import { User } from '../models/User';
+import { BusinessMember } from '../models/BusinessMember';
 import { propertyRepository } from '../repositories/entityRepositories';
 import type { AuthContext, TenantContext } from '../types/context';
 import { badRequest, conflict, notFound } from '../utils/AppError';
@@ -173,6 +174,21 @@ export const websiteService = {
       agents = (await User.find({ _id: { $in: ids } }).select('fullName').limit(30).lean()).map((u) => ({ _id: String(u._id), fullName: u.fullName }));
     }
     return { ...publicSite(b), listingCount: count, purposes, agents };
+  },
+
+  /** Agent landing page: name, contact and how many live listings — only for agents with a live listing. */
+  async agent(slug: string, agentId: string) {
+    const b = await siteBySlug(slug);
+    if (!b.website?.showAgents || !Types.ObjectId.isValid(agentId)) throw notFound(ERROR_CODES.NOT_FOUND, 'Agent not found');
+    const aid = new Types.ObjectId(agentId);
+    const [listings, member, user] = await Promise.all([
+      Property.countDocuments({ ...liveFilter(b), agentIds: aid }),
+      BusinessMember.exists({ businessId: b._id, userId: aid, status: 'ACTIVE' }),
+      User.findById(aid).select('fullName mobileNumber').lean(),
+    ]);
+    if (!listings || !member || !user) throw notFound(ERROR_CODES.NOT_FOUND, 'Agent not found');
+    const purposes = await Property.distinct('listingPurpose', { ...liveFilter(b), agentIds: aid });
+    return { site: publicSite(b), agent: { _id: agentId, fullName: user.fullName, mobileNumber: user.mobileNumber ?? null, listingCount: listings, purposes } };
   },
 
   async listings(slug: string, q: PublicListingQuery & { agentId?: string }) {

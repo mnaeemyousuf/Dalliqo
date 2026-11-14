@@ -13,12 +13,13 @@ import { DealsPanel } from '@/pages/DealPages';
 import { PropertyExtraDetails, PropertyExtraFields } from '@/pages/Phase3Pages';
 import { PropertyImportModal, PropertyQrButton, SavedViews, VerificationBadgeSmall, VerificationPanel } from '@/pages/Phase4Pages';
 import { PublishButton } from '@/pages/MarketingPages';
+import { MultiPicker, useOwnerNames } from '@/components/domain/MultiPicker';
 import { PropertyAiPanel } from '@/pages/AiPages';
 import { toApiError } from '@/api/client';
 import { BrochureDialog } from '@/components/domain/BrochureDialog';
 import { Badge, Button, Card, Checkbox, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column, FilterBar, ViewToggle } from '@/components/ui';
 import { formatDate, formatPkr, waHref } from '@/lib/format';
-import { useDebounce, useEnumOptions, useOnError, useUrlState, useOpenOnNew } from '@/lib/hooks';
+import { useDebounce, useEnumOptions, useMembers, useOnError, useUrlState, useOpenOnNew } from '@/lib/hooks';
 import { useAuth, useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
 
@@ -47,6 +48,11 @@ export function PropertyFormDrawer({ open, onClose, property }: { open: boolean;
   const units = useEnumOptions('sizeUnit', SIZE_UNITS);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [ownerSearch, setOwnerSearch] = useState('');
+  const idOf = (v: unknown) => (v && typeof v === 'object' && '_id' in v ? String((v as { _id: string })._id) : String(v));
+  const [coOwnerIds, setCoOwnerIds] = useState<string[]>((property?.coOwnerIds ?? []).map(idOf));
+  const [agentIds, setAgentIds] = useState<string[]>((property?.agentIds ?? []).map(idOf));
+  const members = useMembers();
+  const coOwnerNames = useOwnerNames(coOwnerIds);
   const owners = useQuery({ queryKey: ['owners', 'pick', useDebounce(ownerSearch, 250)], queryFn: () => ownerApi.list({ q: ownerSearch, limit: 30 }), enabled: open });
   const [form, setForm] = useState({
     branchId: property?.branchId ?? '',
@@ -122,6 +128,8 @@ export function PropertyFormDrawer({ open, onClose, property }: { open: boolean;
       if (lat !== undefined && lng !== undefined) Object.assign(body, { latitude: lat, longitude: lng });
       else if (property?.latitude !== undefined) Object.assign(body, { latitude: null, longitude: null });
       body.ownerId = form.ownerId || (property ? null : undefined);
+      body.coOwnerIds = coOwnerIds.filter((x) => x !== form.ownerId);
+      if (members.options.length || agentIds.length) body.agentIds = agentIds;
       return property ? propertyApi.update(property._id, { ...body, baseVersion: property.version }) : propertyApi.create(body);
     },
     onSuccess: (saved) => {
@@ -218,6 +226,19 @@ export function PropertyFormDrawer({ open, onClose, property }: { open: boolean;
             value={form.ownerId}
             onChange={set('ownerId')}
           />
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <MultiPicker
+              label={t('property.coOwners')}
+              placeholder={t('property.addCoOwner')}
+              values={coOwnerIds}
+              onChange={setCoOwnerIds}
+              names={coOwnerNames}
+              options={(owners.data?.items ?? []).filter((o) => o._id !== form.ownerId).map((o) => ({ value: o._id, label: `${o.fullName} — ${o.mobileNumber}` }))}
+            />
+            {!!members.options.length && (
+              <MultiPicker label={t('property.listingAgents')} placeholder={t('property.addAgent')} values={agentIds} onChange={setAgentIds} names={{}} options={members.options} />
+            )}
+          </div>
         </div>
         <Textarea label={t('common.description')} rows={4} value={form.description} onChange={set('description')} />
       </form>

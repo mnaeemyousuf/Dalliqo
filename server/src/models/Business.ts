@@ -35,6 +35,20 @@ export interface WebsiteSettings {
 export interface WhatsAppSettings {
   phoneNumberId?: string | null;
   displayNumber?: string | null;
+  /** WhatsApp Business Account id — needed to read the approved message templates. */
+  businessAccountId?: string | null;
+  /** Approved templates, synced from Meta (needed to message someone outside the 24-hour window). */
+  templates?: WhatsAppTemplate[];
+  templatesSyncedAt?: Date | null;
+}
+
+export interface WhatsAppTemplate {
+  name: string;
+  language: string;
+  category: string;
+  body: string;
+  /** Number of {{n}} placeholders in the body. */
+  params: number;
 }
 
 export interface SubscriptionDoc {
@@ -120,6 +134,9 @@ const businessSchema = new Schema<BusinessDoc>(
     whatsapp: {
       phoneNumberId: { type: String, trim: true, maxlength: 40, default: null },
       displayNumber: { type: String, trim: true, maxlength: 20, default: null },
+      businessAccountId: { type: String, trim: true, maxlength: 40, default: null },
+      templates: { type: [{ _id: false, name: String, language: String, category: String, body: String, params: Number }], default: [] },
+      templatesSyncedAt: { type: Date, default: null },
     },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true, immutable: true },
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },

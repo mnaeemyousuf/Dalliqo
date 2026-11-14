@@ -102,7 +102,9 @@
     "deals": "Deals",
     "finance": "Income & expense",
     "agreements": "Agreements",
-    "rentals": "Rentals"
+    "rentals": "Rentals",
+    "installments": "Installments",
+    "assistant": "Assistant"
   },
   "topbar": {
     "searchPlaceholder": "Search clients, properties, owners…",
@@ -1700,7 +1702,7 @@
     "off": "AI off",
     "usage": "{{used}} / {{limit}} this month",
     "notConfigured": "The AI assistant needs an Anthropic API key on the server. Price estimates, forecasts and template descriptions still work.",
-    "intro": "Ask in English, Urdu or Roman Urdu. The assistant can only read what you are allowed to see, and never changes anything.",
+    "intro": "Ask in English, Urdu or Roman Urdu. The assistant reads only what you are allowed to see. It can suggest follow-ups and notes — nothing is saved until you confirm.",
     "q1": "What should I focus on today?",
     "q2": "Which hot leads have not been contacted this week?",
     "q3": "How much commission is expected next month?",
@@ -1718,7 +1720,9 @@
       "my_day": "your day",
       "deal_pipeline": "deals",
       "collections": "collections",
-      "forecast": "forecast"
+      "forecast": "forecast",
+      "propose_follow_up": "suggested follow-up",
+      "propose_note": "suggested note"
     },
     "priceTitle": "Price estimate",
     "writeDescription": "Write description",
@@ -1758,6 +1762,11 @@
     "legendInstallments": "Installments",
     "legendRent": "Rent",
     "expectedLeads": "about {{count}} new leads next month",
-    "forecastMethod": "Commission is weighted by how likely each deal stage is to close; installments and rent are what is scheduled and still unpaid."
+    "forecastMethod": "Commission is weighted by how likely each deal stage is to close; installments and rent are what is scheduled and still unpaid.",
+    "proposeNote": "Suggested note",
+    "proposeFollowUp": "Suggested follow-up",
+    "confirm": "Confirm & save",
+    "saved": "Saved",
+    "q5": "Schedule a call tomorrow with my hottest lead"
   }
 }

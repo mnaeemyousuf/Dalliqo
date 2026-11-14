@@ -96,6 +96,17 @@ Public endpoints never take a business id from the caller: sites resolve by slug
 
 Data sent to Anthropic: the user's question, and the records the tools return for it (names and phones of clients the user can already see, and listing facts). CNICs, owner details, plot numbers and minimum prices are never included.
 
+## Follow-ups batch
+| Concern | Where |
+|---|---|
+| Team leaderboard (one aggregate per collection, branch-scoped) | `server/src/services/teamDashboardService.ts` |
+| Campaign spend = typed + booked expenses | `campaignService` (`withMetrics`), Transaction `campaignId` |
+| Agent landing page | `websiteService.agent`, `PublicAgentPage` in `web/src/pages/PublicPages.tsx` |
+| Assistant proposals (no writes) | `propose_follow_up` / `propose_note` in `assistantService.ts`; `ProposalCard` in `AiPages.tsx` |
+| WhatsApp templates | `whatsappService.syncTemplates` and the `send` template branch |
+| Role panels | `web/src/pages/RoleDashboards.tsx` |
+| Android | `mobile/lib/features/finance/installment_screens.dart`, `mobile/lib/features/ai/assistant_screen.dart` |
+
 ## Configuration
 AI (optional): `ANTHROPIC_API_KEY`, `AI_MODEL` (default `claude-opus-5-5`), `AI_MONTHLY_LIMIT` (default 3000).
 WhatsApp Business (optional): `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_API_VERSION` (default v21.0). Email: `SMTP_*` (inquiry acknowledgements, notification copies).

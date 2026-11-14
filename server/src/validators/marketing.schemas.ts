@@ -44,9 +44,21 @@ export const portalLinkSchema = z.object({ kind: z.enum(PORTAL_KINDS), partyId: 
 export const portalLinkListQuery = z.object({ kind: z.enum(PORTAL_KINDS), partyId: objectId });
 
 export const whatsappSettingsSchema = z
-  .object({ phoneNumberId: z.string().trim().regex(/^\d{6,30}$/, 'The phone number id is a long number from Meta').nullable().optional(), displayNumber: phone.nullable().optional() })
+  .object({
+    phoneNumberId: z.string().trim().regex(/^\d{6,30}$/, 'The phone number id is a long number from Meta').nullable().optional(),
+    businessAccountId: z.string().trim().regex(/^\d{6,30}$/, 'The business account id is a long number from Meta').nullable().optional(),
+    displayNumber: phone.nullable().optional(),
+  })
   .strict();
-export const whatsappSendSchema = z.object({ to: phone, text: text(4096).min(1), clientId: objectId.optional() }).strict();
+export const whatsappSendSchema = z
+  .object({
+    to: phone,
+    text: text(4096).min(1),
+    clientId: objectId.optional(),
+    /** Send an approved template instead of free text (works outside the 24-hour window). */
+    template: z.object({ name: z.string().trim().min(1).max(512), language: z.string().trim().min(2).max(15), params: z.array(text(1000)).max(20).default([]) }).strict().optional(),
+  })
+  .strict();
 
 // ── Public ──
 export const slugParams = z.object({ slug: z.string().trim().toLowerCase().max(60) });

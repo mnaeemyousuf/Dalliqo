@@ -197,7 +197,42 @@ Server 242 passed (6 new rental tests: schedule maths, allocation, summary, full
 - Server: 7 new AI tests using a fake Anthropic client (no paid calls); 265 passed + 1 skipped in total.
 - Web: 38. Flutter: 81. `flutter analyze` clean; web build OK.
 
-## Next phases (planned order)
-- **Phase 4 follow-ups:** role-specific dashboards (branch/sales/finance), co-owner and listing-agent pickers in the forms (API ready), verification screens on Android (status shown today).
-- **Phase 6 follow-ups:** a per-agent landing page (the API already filters listings by `agentId`), WhatsApp message templates for messages outside the 24-hour window, campaign spend imported from expense entries.
-- **AI follow-ups:** AI-written WhatsApp templates for campaigns; Android assistant chat; an assistant that can also act (create follow-ups, draft deals) with confirmation.
+## Follow-ups batch ✅ (15 Nov 2026)
+
+### Features implemented
+- **Co-owners and listing agents** can be picked in the property form (web). Pickers show the chosen people as removable chips.
+- **Campaign spend from the books:** an expense can be booked against a campaign (Income & expense form). A campaign's spend is now the amount typed on it plus the expenses booked against it, and ROI and cost per lead use that total. Only expenses can be linked; an income entry is refused.
+- **Agent landing pages** at `/w/<site>/a/<agent>`:
+  - A page shows the agent's name, call and WhatsApp buttons, their live listings and an inquiry form.
+  - It exists only for active members who have a live listing, and only while the website shows agents.
+  - The site home lists "Our agents", and listing pages link to the agent's page.
+- **Role dashboards** (top of the dashboard):
+  - Agents see their own commission (open deals, expected, earned, owed).
+  - Managers see a team table for this month: leads, hot leads, overdue follow-ups, follow-ups done in 7 days, open deals, deals won, and each member's share of commission received. It respects branch scope.
+  - Finance roles see collections: receivables, late installments, late rent, payables, and rent collected against rent due this month.
+- **The assistant can suggest actions:** new `propose_follow_up` and `propose_note` tools return suggestions that appear as cards with a "Confirm & save" button. Nothing is written until the user confirms, and the confirmed save goes through the normal follow-up / note API under the user's own permissions.
+- **WhatsApp templates:**
+  - Each business enters its WhatsApp Business Account id, then "Sync from Meta" stores its approved templates (name, language, category, body, number of parameters).
+  - The Send WhatsApp composer lets you pick a template, fill in its parameters with a live preview, and send it through the Cloud API. Templates work outside the 24-hour window.
+- **Android:**
+  - An Installments screen (list with an overdue filter, plan detail with the schedule, record payment with a retry-safe payment id).
+  - An Assistant chat with suggested follow-ups and notes that you confirm.
+  - Both are new tiles on the More screen.
+- **Demo data:** the demo agent now handles half of the published listings, so the agent page and team table have data.
+
+### Database / APIs
+- **New fields (all additive):** Transaction `campaignId`; Business `whatsapp.businessAccountId`, `whatsapp.templates[]` and `whatsapp.templatesSyncedAt`.
+- `GET /dashboard/team`
+- `GET /public/sites/:slug/agents/:id`
+- `POST /whatsapp/templates/sync`
+- `POST /whatsapp/send` accepts `template {name, language, params[]}`
+- The assistant response now includes `proposals[]`.
+
+### Tests
+- Server: 6 new tests (`server/tests/followups8.test.ts`); 271 passed + 1 skipped in total.
+- Web: 38. Flutter: 81. `flutter analyze` clean; web build OK.
+
+## What is left
+Every item of the brief and the follow-ups is implemented. Live use of WhatsApp Business and the AI assistant needs the credentials listed above; device testing of the Android screens is still to be done on real phones.
+
+- **Remaining ideas (not in the brief):** assistant proposals for deal updates; per-agent public profile photos; scheduled campaign spend import from bank statements.

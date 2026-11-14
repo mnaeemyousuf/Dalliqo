@@ -31,6 +31,9 @@ import {
   syncController,
 } from '../controllers/crmControllers';
 import { requirePermission as can } from '../middleware/authorize';
+import { authOf } from '../middleware/authenticate';
+import { teamDashboardService } from '../services/teamDashboardService';
+import { sendSuccess } from '../utils/http';
 import { validate } from '../middleware/validate';
 import { asyncHandler as h } from '../utils/http';
 import { idParams } from '../validators/common';
@@ -47,6 +50,7 @@ const r = Router();
 
 // Dashboard, My Day, search
 r.get('/dashboard', h(dashboardController.summary));
+r.get('/dashboard/team', h(async (req, res) => sendSuccess(res, await teamDashboardService.team(authOf(req)))));
 r.get('/dashboard/analytics', can(P.REPORTS_READ), validate({ query: s.analyticsQuery }), h(dashboardController.analytics));
 r.get('/my-day', validate({ query: s.myDayQuery }), h(dashboardController.myDay));
 r.get('/search', validate({ query: s.searchQuery }), h(dashboardController.search));

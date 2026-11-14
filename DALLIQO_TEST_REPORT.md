@@ -103,6 +103,20 @@ Run date: 14 Nov 2026 (latest: Phase 5B — see per-phase sections for current t
   - The check found and fixed a crash on the Assistant page: the scroll effect returned a value React treats as a cleanup.
   - It also found and fixed template wording (raw unit codes, a repeated society name).
 
+## Follow-ups batch tests (`server/tests/followups8.test.ts`)
+- **Co-owners / agents:** co-owners and listing agents are saved on a property.
+- **Campaign spend:** an expense booked against a campaign adds to its spend (Rs 10,000 typed + Rs 40,000 booked = Rs 50,000); an income entry is refused (400).
+- **Agent page:**
+  - It works for an agent with a live listing, and returns 404 for an agent without one.
+  - The listings filter by agent.
+- **Team dashboard:**
+  - The manager sees the agent's leads, open deals and 50% share of Rs 1 lakh received.
+  - The agent gets 403.
+- **Assistant:** it proposes a follow-up, which comes back in `proposals`, and no follow-up is saved.
+- **WhatsApp templates (mocked Graph API):** templates are synced from the business account; a template is sent with `components.body.parameters`.
+- **Full results:** server 271 passed (1 skipped), web 38, Flutter 81, `flutter analyze` clean, web build OK.
+- **Visual check:** the dashboard team and collections panels, the property form pickers, and the public agent page, all on demo data.
+
 ## Manual / visual verification
 Demo API (`npm run demo`) + web, headless Chrome screenshots at 1440 px: client list with lead scores and temperature filter, client lead panel, Reports (leads + inventory aging), Settings → Subscription. All rendered correctly with real demo data.
 

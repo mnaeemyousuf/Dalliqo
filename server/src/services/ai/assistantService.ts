@@ -24,11 +24,22 @@ const MAX_RESULT_CHARS = 12_000;
 const nullable = (t: string, extra: Record<string, unknown> = {}) => ({ type: [t, 'null'], ...extra });
 const obj = (properties: Record<string, unknown>): Tool['input_schema'] => ({ type: 'object', properties, required: Object.keys(properties), additionalProperties: false });
 
+/** An action the assistant suggests; nothing is saved until the user confirms it in the app. */
+export type Proposal =
+  | { kind: 'FOLLOW_UP'; clientId: string; clientName: string; type: string; dueAt: string; notes: string }
+  | { kind: 'NOTE'; clientId: string; clientName: string; content: string };
+
 interface ToolDef {
   tool: Tool;
   /** Any one of these permissions lets the user (and so the assistant) use the tool. */
   perms: string[];
-  run(auth: AuthContext, input: Record<string, unknown>): Promise<unknown>;
+  run(auth: AuthContext, input: Record<string, unknown>, proposals: Proposal[]): Promise<unknown>;
+}
+
+async function proposalClient(auth: AuthContext, id: unknown) {
+  const cid = String(id);
+  if (!Types.ObjectId.isValid(cid)) return null;
+  return clientRepository.findById(auth, cid);
 }
 
 const TOOLS: ToolDef[] = [
@@ -155,11 +166,51 @@ const TOOLS: ToolDef[] = [
   },
 ];
 
+TOOLS.push(
+  {
+    perms: [PERMISSIONS.FOLLOWUPS_CREATE],
+    tool: {
+      name: 'propose_follow_up',
+      description: 'Suggest a follow-up (call, meeting, visit…) for a client. It is shown to the user with a Confirm button and is NOT saved unless they confirm. Use a client id from search_clients.',
+      strict: true,
+      input_schema: obj({
+        client_id: { type: 'string' },
+        type: { type: 'string', enum: ['CALL', 'MEETING', 'WHATSAPP', 'SMS', 'PROPERTY_VISIT', 'GENERAL'] },
+        due: { type: 'string', description: 'ISO date-time, e.g. 2026-11-16T11:00' },
+        notes: { type: 'string' },
+      }),
+    },
+    async run(auth, i, proposals) {
+      const c = await proposalClient(auth, i.client_id);
+      if (!c) return { error: 'Unknown client id' };
+      const due = new Date(String(i.due));
+      if (Number.isNaN(+due)) return { error: 'Invalid due date' };
+      proposals.push({ kind: 'FOLLOW_UP', clientId: String(c._id), clientName: c.fullName, type: String(i.type), dueAt: due.toISOString(), notes: String(i.notes ?? '').slice(0, 1000) });
+      return { proposed: true, note: 'Shown to the user for confirmation — not saved yet.' };
+    },
+  },
+  {
+    perms: [PERMISSIONS.NOTES_CREATE],
+    tool: {
+      name: 'propose_note',
+      description: 'Suggest a note on a client record (e.g. a summary of what was discussed). Shown to the user with a Confirm button; NOT saved unless they confirm.',
+      strict: true,
+      input_schema: obj({ client_id: { type: 'string' }, content: { type: 'string' } }),
+    },
+    async run(auth, i, proposals) {
+      const c = await proposalClient(auth, i.client_id);
+      if (!c) return { error: 'Unknown client id' };
+      proposals.push({ kind: 'NOTE', clientId: String(c._id), clientName: c.fullName, content: String(i.content ?? '').slice(0, 2000) });
+      return { proposed: true, note: 'Shown to the user for confirmation — not saved yet.' };
+    },
+  },
+);
+
 const STABLE_SYSTEM =
   'You are the Dalliqo assistant inside a real-estate agency CRM used in Pakistan. You answer questions about the agency’s own clients, listings, deals, follow-ups and money by calling the tools provided.\n' +
   'Rules:\n' +
   '- Use only what the tools return. If the tools cannot answer, say so plainly and suggest where in the app to look. Never guess names, numbers or phone numbers.\n' +
-  '- You can only read data. If asked to change, create, send or delete something, explain which screen to use instead.\n' +
+  '- You never change data yourself. You may suggest a follow-up or a note with the propose_* tools — the user confirms it in the app. For anything else (editing, deleting, sending messages, payments) explain which screen to use.\n' +
   '- The tools already apply the user’s permissions; if one is unavailable, the user is not allowed that information — say so briefly.\n' +
   '- Write amounts in PKR with lakh / crore. Price estimates are indicative, never a valuation.\n' +
   '- Reply in the language the user writes in (English, Urdu or Roman Urdu). Be brief: short paragraphs or bullet lists, no tables wider than 4 columns.';
@@ -175,6 +226,7 @@ export const assistantService = {
     const [user, business] = await Promise.all([User.findById(auth.userId).select('fullName').lean(), Business.findById(auth.businessId).select('name').lean()]);
     const messages: Msg[] = history.slice(-20).map((m) => ({ role: m.role, content: m.content }));
     const used: string[] = [];
+    const proposals: Proposal[] = [];
     for (let step = 0; step < MAX_STEPS; step++) {
       const res = await aiClient.create(auth, 'assistant', {
         max_tokens: 8000,
@@ -190,7 +242,7 @@ export const assistantService = {
       messages.push({ role: 'assistant', content: res.content });
       const calls = res.content.filter((b): b is Anthropic.Beta.BetaToolUseBlock => b.type === 'tool_use');
       if (res.stop_reason !== 'tool_use' || !calls.length) {
-        return { answer: textOf(res) || 'I could not find an answer to that.', toolsUsed: [...new Set(used)] };
+        return { answer: textOf(res) || 'I could not find an answer to that.', toolsUsed: [...new Set(used)], proposals };
       }
       const results: Anthropic.Beta.BetaToolResultBlockParam[] = await Promise.all(
         calls.map(async (c) => {
@@ -198,7 +250,7 @@ export const assistantService = {
           used.push(c.name);
           if (!def) return { type: 'tool_result' as const, tool_use_id: c.id, is_error: true, content: 'This tool is not available to this user.' };
           try {
-            const out = JSON.stringify(await def.run(auth, (c.input ?? {}) as Record<string, unknown>));
+            const out = JSON.stringify(await def.run(auth, (c.input ?? {}) as Record<string, unknown>, proposals));
             return { type: 'tool_result' as const, tool_use_id: c.id, content: out.length > MAX_RESULT_CHARS ? `${out.slice(0, MAX_RESULT_CHARS)}…(truncated)` : out };
           } catch (err) {
             return { type: 'tool_result' as const, tool_use_id: c.id, is_error: true, content: (err as Error).message || 'The lookup failed.' };
@@ -207,7 +259,7 @@ export const assistantService = {
       );
       messages.push({ role: 'user', content: results });
     }
-    return { answer: 'That needed more lookups than I can do in one go. Please ask a narrower question.', toolsUsed: [...new Set(used)] };
+    return { answer: 'That needed more lookups than I can do in one go. Please ask a narrower question.', toolsUsed: [...new Set(used)], proposals };
   },
 
   toolNames(auth: AuthContext) {
