@@ -46,6 +46,7 @@ const VerificationsPage = page(() => import('@/pages/Phase4Pages'), 'Verificatio
 const rentals = () => import('@/pages/RentalPages');
 const installments = () => import('@/pages/InstallmentPages');
 const marketing = () => import('@/pages/MarketingPages');
+const AssistantPage = page(() => import('@/pages/AiPages'), 'AssistantPage');
 const MarketingPage = page(marketing, 'MarketingPage');
 const publicPages = () => import('@/pages/PublicPages');
 const PublicSitePage = page(publicPages, 'PublicSitePage');
@@ -128,6 +129,7 @@ export function AppRoutes() {
         <Route path="installments" element={<InstallmentsPage />} />
         <Route path="installments/:id" element={<InstallmentDetailPage />} />
         <Route path="marketing" element={<MarketingPage />} />
+        <Route path="assistant" element={<AssistantPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

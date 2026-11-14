@@ -43,6 +43,15 @@ const schema = z
      * WhatsApp Business Cloud API (Meta). One Meta app for the platform; each business stores its
      * own phone number id (Settings → WhatsApp). Without these, WhatsApp falls back to wa.me links.
      */
+    /**
+     * AI layer (Anthropic). Without a key the assistant is off and descriptions / client briefs use
+     * built-in templates; forecasts and price estimates never need it.
+     */
+    ANTHROPIC_API_KEY: optional,
+    AI_MODEL: z.string().default('claude-opus-5-5'),
+    /** Provider calls per business per calendar month. */
+    AI_MONTHLY_LIMIT: z.coerce.number().int().min(0).default(3000),
+
     WHATSAPP_ACCESS_TOKEN: optional,
     WHATSAPP_APP_SECRET: optional,
     WHATSAPP_VERIFY_TOKEN: optional,

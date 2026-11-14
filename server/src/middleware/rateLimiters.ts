@@ -37,6 +37,9 @@ const isHealthCheck = (req: Request) => req.path === '/health';
 /** Public forms (website inquiries, portal messages): a person sends a handful, bots send thousands. */
 export const inquiryLimiter = rateLimit({ ...base, windowMs: 15 * 60_000, limit: 10, keyGenerator: ipKey });
 
+/** AI calls cost money: a person asks a few a minute, a runaway script asks hundreds. */
+export const aiLimiter = rateLimit({ ...base, windowMs: 60_000, limit: 20, keyGenerator: bearerKey });
+
 export const apiLimiter = [
   rateLimit({ ...base, windowMs: 15 * 60_000, limit: 3000, keyGenerator: bearerKey, skip: (req) => !env.RATE_LIMIT_ENABLED || isHealthCheck(req) }),
   rateLimit({ ...base, windowMs: 15 * 60_000, limit: 30_000, keyGenerator: ipKey, skip: (req) => !env.RATE_LIMIT_ENABLED || isHealthCheck(req) }),

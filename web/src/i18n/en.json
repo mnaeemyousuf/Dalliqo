@@ -85,7 +85,8 @@
     "hide": "Hide",
     "show": "Show",
     "saved": "Saved",
-    "title": "Title"
+    "title": "Title",
+    "copy": "Copy"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -116,7 +117,8 @@
     "verifications": "Verifications",
     "rentals": "Rentals",
     "installments": "Installments",
-    "marketing": "Marketing"
+    "marketing": "Marketing",
+    "assistant": "Assistant"
   },
   "topbar": {
     "searchPlaceholder": "Search clients, properties, owners…",
@@ -1934,5 +1936,71 @@
     "contact": "Message your agent",
     "messagePlaceholder": "Write your question or request…",
     "sent": "Sent — your agent will get back to you."
+  },
+  "ai": {
+    "title": "Assistant",
+    "subtitle": "Ask about your clients, listings, deals and money — answers come from your own data",
+    "off": "AI off",
+    "usage": "{{used}} / {{limit}} this month",
+    "notConfigured": "The AI assistant needs an Anthropic API key on the server. Price estimates, forecasts and template descriptions still work.",
+    "intro": "Ask in English, Urdu or Roman Urdu. The assistant can only read what you are allowed to see, and never changes anything.",
+    "q1": "What should I focus on today?",
+    "q2": "Which hot leads have not been contacted this week?",
+    "q3": "How much commission is expected next month?",
+    "q4": "Who owes us money and how late is it?",
+    "placeholder": "Ask a question… (Enter to send, Shift+Enter for a new line)",
+    "ask": "Ask",
+    "thinking": "Looking it up…",
+    "looked": "Checked: {{tools}}",
+    "privacy": "Your question and the records needed to answer it are sent to Anthropic to generate the reply. CNICs and owner details are never sent.",
+    "tool": {
+      "search_clients": "clients",
+      "get_client": "client record",
+      "search_properties": "listings",
+      "price_estimate": "price estimate",
+      "my_day": "your day",
+      "deal_pipeline": "deals",
+      "collections": "collections",
+      "forecast": "forecast"
+    },
+    "priceTitle": "Price estimate",
+    "writeDescription": "Write description",
+    "midpoint": "Midpoint {{mid}} · {{rate}} per sq ft",
+    "position": {
+      "WITHIN": "Asking price is within range",
+      "ABOVE": "Asking price is above range",
+      "BELOW": "Asking price is below range"
+    },
+    "confidence": {
+      "HIGH": "High confidence",
+      "MEDIUM": "Medium confidence",
+      "LOW": "Low confidence"
+    },
+    "basedOn": "{{count}} comparables ({{sold}} sold) in {{scope}}",
+    "generate": "Generate",
+    "again": "Try again",
+    "useThis": "Use this",
+    "applied": "Description saved",
+    "descriptionHint": "Uses only the listing facts — never owner details or the plot number.",
+    "descriptionIntro": "Choose a language and press Generate. You can edit the text before saving it to the listing.",
+    "sourceAi": "Written by AI — check before sharing.",
+    "sourceTemplate": "Built-in template (AI is not set up).",
+    "sourceRules": "Rule-based summary (AI is not set up).",
+    "briefTitle": "Lead brief",
+    "getBrief": "Get brief",
+    "refresh": "Refresh",
+    "briefIntro": "A short summary of this lead, the next best step and a WhatsApp message you can send.",
+    "nextAction": "Next step",
+    "suggestedMessage": "Suggested message",
+    "forecastTitle": "Forecast — next 6 months",
+    "weightedCommission": "Expected commission",
+    "bestCase": "Best case",
+    "installmentsDue": "Installments due",
+    "rentDue": "Rent due",
+    "legendCommission": "Commission (weighted)",
+    "legendInstallments": "Installments",
+    "legendRent": "Rent",
+    "expectedLeads": "about {{count}} new leads next month",
+    "forecastMethod": "Commission is weighted by how likely each deal stage is to close; installments and rent are what is scheduled and still unpaid."
   }
 }

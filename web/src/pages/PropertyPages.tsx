@@ -13,6 +13,7 @@ import { DealsPanel } from '@/pages/DealPages';
 import { PropertyExtraDetails, PropertyExtraFields } from '@/pages/Phase3Pages';
 import { PropertyImportModal, PropertyQrButton, SavedViews, VerificationBadgeSmall, VerificationPanel } from '@/pages/Phase4Pages';
 import { PublishButton } from '@/pages/MarketingPages';
+import { PropertyAiPanel } from '@/pages/AiPages';
 import { toApiError } from '@/api/client';
 import { BrochureDialog } from '@/components/domain/BrochureDialog';
 import { Badge, Button, Card, Checkbox, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column, FilterBar, ViewToggle } from '@/components/ui';
@@ -677,6 +678,7 @@ export function PropertyDetailPage() {
         ]}
       />
 
+      {tab === 'overview' && <PropertyAiPanel property={p} />}
       {tab === 'overview' && (
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="space-y-4 lg:col-span-2">

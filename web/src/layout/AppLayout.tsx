@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
-import { Bell, Building2, CalendarCheck, ChevronsLeft, CornerDownLeft, FileText, FolderOpen, Handshake, Home, LayoutDashboard, Languages, LogOut, Menu, Moon, Plus, Search, Settings, ShieldCheck, Sun, SunMoon, UserCog, UserPlus, Users, X, Sparkles, HandCoins, Wallet, FileSignature, CalendarPlus, HousePlus, KeyRound, CalendarRange, Megaphone } from 'lucide-react';
+import { Bell, Building2, CalendarCheck, ChevronsLeft, CornerDownLeft, FileText, FolderOpen, Handshake, Home, LayoutDashboard, Languages, LogOut, Menu, Moon, Plus, Search, Settings, ShieldCheck, Sun, SunMoon, UserCog, UserPlus, Users, X, Sparkles, HandCoins, Wallet, FileSignature, CalendarPlus, HousePlus, KeyRound, CalendarRange, Megaphone, Bot } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -34,6 +34,7 @@ function useNav(): { label: string; items: NavItem[] }[] {
       label: t('nav.section.overview'),
       items: [
         { to: '/', label: t('nav.dashboard'), icon: <LayoutDashboard className={i} /> },
+        { to: '/assistant', label: t('nav.assistant'), icon: <Bot className={i} />, module: 'ai' },
         { to: '/my-day', label: t('nav.myDay'), icon: <Sparkles className={i} /> },
       ],
     },

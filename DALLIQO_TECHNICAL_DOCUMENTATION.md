@@ -84,7 +84,20 @@ Payment allocation reuses the rental helpers (`allocatePayment`, `statusFor`). I
 
 Public endpoints never take a business id from the caller: sites resolve by slug (website on, business active), portals by token hash, and webhooks by the Meta phone number id.
 
+## Phase 7 — AI layer
+| Concern | Where |
+|---|---|
+| Stage probabilities, weighted commission forecast, comparable-based price estimate | `shared/src/ai.ts` |
+| Anthropic client: allowance, refusal fallbacks, usage metering, error mapping | `server/src/services/ai/aiClient.ts` (`aiClient.use(fake)` in tests) |
+| Descriptions (allow-listed facts / template), lead brief (structured output / rules), forecast, price estimate | `server/src/services/ai/aiService.ts` |
+| Assistant (manual tool loop, read-only, permission-filtered tools, cached system prompt) | `server/src/services/ai/assistantService.ts` |
+| Routes and limits | `server/src/routes/aiRoutes.ts`, `aiLimiter` (20/min per user), entitlement `/ai → ai` |
+| UI | `web/src/pages/AiPages.tsx`, `mobile/lib/features/ai/ai_actions.dart` |
+
+Data sent to Anthropic: the user's question, and the records the tools return for it (names and phones of clients the user can already see, and listing facts). CNICs, owner details, plot numbers and minimum prices are never included.
+
 ## Configuration
+AI (optional): `ANTHROPIC_API_KEY`, `AI_MODEL` (default `claude-opus-5-5`), `AI_MONTHLY_LIMIT` (default 3000).
 WhatsApp Business (optional): `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_API_VERSION` (default v21.0). Email: `SMTP_*` (inquiry acknowledgements, notification copies).
 
 | Variable | Purpose |

@@ -19,6 +19,7 @@
     "predemo": "cd ../shared && npm run build"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0",
     "@recrm/shared": "*",
     "argon2": "^0.41.1",
     "cloudinary": "^2.11.0",

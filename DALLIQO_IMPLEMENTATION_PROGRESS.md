@@ -161,7 +161,43 @@ Server 242 passed (6 new rental tests: schedule maths, allocation, summary, full
 - Server: 10 new marketing tests; 258 passed + 1 skipped in total.
 - Web: 38. Flutter: 81. `flutter analyze` clean; web build OK.
 
+## Phase 7 — AI layer ✅ (15 Nov 2026)
+
+### Features implemented
+- **Assistant** (web → Assistant): ask in English, Urdu or Roman Urdu about clients, listings, deals, follow-ups and money.
+  - It runs on Claude through the official Anthropic SDK, using model `claude-opus-5-5` (configurable).
+  - It can only read, through 8 tools: search clients, client record, search listings, price estimate, my day, deal pipeline, collections, forecast.
+  - **Permission-aware:** each tool runs as the signed-in user, so the same permissions, branch scope and own-deals-only rules apply. Tools the user isn't allowed are never offered, and a request for one is refused.
+  - At most 6 lookups per question.
+- **Listing descriptions:** "Write description" on a property drafts a headline and description in English or Urdu, which the user edits and then saves.
+  - The AI only sees allow-listed listing facts: no owner, plot / unit number or minimum price.
+  - Without a key, a built-in template writes it instead (readable units, no repeated place names, Urdu property types).
+- **Lead brief:** a card on the client overview gives a summary, the next step, risks and a WhatsApp message ready to send (copy, or open in WhatsApp). Without a key, a rule-based brief is shown.
+- **Forecast, no AI needed:** the next 6 months of commission from open deals, weighted by how likely each stage is to close (best case shown too), plus scheduled installments and rent still unpaid and the lead trend. It is a card on the Reports page and is also available to the assistant.
+- **Price estimate, no AI needed:** an indicative range from comparable listings and recorded sales (price per sq ft; sold prices count double; outliers removed). It widens the area searched (block → society → area → city) until there are at least 3 comparables, and reports confidence, the basis used and where the asking price sits in the range. It is always labelled as an estimate, not a valuation.
+- **Cost and safety:**
+  - Server-side refusal fallbacks are on: if Claude declines, the API retries on a fallback model in the same call.
+  - Refusals return a clear 422 AI_DECLINED.
+  - Each business has a monthly allowance (`AI_MONTHLY_LIMIT`, default 3000 calls; 429 AI_LIMIT_REACHED when used up), plus 20 AI calls per minute per user.
+  - Every call is metered in `aiUsage` (feature, model, tokens, outcome), kept for one year.
+  - The fixed system prompt is cached.
+  - Provider errors are mapped to clear messages (busy, credentials, unavailable).
+- **Android:** a lead brief sheet on client detail (WhatsApp button) and a price-estimate dialog on property detail.
+- **Plan:** `/ai` belongs to the `ai` module (Enterprise, which is also the trial plan).
+
+### Database / APIs
+- New collection `aiUsage`. No migration needed; uses existing permissions.
+- `GET /ai/status`, `POST /ai/assistant`, `POST /ai/properties/:id/description`, `GET /ai/properties/:id/price-estimate`, `POST /ai/clients/:id/brief`, `GET /ai/forecast`.
+- New dependency: `@anthropic-ai/sdk` 1.8.0 (server). The lockfile's Linux build entries were checked and are intact.
+
+### Credentials needed
+`ANTHROPIC_API_KEY` on the API service turns on the assistant and AI-written text. Optional: `AI_MODEL` and `AI_MONTHLY_LIMIT`. Without a key, every screen still works: descriptions use templates, briefs use rules, and forecast and price estimates don't need a key.
+
+### Tests
+- Server: 7 new AI tests using a fake Anthropic client (no paid calls); 265 passed + 1 skipped in total.
+- Web: 38. Flutter: 81. `flutter analyze` clean; web build OK.
+
 ## Next phases (planned order)
 - **Phase 4 follow-ups:** role-specific dashboards (branch/sales/finance), co-owner and listing-agent pickers in the forms (API ready), verification screens on Android (status shown today).
 - **Phase 6 follow-ups:** a per-agent landing page (the API already filters listings by `agentId`), WhatsApp message templates for messages outside the 24-hour window, campaign spend imported from expense entries.
-- **Phase 7:** AI layer (permission-aware assistant, descriptions, summaries, forecasting, indicative pricing — clearly labelled estimates).
+- **AI follow-ups:** AI-written WhatsApp templates for campaigns; Android assistant chat; an assistant that can also act (create follow-ups, draft deals) with confirmation.

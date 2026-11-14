@@ -16,6 +16,7 @@ import fileRoutes from './fileRoutes';
 import { platformRoutes, subscriptionRoutes } from './subscriptionRoutes';
 import { entitlementGuard } from '../middleware/entitlements';
 import { marketingRoutes, publicRoutes } from './marketingRoutes';
+import { aiRoutes } from './aiRoutes';
 
 const api = Router();
 
@@ -47,10 +48,11 @@ const CRM_PREFIXES = [
   '/documents', '/uploads', '/notes', '/activities', '/matches', '/settings', '/followups', '/notifications',
   '/devices', '/exports', '/sync', '/deals', '/reports', '/transactions', '/transaction-categories', '/agreements', '/agreement-templates',
   '/verifications', '/saved-views', '/leases', '/installments', '/receipts',
-  '/website', '/inquiries', '/campaigns', '/portal-links', '/whatsapp',
+  '/website', '/inquiries', '/campaigns', '/portal-links', '/whatsapp', '/ai',
 ];
 api.use(CRM_PREFIXES, ...secured, entitlementGuard);
 api.use(marketingRoutes);
+api.use(aiRoutes);
 api.use(crmRoutes);
 
 export default api;

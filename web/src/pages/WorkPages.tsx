@@ -13,6 +13,7 @@ import { CommissionReport, DealsPanel } from '@/pages/DealPages';
 import { FinanceReport } from '@/pages/FinancePages';
 import { AgentStatementCard, AgingCard, CashFlowCard } from '@/pages/InstallmentPages';
 import { CampaignReportCard, PortalLinkButton } from '@/pages/MarketingPages';
+import { ForecastCard } from '@/pages/AiPages';
 import { InventoryReportCard, LeadReportCard } from '@/pages/Phase3Pages';
 import { Badge, Button, Card, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column, Avatar } from '@/components/ui';
 import { formatBytes, formatDate, formatPkr } from '@/lib/format';
@@ -466,6 +467,7 @@ export function ReportsPage() {
       {canFinance && <AgingCard />}
       {canDeals && <AgentStatementCard />}
       <CampaignReportCard />
+      <ForecastCard />
       <Card>
         <div className="grid gap-4 sm:grid-cols-2">
           <Select label={t('report.resource')} options={resources} value={resource} onChange={(e) => (setResource(e.target.value), setFilters({}))} />

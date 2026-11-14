@@ -81,6 +81,28 @@ Run date: 14 Nov 2026 (latest: Phase 5B — see per-phase sections for current t
 - **Full results:** server 258 passed (1 skipped), web 38, Flutter 81, `flutter analyze` clean, web build OK.
 - **Visual check** (Chrome, 1280 px and 390 px): agency site, listing page, client portal with lease and receipt, Marketing → Campaigns with ROI.
 
+## Phase 7 tests (`server/tests/ai.test.ts`)
+- **Shared:** the forecast weights deals by stage and places them in the right months (overdue dates land in the current month, undated deals by typical time to close, lost deals excluded). The price estimate ignores an outlier, counts a sale, and refuses with fewer than 3 comparables.
+- **Without a key:**
+  - English and Urdu template descriptions, with no plot number.
+  - A rule-based brief ("Never contacted", a WhatsApp message).
+  - The assistant returns 503.
+  - The price estimate uses 4 comparables in the society, with the disclaimer.
+  - The forecast's weighted commission is Rs 2.1 lakh for a TOKEN-stage deal.
+- **With a fake client:**
+  - The request uses the configured model, `fallbacks: "default"` with the server-side fallback beta, and a JSON-schema output.
+  - Neither the plot number nor the minimum price reaches the request.
+  - Usage is metered.
+- **Assistant:**
+  - A user with only `clients:read` is offered just the client tools; the tool result reaches the model; the system prompt carries cache control.
+  - A tool the model asks for that the user isn't allowed is refused.
+  - A refusal returns 422 AI_DECLINED; the monthly cap returns 429 AI_LIMIT_REACHED.
+- **Plans and permissions:** the forecast returns 403 without deals/reports permission; the Business plan gets 403 MODULE_NOT_IN_PLAN.
+- **Full results:** server 265 passed (1 skipped), web 38, Flutter 81, `flutter analyze` clean, web build OK.
+- **Visual check** on the demo with no key: the Assistant page (shown as off, with an explanation), the description writer with the template, the lead brief, and the forecast on Reports.
+  - The check found and fixed a crash on the Assistant page: the scroll effect returned a value React treats as a cleanup.
+  - It also found and fixed template wording (raw unit codes, a repeated society name).
+
 ## Manual / visual verification
 Demo API (`npm run demo`) + web, headless Chrome screenshots at 1440 px: client list with lead scores and temperature filter, client lead panel, Reports (leads + inventory aging), Settings → Subscription. All rendered correctly with real demo data.
 

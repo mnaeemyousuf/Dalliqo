@@ -46,7 +46,7 @@ Legend: ✅ implemented · 🟡 partial · ❌ missing · **P3** = delivered in 
 | 9 | Installments, receipts/vouchers, receivables/payables aging, cash flow | ✅ | ✅ | Phase 5B done (Android: installments viewed on web for now) |
 | 10 | Rental management (tenants, leases, rent schedules, late fees) | ❌ (rent agreements only) | ✅ **P5A** | Leases, schedules, partial payments, late fees, inspections, renewals, rent roll, reminders; maintenance expenses via finance |
 | 11 | Public listings, inquiry → lead automation, campaigns/ROI, WhatsApp Business API | ✅ | ✅ | Phase 6 done |
-| 12 | AI layer (assistant, descriptions, forecasting) | ❌ | ❌ | Phase 7 (needs AI provider key; module `ai` reserved) |
+| 12 | AI layer (assistant, descriptions, forecasting) | ✅ | ✅ | Phase 7 done (AI text needs an Anthropic key; forecast and price estimate need none) |
 | 13 | Role dashboards, agent performance | 🟡 owner dashboard + team table | 🟡 | Lead/inventory reports added; per-role dashboards Phase 4 |
 | 14 | Client / owner portals | ✅ | ✅ | Phase 6 done |
 | 15 | Configurable automation rules | ❌ | ✅ **P3** | 6 rules, thresholds, on/off, de-duplicated alerts |

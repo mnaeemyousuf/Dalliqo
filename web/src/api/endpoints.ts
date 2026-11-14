@@ -270,6 +270,15 @@ export const inventoryApi = {
   removeView: (id: string) => api<null>({ method: 'DELETE', url: `/saved-views/${id}` }),
 };
 
+export const aiApi = {
+  status: () => api<{ configured: boolean; model: string | null; usedThisMonth: number; monthlyLimit: number; tools: string[] }>({ url: '/ai/status' }),
+  assistant: (messages: { role: 'user' | 'assistant'; content: string }[]) => api<{ answer: string; toolsUsed: string[] }>({ method: 'POST', url: '/ai/assistant', data: { messages }, timeout: 180_000 }),
+  describe: (propertyId: string, language: 'en' | 'ur') => api<{ headline: string; description: string; source: 'ai' | 'template' }>({ method: 'POST', url: `/ai/properties/${propertyId}/description`, data: { language }, timeout: 120_000 }),
+  priceEstimate: (propertyId: string) => api<{ low?: number; mid?: number | null; high?: number; perSqft?: number; comparables: number; sold?: number; confidence?: 'LOW' | 'MEDIUM' | 'HIGH'; scope?: string; position?: 'ABOVE' | 'BELOW' | 'WITHIN'; askingPrice?: number; disclaimer: string }>({ url: `/ai/properties/${propertyId}/price-estimate` }),
+  brief: (clientId: string, language: 'en' | 'ur') => api<{ summary: string; nextAction: string; message: string; risks: string[]; source: 'ai' | 'rules' }>({ method: 'POST', url: `/ai/clients/${clientId}/brief`, data: { language }, timeout: 120_000 }),
+  forecast: () => api<{ months: { month: string; weighted: number; bestCase: number; deals: number; installments: number; rent: number }[]; totals: { weightedCommission: number; bestCaseCommission: number; installments: number; rent: number }; leads: { month: string; created: number; won: number }[]; expectedLeadsNextMonth: number; method: string }>({ url: '/ai/forecast' }),
+};
+
 export const websiteApi = {
   get: () => api<WebsiteSettings>({ url: '/website' }),
   update: (body: Body) => api<WebsiteSettings>({ method: 'PUT', url: '/website', data: body }),

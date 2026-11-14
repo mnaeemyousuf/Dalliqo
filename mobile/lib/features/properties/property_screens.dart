@@ -20,6 +20,7 @@ import '../../core/widgets/domain_widgets.dart';
 import '../../data/repositories.dart';
 import '../auth/auth_controller.dart';
 import '../marketing/marketing_actions.dart';
+import '../ai/ai_actions.dart';
 import '../branches/branch_screens.dart';
 import '../deals/deal_screens.dart';
 import '../clients/client_screens.dart' show propertyTypes, sizeUnits;
@@ -322,6 +323,7 @@ class PropertyDetailScreen extends ConsumerWidget {
                         if (p.hasLocation) 'https://www.google.com/maps/search/?api=1&query=${p.latitude},${p.longitude}',
                       ].join('\n'))),
                     ),
+                    PriceEstimateButton(propertyServerId: p.serverId),
                     PublishOnWebsiteButton(propertyServerId: p.serverId, published: (p.json['publicListing'] as Map?)?['published'] == true),
                     if (auth.can('exports:create'))
                       IconButton(tooltip: l.t('brochure.button'), icon: const Icon(Icons.auto_stories_outlined), onPressed: () => showBrochureSheet(context, ref, p)),

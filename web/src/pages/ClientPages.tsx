@@ -7,6 +7,7 @@ import { BUYING_TIMELINES, CLIENT_PURPOSES, CLIENT_SOURCES, CLIENT_STATUSES, LEA
 import { LeadImportModal, LeadPanel, TemperatureBadge } from '@/pages/Phase3Pages';
 import { SavedViews } from '@/pages/Phase4Pages';
 import { PortalLinkButton, WhatsAppSendButton } from '@/pages/MarketingPages';
+import { ClientBriefCard } from '@/pages/AiPages';
 import { toApiError } from '@/api/client';
 import { clientApi } from '@/api/endpoints';
 import type { Client, Requirement } from '@/api/types';
@@ -539,6 +540,7 @@ export function ClientDetailPage() {
       />
       <Tabs tabs={tabs} value={tab} onChange={setTab} />
 
+      {tab === 'overview' && <ClientBriefCard clientId={c._id} phone={c.whatsappNumber || c.mobileNumber} />}
       {tab === 'overview' && (
         <div className="grid gap-4 lg:grid-cols-3">
           <Card title={t('common.details')} className="lg:col-span-1">
