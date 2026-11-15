@@ -14,7 +14,8 @@ import memberRoutes from './memberRoutes';
 import crmRoutes from './crmRoutes';
 import fileRoutes from './fileRoutes';
 import { platformRoutes, subscriptionRoutes } from './subscriptionRoutes';
-import { entitlementGuard } from '../middleware/entitlements';
+import { entitlementGuard, requireModule } from '../middleware/entitlements';
+import { apiKeyRoutes } from './apiKeyRoutes';
 import { marketingRoutes, publicRoutes } from './marketingRoutes';
 import { aiRoutes } from './aiRoutes';
 
@@ -39,6 +40,7 @@ api.use('/business', ...secured, businessRoutes);
 api.use('/members', ...secured, entitlementGuard, memberRoutes);
 api.use('/subscription', ...secured, subscriptionRoutes);
 api.use('/platform', ...secured, platformRoutes);
+api.use('/api-keys', ...secured, requireModule('api'), requirePermission(PERMISSIONS.SETTINGS_MANAGE), apiKeyRoutes);
 api.get('/audit-logs', ...secured, requirePermission(PERMISSIONS.AUDIT_READ), validate({ query: listAuditQuery }), asyncHandler(auditController.list));
 api.get('/meta/permissions', ...secured, metaController.permissions);
 

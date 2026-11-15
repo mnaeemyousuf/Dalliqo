@@ -187,6 +187,30 @@ export interface CommissionDefaults {
   closeApprovalRequired: boolean;
   /** Agent payouts must be approved (deals:approve) before they can be marked paid. */
   payoutApprovalRequired: boolean;
+  /**
+   * Custom default rates. The first rule that fits a new deal's listing (sale / rent and,
+   * optionally, property type) replaces the two defaults above.
+   */
+  rules?: CommissionRule[];
+}
+
+export interface CommissionRule {
+  /** SALE or RENT; empty = both. */
+  listingPurpose?: 'SALE' | 'RENT' | null;
+  /** A property type (e.g. PLOT); empty = any. */
+  propertyType?: string | null;
+  buyerPct: number;
+  sellerPct: number;
+}
+
+export const MAX_COMMISSION_RULES = 20;
+
+/** Default buyer / seller percentages for a deal on this kind of listing. */
+export function defaultCommissionRates(c: CommissionDefaults, listing?: { listingPurpose?: string | null; propertyType?: string | null } | null): { buyerPct: number; sellerPct: number } {
+  const rule = listing
+    ? (c.rules ?? []).find((r) => (r.listingPurpose || r.propertyType) && (!r.listingPurpose || r.listingPurpose === listing.listingPurpose) && (!r.propertyType || r.propertyType === listing.propertyType))
+    : undefined;
+  return rule ? { buyerPct: rule.buyerPct, sellerPct: rule.sellerPct } : { buyerPct: c.defaultBuyerPct, sellerPct: c.defaultSellerPct };
 }
 
 export const DEFAULT_COMMISSION_SETTINGS: CommissionDefaults = { defaultBuyerPct: 1, defaultSellerPct: 1, autoCreateIncome: true, closeApprovalRequired: false, payoutApprovalRequired: false };

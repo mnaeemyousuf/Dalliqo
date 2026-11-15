@@ -21,6 +21,7 @@ import { BrochureDialog } from '@/components/domain/BrochureDialog';
 import { Badge, Button, Card, Checkbox, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column, FilterBar, ViewToggle } from '@/components/ui';
 import { formatDate, formatPkr, waHref } from '@/lib/format';
 import { useDebounce, useEnumOptions, useMembers, useOnError, useUrlState, useOpenOnNew } from '@/lib/hooks';
+import { BulkBar, useSelection } from '@/pages/AdminExtras';
 import { useAuth, useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
 
@@ -290,7 +291,9 @@ export function PropertiesPage() {
   const ownerOptions = useQuery({ queryKey: ['owners', 'filter'], queryFn: () => ownerApi.list({ sort: 'fullName', limit: 100 }), staleTime: 60_000 });
   const f = (k: keyof typeof filters) => (e: { target: { value: string } }) => setFilters({ [k]: e.target.value, page: '1' } as never);
 
+  const selection = useSelection(query.data?.items, true);
   const columns: Column<Property>[] = [
+    ...selection.columns,
     {
       key: 'id',
       header: t('property.id'),
@@ -417,9 +420,12 @@ export function PropertiesPage() {
           </>
         )
       ) : (
-        <Card bodyClassName="!p-0">
-          <DataTable columns={columns} query={query} page={page} onPage={(p) => setFilters({ page: String(p) })} onRowClick={(p) => navigate(`/properties/${p._id}`)} empty={empty} />
-        </Card>
+        <>
+          <BulkBar kind="properties" ids={selection.ids} onDone={selection.clear} />
+          <Card bodyClassName="!p-0">
+            <DataTable columns={columns} query={query} page={page} onPage={(p) => setFilters({ page: String(p) })} onRowClick={(p) => navigate(`/properties/${p._id}`)} empty={empty} />
+          </Card>
+        </>
       )}
       {formOpen && <PropertyFormDrawer open onClose={() => setFormOpen(false)} />}
     </div>

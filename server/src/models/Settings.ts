@@ -27,6 +27,7 @@ export interface SettingsDoc {
   automation?: Partial<AutomationSettings>;
   leadAssignment?: Partial<LeadAssignmentSettings> & { cursor?: number };
   dealPipeline?: { stages?: Partial<DealStageConfig>[] };
+  retention?: { auditLogMonths?: number; activityMonths?: number };
   updatedBy?: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -64,6 +65,7 @@ const schema = new Schema<SettingsDoc>(
       autoCreateIncome: { type: Boolean, default: DEFAULT_COMMISSION_SETTINGS.autoCreateIncome },
       closeApprovalRequired: { type: Boolean, default: DEFAULT_COMMISSION_SETTINGS.closeApprovalRequired },
       payoutApprovalRequired: { type: Boolean, default: DEFAULT_COMMISSION_SETTINGS.payoutApprovalRequired },
+      rules: { type: [{ _id: false, listingPurpose: String, propertyType: String, buyerPct: Number, sellerPct: Number }], default: [] },
     },
     leadAssignment: {
       mode: { type: String, enum: ['NONE', 'ROUND_ROBIN', 'BY_SOURCE'], default: 'NONE' },
@@ -73,6 +75,7 @@ const schema = new Schema<SettingsDoc>(
       /** Round-robin position (internal). */
       cursor: { type: Number, default: 0 },
     },
+    retention: { auditLogMonths: { type: Number, default: 0 }, activityMonths: { type: Number, default: 0 } },
     // Missing stages fall back to DEFAULT_DEAL_PIPELINE (see normalizeDealPipeline).
     dealPipeline: {
       stages: { type: [{ _id: false, stage: { type: String, enum: DEAL_STAGES }, enabled: Boolean, label: String, labelUr: String, probability: Number }], default: undefined },

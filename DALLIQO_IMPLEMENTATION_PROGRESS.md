@@ -313,6 +313,35 @@ Server 242 passed (6 new rental tests: schedule maths, allocation, summary, full
 - `server/tests/pipeline.test.ts` (2 tests), plus a provider-selection test in `server/tests/ai.test.ts` and a pipeline test in `mobile/test/deals_test.dart`.
 - Server 283 passed + 1 skipped; web 38; Flutter 82; `flutter analyze` clean; web build OK.
 
+## Second re-audit batch ✅ (15 Nov 2026) — API access, bulk actions, commission rules, retention
+
+A second line-by-line pass over the brief found four items that were named in it but not built. All four are now implemented.
+
+### Features implemented
+- **API access keys (Enterprise "API access").** Settings → Security → API access. A manager creates a named key with chosen permissions and an optional expiry. The full key is shown once; only its hash is stored.
+  - A key acts for the member who created it, with that member's branch scope, and never more than that member's own permissions.
+  - Keys can only call record endpoints (clients, properties, owners, deals, follow-ups, reports and similar). Members, settings, billing, sign-in and key management are closed to keys.
+  - Keys stop working when revoked, expired, when the member leaves, or when the plan no longer includes API access. Creation and revocation are in the audit log.
+- **Bulk actions on lists.** The client and property tables have a tick-box column. With rows selected, a bar offers assign, change status and delete for all of them.
+  - Each record goes through the normal single-record logic, so permissions, branch scope, audit entries and re-matching behave as usual.
+  - Records that cannot be changed are reported; the rest still go through.
+- **Custom commission rules.** Settings → Matching → Commission rules. Different default buyer / seller rates by listing purpose (sale / rent) and property type. The first fitting rule sets the defaults on a new deal; a commission entered on the deal still wins.
+- **Data retention.** Settings → Security → Data retention. Each business chooses how long its audit log (minimum 12 months) and activity feed (minimum 6 months) are kept, or forever (the default). A daily job removes older entries. Business records are never removed by retention.
+
+### Database / APIs
+- **New collection:** `apiKeys` (unique index on `hash`; index on `businessId, createdAt`).
+- **New settings fields:** `commission.rules[]`, `retention {auditLogMonths, activityMonths}` (optional, defaults applied — no migration needed).
+- **New endpoints:** `GET/POST /api-keys`, `DELETE /api-keys/:id` (plan module `api` + `settings:manage`); `POST /clients/bulk`, `POST /properties/bulk` (up to 200 ids).
+- **Modified:** `PATCH /settings` accepts `commission.rules` and `retention`. Bearer tokens starting with `dq_live_` are treated as API keys.
+- **New job:** `data-retention` (daily).
+
+### Web / Android
+- Web: `web/src/pages/AdminExtras.tsx` (selection + bulk bar, commission rules, retention, API keys), wired into Settings and the client / property lists.
+- Android: no screen changes; these are administration features on the web. New deals created on Android get the rule-based default rates from the server.
+
+### Tests
+- `server/tests/final.test.ts` (5 tests). Server 288 passed + 1 skipped; web 38; Flutter 82; `flutter analyze` clean; web build OK.
+
 ## What is left
 Every item of the brief and the follow-ups is implemented, including configurable deal stages and a swappable AI provider. Live use of WhatsApp Business and the AI assistant needs the credentials listed above; device testing of the Android screens is still to be done on real phones.
 

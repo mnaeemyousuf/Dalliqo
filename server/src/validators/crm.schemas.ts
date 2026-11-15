@@ -655,6 +655,7 @@ export const settingsUpdateSchema = z
       .strict()
       .optional(),
     sqftPerUnit: z.object({ MARLA: z.number().positive(), KANAL: z.number().positive(), ACRE: z.number().positive() }).partial().strict().optional(),
+    retention: z.object({ auditLogMonths: z.number().int().min(0).max(240).optional(), activityMonths: z.number().int().min(0).max(240).optional() }).strict().optional(),
     dealPipeline: z
       .object({
         stages: z
@@ -687,7 +688,7 @@ export const settingsUpdateSchema = z
       .optional(),
     reminders: z.object({ defaultMinutesBefore: z.number().int().min(0).max(10080) }).strict().optional(),
     commission: z
-      .object({ defaultBuyerPct: z.number().min(0).max(20).optional(), defaultSellerPct: z.number().min(0).max(20).optional(), autoCreateIncome: z.boolean().optional(), closeApprovalRequired: z.boolean().optional(), payoutApprovalRequired: z.boolean().optional() })
+      .object({ defaultBuyerPct: z.number().min(0).max(20).optional(), defaultSellerPct: z.number().min(0).max(20).optional(), autoCreateIncome: z.boolean().optional(), closeApprovalRequired: z.boolean().optional(), payoutApprovalRequired: z.boolean().optional(), rules: z.array(z.object({ listingPurpose: z.enum(LISTING_PURPOSES).nullable().optional(), propertyType: z.enum(PROPERTY_TYPES).nullable().optional(), buyerPct: z.number().min(0).max(20), sellerPct: z.number().min(0).max(20) }).strict().refine((r) => !!(r.listingPurpose || r.propertyType), 'A rule needs a listing purpose or a property type')).max(20).optional() })
       .strict()
       .optional(),
   })
@@ -755,3 +756,16 @@ export const syncPushSchema = z.object({ mutations: z.array(mutation).min(1).max
 export const syncPullQuery = z.object({ cursor: z.string().max(4000).optional(), limit: z.coerce.number().int().min(1).max(1000).default(500) });
 
 export { nullableId };
+
+// ── Bulk actions (lists) ──
+const bulkIds = z.array(objectId).min(1).max(200);
+export const bulkClientSchema = z.discriminatedUnion('action', [
+  z.object({ ids: bulkIds, action: z.literal('ASSIGN'), assignedTo: objectId }).strict(),
+  z.object({ ids: bulkIds, action: z.literal('STATUS'), status: z.enum(CLIENT_STATUSES) }).strict(),
+  z.object({ ids: bulkIds, action: z.literal('DELETE') }).strict(),
+]);
+export const bulkPropertySchema = z.discriminatedUnion('action', [
+  z.object({ ids: bulkIds, action: z.literal('ASSIGN'), agentIds: z.array(objectId).min(1).max(10) }).strict(),
+  z.object({ ids: bulkIds, action: z.literal('STATUS'), status: z.enum(PROPERTY_STATUSES), reason: optionalText(300) }).strict(),
+  z.object({ ids: bulkIds, action: z.literal('DELETE') }).strict(),
+]);

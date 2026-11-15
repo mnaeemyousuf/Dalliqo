@@ -18,6 +18,7 @@ import { DealsPanel } from '@/pages/DealPages';
 import { Badge, Button, Card, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column, Avatar, FilterBar, ViewToggle } from '@/components/ui';
 import { formatDate, formatRange, mailHref, smsHref, splitList, telHref, waHref } from '@/lib/format';
 import { useCategories, useDebounce, useEnumOptions, useMembers, useOnError, useUrlState, useOpenOnNew, isNarrowScreen } from '@/lib/hooks';
+import { BulkBar, useSelection } from '@/pages/AdminExtras';
 import { useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
 
@@ -332,7 +333,9 @@ export function ClientsPage() {
   const units = useEnumOptions('sizeUnit', SIZE_UNITS);
   const f = (k: keyof typeof filters) => (e: { target: { value: string } }) => setFilters({ [k]: e.target.value, page: '1' } as never);
 
+  const selection = useSelection(query.data?.items, true);
   const columns: Column<Client>[] = [
+    ...selection.columns,
     { key: 'name', header: t('common.name'), render: (c) => <span className="flex items-center gap-3 whitespace-nowrap font-semibold text-ink"><Avatar name={c.fullName} size="sm" />{c.fullName}</span> },
     { key: 'mobile', header: t('common.mobile'), render: (c) => <span className="ltr-nums whitespace-nowrap">{c.mobileNumber}</span> },
     { key: 'category', header: t('client.category'), render: (c) => cats.name(c.categoryId) ?? '—' },
@@ -437,6 +440,8 @@ export function ClientsPage() {
           </>
         )
       ) : (
+        <>
+          <BulkBar kind="clients" ids={selection.ids} onDone={selection.clear} />
         <Card bodyClassName="!p-0">
           <DataTable
             columns={columns}
@@ -447,6 +452,7 @@ export function ClientsPage() {
             empty={<EmptyState title={t('client.noClients')} hint={t('client.noClientsHint')} action={canCreate && <Button onClick={() => setFormOpen(true)}>{t('client.add')}</Button>} />}
           />
         </Card>
+        </>
       )}
       {formOpen && <ClientFormDrawer open onClose={() => setFormOpen(false)} />}
       {followUpFor && <FollowUpForm open onClose={() => setFollowUpFor(null)} clientId={followUpFor} />}

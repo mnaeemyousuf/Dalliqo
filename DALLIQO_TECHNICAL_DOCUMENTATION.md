@@ -135,6 +135,19 @@ Data sent to Anthropic: the user's question, and the records the tools return fo
 
 To add a provider: implement `AiProvider`, add it to `AI_PROVIDERS` and to the `AI_PROVIDER` enum in `server/src/config/env.ts`. No feature code changes.
 
+## Second re-audit batch
+| Concern | Where |
+|---|---|
+| API key rules (prefix, allowed permissions and paths) | `shared/src/apiKeys.ts` |
+| API keys: model, create / revoke / resolve | `server/src/models/ApiKey.ts`, `server/src/services/apiKeyService.ts`, `server/src/routes/apiKeyRoutes.ts` |
+| API key sign-in | `server/src/middleware/authenticate.ts` (tokens starting `dq_live_`) |
+| Bulk actions | `server/src/services/bulkService.ts` (loops the single-record services), `bulkClientSchema` / `bulkPropertySchema` |
+| Commission rules | `defaultCommissionRates` in `shared/src/commission.ts`, used by `dealService.create` |
+| Retention | `RetentionSettings` in `shared/src/leads.ts`, `server/src/services/retentionService.ts`, job `data-retention` |
+| Web | `web/src/pages/AdminExtras.tsx` |
+
+Using a key: send `Authorization: Bearer dq_live_…` to the normal `/api` endpoints. Responses, validation and rate limits are the same as for signed-in users.
+
 ## Configuration
 AI (optional): `AI_PROVIDER` (default `anthropic`), `ANTHROPIC_API_KEY`, `AI_MODEL` (default `claude-opus-5-5`), `AI_MONTHLY_LIMIT` (default 3000).
 WhatsApp Business (optional): `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_API_VERSION` (default v21.0). Email: `SMTP_*` (inquiry acknowledgements, notification copies).

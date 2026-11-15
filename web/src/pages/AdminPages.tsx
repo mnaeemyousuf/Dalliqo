@@ -14,6 +14,7 @@ import { formatDate, relativeTime } from '@/lib/format';
 import { useEnumOptions, useOnError, useUrlState } from '@/lib/hooks';
 import { EmailNotificationsSetting } from '@/pages/MarketingPages';
 import { DealPipelineCard } from '@/pages/OpsPages';
+import { ApiKeysCard, CommissionRulesCard, RetentionCard } from '@/pages/AdminExtras';
 import { useAuth, useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
 import { useUi } from '@/store/ui';
@@ -528,12 +529,19 @@ export function SettingsPage() {
         {tab === 'matching' && (
           <div className="space-y-4">
             <MatchingSettings />
+            <CommissionRulesCard />
             <DealPipelineCard />
           </div>
         )}
         {tab === 'automation' && <AutomationTab />}
         {tab === 'subscription' && <SubscriptionSettings />}
-        {tab === 'security' && <SecuritySettings />}
+        {tab === 'security' && (
+          <div className="space-y-4">
+            <SecuritySettings />
+            <ApiKeysCard />
+            <RetentionCard />
+          </div>
+        )}
         {tab === 'appearance' && <AppearanceSettings />}
         {tab === 'about' && (
           <Card>

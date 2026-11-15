@@ -4,6 +4,7 @@ import {
   ERROR_CODES,
   OPEN_DEAL_STAGES,
   isDealStageEnabled,
+  defaultCommissionRates,
   PERMISSIONS,
   SOCKET_EVENTS,
   sharesValid,
@@ -260,9 +261,11 @@ export const dealService = {
       throw forbidden(ERROR_CODES.FORBIDDEN, 'Add yourself as an agent, or ask for permission to see all deals');
     }
     const settings = await settingsService.get(auth);
+    // Custom commission rules (by sale / rent and property type) override the two default rates.
+    const rates = defaultCommissionRates(settings.commission, property);
     const commission = {
-      buyer: input.commission?.buyer ?? { mode: 'PERCENT' as const, value: settings.commission.defaultBuyerPct },
-      seller: input.commission?.seller ?? { mode: 'PERCENT' as const, value: settings.commission.defaultSellerPct },
+      buyer: input.commission?.buyer ?? { mode: 'PERCENT' as const, value: rates.buyerPct },
+      seller: input.commission?.seller ?? { mode: 'PERCENT' as const, value: rates.sellerPct },
     };
     const payments = input.payments?.length && canManageMoney(auth) ? normalizePayments(input.payments, auth) : [];
     const payouts = input.payouts?.length && canManageMoney(auth) ? normalizePayouts(input.payouts) : [];

@@ -38,6 +38,15 @@ export interface LeadAssignmentSettings {
   /** BY_SOURCE: source → user id (sources without a rule fall back to the round-robin pool). */
   bySource: { source: string; userId: string }[];
 }
+/** How long logs are kept, in months (0 = forever). Business records are never purged. */
+export interface RetentionSettings {
+  auditLogMonths: number;
+  activityMonths: number;
+}
+export const DEFAULT_RETENTION: RetentionSettings = { auditLogMonths: 0, activityMonths: 0 };
+/** Shortest periods allowed, so a trail always exists for recent work. */
+export const MIN_RETENTION = { auditLogMonths: 12, activityMonths: 6 } as const;
+
 export const DEFAULT_LEAD_ASSIGNMENT: LeadAssignmentSettings = { mode: 'NONE', preferListingAgent: true, agentIds: [], bySource: [] };
 
 export const DEFAULT_LEAD_SCORING: LeadScoringSettings = {

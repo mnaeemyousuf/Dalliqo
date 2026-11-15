@@ -785,13 +785,25 @@ export interface MyDay {
 
 export interface Settings {
   matching: { weights: Record<'type' | 'location' | 'budget' | 'size' | 'purpose' | 'features', number>; storeThreshold: number; notifyThreshold: number; crossBranch: boolean };
-  commission: { defaultBuyerPct: number; defaultSellerPct: number; autoCreateIncome: boolean; closeApprovalRequired?: boolean; payoutApprovalRequired?: boolean };
+  commission: { defaultBuyerPct: number; defaultSellerPct: number; autoCreateIncome: boolean; closeApprovalRequired?: boolean; payoutApprovalRequired?: boolean; rules?: import('@recrm/shared').CommissionRule[] };
   sqftPerUnit: Record<SizeUnit, number>;
   reminders: { defaultMinutesBefore: number };
   leadScoring: LeadScoringSettings;
   automation: AutomationSettings;
   leadAssignment?: { mode: 'NONE' | 'ROUND_ROBIN' | 'BY_SOURCE'; preferListingAgent: boolean; agentIds: string[]; bySource: { source: string; userId: string }[] };
   dealPipeline?: import('@recrm/shared').DealPipelineSettings;
+  retention?: { auditLogMonths: number; activityMonths: number };
+}
+
+export interface ApiKey {
+  _id: string;
+  name: string;
+  prefix: string;
+  permissions: string[];
+  expiresAt: string | null;
+  lastUsedAt: string | null;
+  revokedAt: string | null;
+  createdAt: string;
 }
 
 export interface DeviceSession {

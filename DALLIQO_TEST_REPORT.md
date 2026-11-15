@@ -146,6 +146,14 @@ Run date: 14 Nov 2026 (latest: Phase 5B — see per-phase sections for current t
 - **Full results:** server 283 passed (1 skipped), web 38, Flutter 82, `flutter analyze` clean, web build OK.
 - **Visual check:** in Settings, switching off Qualified and renaming Site visit to "Viewing" is reflected on the deals board.
 
+## Second re-audit batch tests (`server/tests/final.test.ts`)
+- **API keys:** a member without settings rights gets 403; a key with an admin permission is refused (400). The created key is shown once and the list never contains the secret or its hash. The key can read and create clients, but gets 403 for properties, members, settings and key management. An unknown key gets 401. On a plan without API access the key gets MODULE_NOT_IN_PLAN. After revocation it gets 401. Creation and revocation are audited.
+- **Bulk actions:** assigning three ids (one unknown) updates two and reports the third. Status change and delete work for clients; an agent without delete rights gets 403 and an unknown action 400. Properties: status change with a reason and agent assignment work; an agent without update rights gets 403.
+- **Commission rules:** the first fitting rule wins, otherwise the defaults; a rule with no condition is refused (400). A new deal on a matching listing gets 2.5 % / 1.5 %, a deal without a property gets the defaults, and a commission entered on the deal wins.
+- **Retention:** nothing is purged by default. A 3-month audit period is refused (400). With 12 / 6 months set, entries 400 days old are removed for that business only, the recent settings change stays, and client records are untouched.
+- **Full results:** server 288 passed (1 skipped), web 38, Flutter 82, `flutter analyze` clean, web build OK.
+- **Visual check:** selecting two clients and putting them on hold from the bulk bar; creating an API key and seeing it listed as active; adding a commission rule. No console errors.
+
 ## Manual / visual verification
 Demo API (`npm run demo`) + web, headless Chrome screenshots at 1440 px: client list with lead scores and temperature filter, client lead panel, Reports (leads + inventory aging), Settings → Subscription. All rendered correctly with real demo data.
 

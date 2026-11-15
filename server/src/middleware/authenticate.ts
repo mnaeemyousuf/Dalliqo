@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { ERROR_CODES } from '@recrm/shared';
 import { BRANCH_HEADER } from '@recrm/shared';
+import { apiKeyService, isApiKey } from '../services/apiKeyService';
 import { resolveAuthContext } from '../services/authContextService';
 import { narrowToSelectedBranch } from '../services/branchScope';
 import { tokenService } from '../services/tokenService';
@@ -17,6 +18,12 @@ export function bearerToken(req: Request): string | undefined {
 export const authenticate = asyncHandler(async (req, _res, next) => {
   const token = bearerToken(req);
   if (!token) throw unauthorized();
+  if (isApiKey(token)) {
+    // API access keys (Enterprise): limited permissions, record endpoints only.
+    const path = req.originalUrl.split('?')[0].replace(/^\/api(?=\/)/, '');
+    req.auth = await narrowToSelectedBranch(await apiKeyService.resolve(token, path), req.get(BRANCH_HEADER));
+    return next();
+  }
   req.auth = await narrowToSelectedBranch(await resolveAuthContext(tokenService.verifyAccessToken(token)), req.get(BRANCH_HEADER));
   next();
 });

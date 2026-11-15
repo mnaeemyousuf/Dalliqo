@@ -1,4 +1,5 @@
 import type { ClientSession } from 'mongoose';
+import { DEFAULT_RETENTION, MIN_RETENTION, type RetentionSettings } from '@recrm/shared';
 import { DEFAULT_LEAD_ASSIGNMENT, REQUIRED_DEAL_STAGES, normalizeDealPipeline, type DealPipelineSettings, type DealStageConfig, type LeadAssignmentSettings } from '@recrm/shared';
 import { memberRepository } from '../repositories/memberRepository';
 import {
@@ -32,6 +33,7 @@ export interface EffectiveSettings {
   automation: AutomationSettings;
   leadAssignment: LeadAssignmentSettings;
   dealPipeline: DealPipelineSettings;
+  retention: RetentionSettings;
 }
 
 function effectiveAutomation(stored?: Partial<AutomationSettings> | null): AutomationSettings {
@@ -67,6 +69,7 @@ function effective(doc: Partial<SettingsDoc> | null): EffectiveSettings {
       bySource: doc?.leadAssignment?.bySource ?? [],
     },
     dealPipeline: normalizeDealPipeline(doc?.dealPipeline),
+    retention: { auditLogMonths: doc?.retention?.auditLogMonths ?? DEFAULT_RETENTION.auditLogMonths, activityMonths: doc?.retention?.activityMonths ?? DEFAULT_RETENTION.activityMonths },
   };
 }
 
@@ -82,6 +85,7 @@ export type SettingsUpdate = {
   leadScoring?: { weights?: Partial<LeadScoringSettings['weights']>; hotThreshold?: number; warmThreshold?: number };
   automation?: Partial<Record<AutomationRuleKey, { enabled?: boolean; threshold?: number }>>;
   leadAssignment?: Partial<LeadAssignmentSettings>;
+  retention?: Partial<RetentionSettings>;
   /** Changed stages only (matched by key); the rest keep their current configuration. */
   dealPipeline?: { stages: (Partial<DealStageConfig> & { stage: DealStageConfig['stage'] })[] };
 };
@@ -144,7 +148,14 @@ export const settingsService = {
       dealPipeline: input.dealPipeline
         ? normalizeDealPipeline({ stages: before.dealPipeline.stages.map((s) => ({ ...s, ...stripUndefined(input.dealPipeline!.stages.find((c) => c.stage === s.stage) ?? {}) })) })
         : before.dealPipeline,
+      retention: { ...before.retention, ...stripUndefined(input.retention ?? {}) },
     };
+    for (const k of ['auditLogMonths', 'activityMonths'] as const) {
+      const v = next.retention[k];
+      if (v !== 0 && v < MIN_RETENTION[k]) {
+        throw badRequest(ERROR_CODES.VALIDATION_ERROR, `Keep ${k === 'auditLogMonths' ? 'the audit log' : 'activity'} for at least ${MIN_RETENTION[k]} months, or forever (0)`);
+      }
+    }
     if (input.dealPipeline?.stages.some((c) => c.enabled === false && REQUIRED_DEAL_STAGES.includes(c.stage))) {
       throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'Inquiry, Won and Lost are always part of the pipeline');
     }
@@ -176,7 +187,7 @@ export const settingsService = {
       { $set: { ...rest, 'leadAssignment.mode': leadAssignment.mode, 'leadAssignment.preferListingAgent': leadAssignment.preferListingAgent, 'leadAssignment.agentIds': leadAssignment.agentIds, 'leadAssignment.bySource': leadAssignment.bySource, updatedBy: auth.userId } },
       { upsert: true, new: true },
     );
-    const changes = diffFields(before as unknown as Record<string, unknown>, next as unknown as Record<string, unknown>, ['matching', 'sqftPerUnit', 'reminders', 'commission', 'leadScoring', 'automation', 'leadAssignment', 'dealPipeline']);
+    const changes = diffFields(before as unknown as Record<string, unknown>, next as unknown as Record<string, unknown>, ['matching', 'sqftPerUnit', 'reminders', 'commission', 'leadScoring', 'automation', 'leadAssignment', 'dealPipeline', 'retention']);
     if (changes.length) await auditService.record(auth, { action: 'settings.updated', entityType: 'settings', changes, ip });
     return next;
   },

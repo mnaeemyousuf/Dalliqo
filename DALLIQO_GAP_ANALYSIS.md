@@ -98,4 +98,9 @@ Each section of the master brief was checked against the code (server, web, Andr
 | 18 | Responsive web, Urdu RTL, themes, PKR / CNIC / phone / DD/MM formatting | ✅ | |
 | 19 | Auth, sessions, devices, rate limits, secure uploads, audit log with old / new values, sensitive-data protection | ✅ | Backups and monitoring are documented in `docs/deployment` (hosting-level). |
 | 20 | Trial, plans, module entitlements, limits, billing history, usage | ✅ | Phase 3 |
+| 8 | Custom commission rules | ✅ | **Second re-audit:** default rates by sale / rent and property type |
+| 18 | Bulk actions on lists | ✅ | **Second re-audit:** assign, change status and delete on the client and property tables |
+| 18 | Configurable currency and timezone | 🟡 | Stored per business and editable. Amounts are still written in the PKR lakh / crore style everywhere (screens, PDFs, messages). |
+| 19 | Data retention policies | ✅ | **Second re-audit:** per-business retention for the audit log and activity feed, purged daily |
+| 20 | API access (Enterprise) | ✅ | **Second re-audit:** scoped API keys, hashed at rest, record endpoints only |
 | 21 | Indexes, pagination, background jobs, efficient reports | ✅ | Aggregations only. Every new collection and field is indexed. |

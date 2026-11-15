@@ -6,6 +6,7 @@ import { automationService } from '../services/automationService';
 import { followUpService } from '../services/followUpService';
 import { leaseService } from '../services/leaseService';
 import { installmentService } from '../services/installmentService';
+import { retentionService } from '../services/retentionService';
 
 const OWNER = `${hostname()}:${process.pid}:${randomUUID().slice(0, 8)}`;
 
@@ -42,6 +43,7 @@ export const JOBS: Job[] = [
   { name: 'lead-rescore', everyMs: 30 * 60_000, run: () => automationService.rescoreStaleLeads() },
   { name: 'lease-refresh', everyMs: 60 * 60_000, run: () => leaseService.refreshAll() },
   { name: 'installment-refresh', everyMs: 60 * 60_000, run: () => installmentService.refreshAll() },
+  { name: 'data-retention', everyMs: 24 * 60 * 60_000, run: () => retentionService.purgeAll() },
 ];
 
 export function startScheduler(): () => void {

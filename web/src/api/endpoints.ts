@@ -1,4 +1,5 @@
 import type { DealPipelineSettings } from '@recrm/shared';
+import type { ApiKey } from './types';
 import type { AxiosProgressEvent } from 'axios';
 import { api, apiPage, clean, http, toApiError } from './client';
 import type {
@@ -501,4 +502,14 @@ export const exportApi = {
       throw toApiError(e);
     }
   },
+};
+
+export const apiKeyApi = {
+  list: () => api<ApiKey[]>({ url: '/api-keys' }),
+  create: (body: Body) => api<ApiKey & { secret: string }>({ method: 'POST', url: '/api-keys', data: body }),
+  revoke: (id: string) => api<ApiKey>({ method: 'DELETE', url: `/api-keys/${id}` }),
+};
+
+export const bulkApi = {
+  run: (kind: 'clients' | 'properties', body: Body) => api<{ done: number; failed: { id: string; message: string }[] }>({ method: 'POST', url: `/${kind}/bulk`, data: body }),
 };

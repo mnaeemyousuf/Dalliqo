@@ -39,6 +39,7 @@ import { performanceService, type PeriodFilter } from '../services/performanceSe
 import { agentPerformancePdf, agentPerformanceXlsx } from '../services/performanceExport';
 import { dealService } from '../services/dealService';
 import { settingsService } from '../services/settingsService';
+import { bulkService } from '../services/bulkService';
 import { sendSuccess } from '../utils/http';
 import { validate } from '../middleware/validate';
 import { asyncHandler as h } from '../utils/http';
@@ -82,6 +83,10 @@ r.post('/clients/:id/assign', can(P.CLIENTS_UPDATE), validate({ params: idParams
 r.get('/reports/leads', can(P.CLIENTS_READ, P.REPORTS_READ), validate({ query: s.leadReportQuery }), h(leadController.report));
 r.get('/reports/inventory', can(P.PROPERTIES_READ, P.REPORTS_READ), h(propertyController.inventoryReport));
 r.get('/clients/:id', can(P.CLIENTS_READ), id, h(clientController.get));
+r.post('/clients/bulk', can(P.CLIENTS_READ), validate({ body: s.bulkClientSchema }), h(async (req, res) => {
+  const { ids, ...action } = req.body;
+  sendSuccess(res, await bulkService.clients(authOf(req), ids, action, { ip: req.ip }));
+}));
 r.patch('/clients/:id', can(P.CLIENTS_UPDATE), validate({ params: idParams, body: s.clientUpdateSchema }), h(clientController.update));
 r.delete('/clients/:id', can(P.CLIENTS_DELETE), id, h(clientController.remove));
 r.post('/clients/:id/communications', can(P.CLIENTS_READ), validate({ params: idParams, body: s.communicationSchema }), h(clientController.communicate));
@@ -198,6 +203,10 @@ r.get('/properties/:id', can(P.PROPERTIES_READ), id, h(propertyController.get));
 r.get('/properties/:id/brochure', can(P.PROPERTIES_READ, P.EXPORTS_CREATE), validate({ params: idParams, query: s.brochureQuery }), h(propertyController.brochure));
 r.patch('/properties/:id', can(P.PROPERTIES_UPDATE), validate({ params: idParams, body: s.propertyUpdateSchema }), h(propertyController.update));
 r.post('/properties/:id/verify', can(P.PROPERTIES_UPDATE), validate({ params: idParams, body: s.propertyVerifySchema }), h(propertyController.verify));
+r.post('/properties/bulk', can(P.PROPERTIES_READ), validate({ body: s.bulkPropertySchema }), h(async (req, res) => {
+  const { ids, ...action } = req.body;
+  sendSuccess(res, await bulkService.properties(authOf(req), ids, action, { ip: req.ip }));
+}));
 r.post('/properties/:id/status', can(P.PROPERTIES_UPDATE), validate({ params: idParams, body: s.propertyStatusSchema }), h(propertyController.changeStatus));
 r.delete('/properties/:id', can(P.PROPERTIES_DELETE), id, h(propertyController.remove));
 r.get('/properties/:id/matches', can(P.MATCHES_READ), validate({ params: idParams, query: s.matchListQuery }), h(propertyController.matches));
