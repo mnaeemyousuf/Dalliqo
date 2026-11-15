@@ -2,7 +2,7 @@
 
 The release APK is built by GitHub Actions (`.github/workflows/android-apk.yml`): the Phase 2 build is
 [release `apk-build-3`](https://github.com/mnaeemyousuf/Stateown/releases/tag/apk-build-3) (`Stateown-1.0.0+1-3.apk`, run 41661337077,
-pointing at `https://dalliqo.onrender.com`). It has **not yet been installed on a phone** — the development machine has no Android
+pointing at `https://stateown.onrender.com`). It has **not yet been installed on a phone** — the development machine has no Android
 SDK and no phone — so none of the steps below has been executed. The logic behind them is covered by automated tests (named in
 each section); this script checks what only real phones can show: notifications and alarms, reboot, the share sheet, WhatsApp,
 the camera, PDF viewers, right-to-left Urdu on screen, and two people working on the same business at once.
@@ -16,10 +16,10 @@ the camera, PDF viewers, right-to-left Urdu on screen, and two people working on
 
 1. On each phone: open the release page above, download `Stateown-1.0.0+1-3.apk`, allow "install unknown apps" for the browser,
    install. (The APK is debug-signed, for sideloading only; Play Store needs a release keystore.) To build your own instead:
-   on a machine with Android Studio (SDK 34+, JDK 17) run `cd mobile && flutter build apk --release --dart-define=API_BASE_URL=https://dalliqo.onrender.com`,
+   on a machine with Android Studio (SDK 34+, JDK 17) run `cd mobile && flutter build apk --release --dart-define=API_BASE_URL=https://stateown.onrender.com`,
    or push to the `build-apk` branch / run the workflow manually (it can take another API URL).
 2. The live demo uses the password set in Render's `DEMO_PASSWORD` (the code default is `Demo1234!`; `.env.example` suggests
-   `DEMO@1234`). The Render free plan sleeps: open https://dalliqo.onrender.com once and wait for it to wake before signing in.
+   `DEMO@1234`). The Render free plan sleeps: open https://stateown.onrender.com once and wait for it to wake before signing in.
    Demo data resets when the service restarts.
 3. Optional push: the CI build has no `google-services.json`, so Firebase push is off; in-app and **local** reminders still work.
 4. Record phone model, Android version and build in the results table at the end. Use Android 13+ (14 recommended for the

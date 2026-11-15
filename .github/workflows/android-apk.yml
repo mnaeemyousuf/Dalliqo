@@ -8,7 +8,7 @@ on:
     inputs:
       api_base_url:
         description: 'API base URL baked into the app'
-        default: 'https://dalliqo.onrender.com'
+        default: 'https://stateown.onrender.com'
 
 permissions:
   contents: write
@@ -20,7 +20,7 @@ jobs:
       run:
         working-directory: mobile
     env:
-      API_BASE_URL: ${{ github.event.inputs.api_base_url || 'https://dalliqo.onrender.com' }}
+      API_BASE_URL: ${{ github.event.inputs.api_base_url || 'https://stateown.onrender.com' }}
     steps:
       - uses: actions/checkout@v4
 

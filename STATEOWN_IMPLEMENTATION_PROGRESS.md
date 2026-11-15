@@ -348,7 +348,8 @@ A second line-by-line pass over the brief found four items that were named in it
 - The product name is now **Stateown** everywhere: web, Android / iOS app name, e-mails, PDFs (reports, brochures, agreements, vouchers), notifications, the assistant's instructions, documents and manuals.
 - New logo mark (a house with the lead dot) and "stateown" wordmark, generated from `shared/brand/stateown.tokens.json` by `tools/brand`: favicons, launcher icons, splash, web logos, PDF logo. Colours, typeface and tagline are unchanged.
 - The four progress documents are renamed `STATEOWN_*.md`. API keys now start with `so_live_`.
-- **Not changed on purpose:** the hosted address (`dalliqo.onrender.com`), the GitHub repository name and the Android application id (`com.recrm.real_estate_crm`), so existing installs and links keep working. See "What is left".
+- **Hosted address:** the app now runs at `https://stateown.onrender.com` (a new Render service `stateown`; the old service is still running at its old address until it is deleted in the Render dashboard). The APK build uses the new address by default.
+- **Not changed on purpose:** the GitHub repository name and the Android application id (`com.recrm.real_estate_crm`), so existing installs keep updating.
 
 ### Mobile parity (Android)
 Every web feature that the app did not have is now in the app, as screens that work with live data:
@@ -375,7 +376,8 @@ Every web feature that the app did not have is now in the app, as screens that w
 - Server 288 passed + 1 skipped; web 38; Flutter 86; `flutter analyze` clean.
 
 ## What is left
-- **Hosting names (your decision):** the Render address and GitHub repository still contain the old name. Renaming them changes the app's server address, so it needs a new APK and a redirect.
+- **Old hosted service:** delete the old Render service in the dashboard once every phone has the new APK. Phones with an older APK still talk to the old address.
+- **GitHub repository name** still contains the old name; renaming it is done in GitHub settings (Render follows the redirect).
 - **Saved views on the phone:** saved filter sets are a web feature (they store the web page's filters). The phone keeps its own filter sheet.
 Every item of the brief and the follow-ups is implemented, including configurable deal stages and a swappable AI provider. Live use of WhatsApp Business and the AI assistant needs the credentials listed above; device testing of the Android screens is still to be done on real phones.
 
