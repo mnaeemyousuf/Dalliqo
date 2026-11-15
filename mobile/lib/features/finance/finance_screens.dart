@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../more/record_tools.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 
@@ -166,6 +167,7 @@ class MoneyEntryScreen extends ConsumerWidget {
           appBar: AppBar(
             title: Text(l.enumLabel('transactionType', e.type)),
             actions: [
+              RecordToolsButton(kind: 'transaction', serverId: e.serverId),
               if (editable && auth.can('finance:update')) IconButton(icon: const Icon(Icons.edit_outlined), tooltip: l.t('common.edit'), onPressed: () => context.push('/finance/${e.id}/edit')),
               if (editable && auth.can('finance:delete'))
                 IconButton(

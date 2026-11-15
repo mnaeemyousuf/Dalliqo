@@ -395,7 +395,7 @@ export const verificationController = {
 export const inventoryToolsController = {
   async template(_req: Request, res: Response) {
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename="dalliqo-properties-template.xlsx"');
+    res.setHeader('Content-Disposition', 'attachment; filename="stateown-properties-template.xlsx"');
     res.end(await inventoryToolsService.propertyTemplate());
   },
   async importExcel(req: Request, res: Response) {
@@ -432,7 +432,7 @@ export const leadController = {
   },
   async template(_req: Request, res: Response) {
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename="dalliqo-leads-template.xlsx"');
+    res.setHeader('Content-Disposition', 'attachment; filename="stateown-leads-template.xlsx"');
     res.end(await leadService.template());
   },
   async importExcel(req: Request, res: Response) {

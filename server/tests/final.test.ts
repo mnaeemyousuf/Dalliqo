@@ -21,7 +21,7 @@ describe('API access keys', () => {
     await request(app).post('/api/api-keys').set(auth).send({ name: 'Bad', permissions: ['members:manage'] }).expect(400);
 
     const made = (await request(app).post('/api/api-keys').set(auth).send({ name: 'Website sync', permissions: ['clients:read', 'clients:create'] }).expect(201)).body.data;
-    expect(made.secret).toMatch(/^dq_live_[0-9a-f]{48}$/);
+    expect(made.secret).toMatch(/^so_live_[0-9a-f]{48}$/);
     const key = bearer(made.secret);
 
     // The list never returns the secret or its hash.
@@ -40,7 +40,7 @@ describe('API access keys', () => {
     await request(app).get('/api/members').set(key).expect(403);
     await request(app).get('/api/settings').set(key).expect(403);
     await request(app).get('/api/api-keys').set(key).expect(403);
-    await request(app).get('/api/clients').set(bearer('dq_live_' + '0'.repeat(48))).expect(401);
+    await request(app).get('/api/clients').set(bearer('so_live_' + '0'.repeat(48))).expect(401);
 
     // Not on plans without API access.
     const { Business } = await import('../src/models/Business');

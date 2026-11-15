@@ -16,7 +16,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
 /*
- * Dalliqo design system — web primitives. Every page is built from these, so visual changes belong here
+ * Stateown design system — web primitives. Every page is built from these, so visual changes belong here
  * (tokens live in tailwind.config.js and index.css). APIs stay stable; styling is the design system's job.
  */
 

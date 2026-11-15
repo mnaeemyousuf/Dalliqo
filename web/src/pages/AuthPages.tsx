@@ -27,7 +27,7 @@ function AuthShell({ title, subtitle, children, footer }: { title: string; subti
         <div className="pointer-events-none absolute -bottom-40 end-0 h-[24rem] w-[24rem] rounded-full bg-[#F59E0B]/20 blur-[120px]" />
         <div className="relative flex items-center gap-3">
           <BrandLogo variant="mark" className="h-10 w-10 rounded-xl" />
-          <span className="text-lg font-extrabold tracking-tight">Dalliqo</span>
+          <span className="text-lg font-extrabold tracking-tight">Stateown</span>
         </div>
         <div className="relative mt-auto max-w-lg animate-rise">
           <h2 className="text-4xl font-bold leading-[1.15] tracking-tight">{t('auth.brand.headline')}</h2>
@@ -74,7 +74,7 @@ function AuthShell({ title, subtitle, children, footer }: { title: string; subti
           </div>
           {footer && <div className="mt-8 text-center text-sm text-muted [&_a]:font-semibold [&_a]:text-brand-600 hover:[&_a]:underline">{footer}</div>}
         </div>
-        <p className="text-center text-2xs text-subtle">© {new Date().getFullYear()} Dalliqo · {t('app.tagline')}</p>
+        <p className="text-center text-2xs text-subtle">© {new Date().getFullYear()} Stateown · {t('app.tagline')}</p>
       </main>
     </div>
   );

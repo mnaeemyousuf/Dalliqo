@@ -5,7 +5,7 @@
  */
 import { PERMISSIONS, type Permission } from './permissions';
 
-export const API_KEY_PREFIX = 'dq_live_';
+export const API_KEY_PREFIX = 'so_live_';
 
 /** Permissions a key may carry (the creator must hold them too). */
 export const API_KEY_PERMISSIONS: readonly Permission[] = [

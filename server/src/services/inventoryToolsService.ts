@@ -148,7 +148,7 @@ export const inventoryToolsService = {
     return result;
   },
 
-  /** QR code (PNG) pointing at the property in Dalliqo — for signboards, files and brochures. */
+  /** QR code (PNG) pointing at the property in Stateown — for signboards, files and brochures. */
   async propertyQr(ctx: TenantContext, id: string): Promise<{ png: Buffer; url: string; fileName: string }> {
     const p = await propertyRepository.getById(ctx, id, 'Property not found');
     const url = `${env.APP_WEB_URL.replace(/\/$/, '')}/properties/${p._id}`;

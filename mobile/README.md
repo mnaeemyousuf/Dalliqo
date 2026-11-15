@@ -1,6 +1,6 @@
-# Dalliqo — Flutter app
+# Stateown — Flutter app
 
-Offline-first Android / iOS app for the Dalliqo API. Riverpod (no code generation), GoRouter,
+Offline-first Android / iOS app for the Stateown API. Riverpod (no code generation), GoRouter,
 Dio, sqflite, Socket.IO, Firebase Cloud Messaging, Google Maps, English + Urdu (RTL).
 
 ```text

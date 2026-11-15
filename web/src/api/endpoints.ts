@@ -218,7 +218,7 @@ export const clientApi = {
       const url = URL.createObjectURL(r.data);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'dalliqo-leads-template.xlsx';
+      a.download = 'stateown-leads-template.xlsx';
       a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (e) {
@@ -262,7 +262,7 @@ export const inventoryApi = {
       throw toApiError(e);
     }
   },
-  downloadTemplate: () => blobDownload('/properties/import/template', 'dalliqo-properties-template.xlsx'),
+  downloadTemplate: () => blobDownload('/properties/import/template', 'stateown-properties-template.xlsx'),
   async qrObjectUrl(id: string) {
     try {
       const r = await http.get<Blob>(`/properties/${id}/qr`, { responseType: 'blob' });

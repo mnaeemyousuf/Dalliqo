@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "Dalliqo",
+    "name": "Stateown",
     "tagline": "Every Property. Every Lead. One Platform.",
     "description": "Real Estate CRM & Business Management Platform"
   },
@@ -81,7 +81,12 @@
     "date": "Date",
     "archive": "Archive",
     "restore": "Restore",
-    "copy": "Copy"
+    "copy": "Copy",
+    "moreFilters": "More filters",
+    "hide": "Hide",
+    "show": "Show",
+    "saved": "Saved",
+    "title": "Title"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -104,7 +109,16 @@
     "agreements": "Agreements",
     "rentals": "Rentals",
     "installments": "Installments",
-    "assistant": "Assistant"
+    "assistant": "Assistant",
+    "section": {
+      "overview": "Overview",
+      "workspace": "Workspace",
+      "business": "Business",
+      "admin": "Administration"
+    },
+    "platform": "Platform admin",
+    "verifications": "Verifications",
+    "marketing": "Marketing"
   },
   "topbar": {
     "searchPlaceholder": "Search clients, properties, owners…",
@@ -114,7 +128,11 @@
     "dark": "Dark",
     "system": "System",
     "live": "Live",
-    "reconnecting": "Reconnecting…"
+    "reconnecting": "Reconnecting…",
+    "create": "Create",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar",
+    "openHint": "Choose a result to open it"
   },
   "auth": {
     "signIn": "Sign in",
@@ -142,12 +160,22 @@
     "changeTempTitle": "Set your own password",
     "changeTempSubtitle": "Your account was created with a temporary password. Please choose a new one to continue.",
     "haveAccount": "Already have an account?",
-    "noAccount": "New to Dalliqo?",
+    "noAccount": "New to Stateown?",
     "passwordsMismatch": "Passwords do not match",
     "passwordHint": "At least 8 characters with letters and numbers",
     "backToSignIn": "Back to sign in",
     "sessionExpired": "Your session has ended. Please sign in again.",
-    "mobileNumber": "Mobile number"
+    "mobileNumber": "Mobile number",
+    "brand": {
+      "headline": "Every property, every lead, one calm workspace.",
+      "subline": "Clients, listings, matches, deals and agreements for your agency — on the web and on your phone, even offline.",
+      "point1": "Automatic two-way matching with clear reasons",
+      "point2": "Works offline on the phone and syncs by itself",
+      "point3": "Every action permission-checked and audited",
+      "kpi1": "Listings",
+      "kpi2": "Active deals",
+      "kpi3": "Match rate"
+    }
   },
   "dashboard": {
     "title": "Dashboard",
@@ -201,7 +229,20 @@
     "netThisMonth": "Net this month",
     "agreementDrafts": "Agreement drafts",
     "agreementsAwaitingSignature": "Awaiting signature",
-    "agreementsExpiring": "Rent agreements ending in 30 days"
+    "agreementsExpiring": "Rent agreements ending in 30 days",
+    "greeting": {
+      "morning": "Good morning, {{name}}",
+      "afternoon": "Good afternoon, {{name}}",
+      "evening": "Good evening, {{name}}"
+    },
+    "heroSummary": "{{today}} follow-ups today, {{overdue}} overdue and {{matches}} new matches. Here is how the business is doing.",
+    "groups": {
+      "portfolio": "Portfolio",
+      "clients": "Clients & follow-ups",
+      "business": "Deals, money & agreements"
+    },
+    "analytics": "Analytics",
+    "analyticsHint": "Trends across properties, clients, follow-ups and lead sources."
   },
   "myDay": {
     "title": "My Day",
@@ -276,7 +317,10 @@
     "saveAnyway": "Save anyway",
     "matchingProperties_one": "{{count}} matching property",
     "bathroomsMin": "Bathrooms (at least)",
-    "amenities": "Must-have features"
+    "amenities": "Must-have features",
+    "morePreferences": "More preferences (bedrooms, possession, amenities)",
+    "possessionStatuses": "Possession",
+    "constructionStatuses": "Construction"
   },
   "property": {
     "title": "Properties",
@@ -368,7 +412,41 @@
       "mainRoad": "Main road",
       "priceHistory": "Price history",
       "duplicateConfirm": "This plot is already listed as {{id}}. Save it as a separate listing anyway?"
-    }
+    },
+    "inventory": {
+      "title": "Inventory aging",
+      "onMarket": "On the market",
+      "avgDays": "Avg. days listed",
+      "buckets": {
+        "0_30": "0–30 days",
+        "31_60": "31–60 days",
+        "61_90": "61–90 days",
+        "90_PLUS": "Unsold 90+ days"
+      },
+      "oldest": "Longest on the market",
+      "days": "{{n}} days"
+    },
+    "import": {
+      "title": "Import properties from Excel",
+      "hint": "Use the template (type, size, unit and asking price are required). Owners are matched by mobile number or created. Duplicate plots and invalid rows are skipped and listed.",
+      "agent": "Listing agent",
+      "duplicateOf": "already listed as {{id}}"
+    },
+    "qr": {
+      "button": "QR code",
+      "title": "Property QR code",
+      "download": "Download PNG",
+      "hint": "Print it on signboards or the property file — scanning opens this listing in Stateown."
+    },
+    "map": {
+      "view": "Map",
+      "summary": "{{shown}} of {{total}} listings have a location.",
+      "missing": "Add coordinates in the property form to show the rest."
+    },
+    "coOwners": "Co-owners",
+    "addCoOwner": "Add a co-owner (search above)",
+    "listingAgents": "Listing agents",
+    "addAgent": "Add an agent"
   },
   "owner": {
     "title": "Owners",
@@ -462,7 +540,8 @@
     "allowed": "PDF, images, Word or Excel up to 25 MB",
     "chooseRecord": "Open a client, property or owner to upload documents to it.",
     "rename": "Rename",
-    "renamed": "Document renamed"
+    "renamed": "Document renamed",
+    "expiresAt": "Expires on"
   },
   "report": {
     "title": "Reports & exports",
@@ -507,7 +586,8 @@
       "deals": "Deals & commission",
       "finance": "Income & expense",
       "agreements": "Agreements",
-      "verification": "Verification"
+      "verification": "Verification",
+      "rentals": "Rentals"
     },
     "template": "Start from a template",
     "access": "Access",
@@ -585,9 +665,13 @@
     "marla": "Square feet per marla",
     "reminderDefault": "Default reminder (minutes before)",
     "version": "Version {{version}}",
-    "aboutText": "Dalliqo keeps your clients, properties, owners, matches and follow-ups in one place. Data is stored securely in the cloud and syncs between all your devices.",
+    "aboutText": "Stateown keeps your clients, properties, owners, matches and follow-ups in one place. Data is stored securely in the cloud and syncs between all your devices.",
     "clientCount_one": "{{count}} client",
-    "branches": "Branches"
+    "branches": "Branches",
+    "automation": "Automation & scoring",
+    "subscription": "Subscription",
+    "featuresWeight": "Bedrooms & features (extra)",
+    "featuresHint": "The bedrooms & features weight is extra: it only counts for clients who stated such preferences, and scores are rescaled to 100."
   },
   "enums": {
     "propertyType": {
@@ -730,7 +814,8 @@
       "owner": "Owner",
       "followUp": "Follow-up",
       "deal": "Deal",
-      "agreement": "Agreement"
+      "agreement": "Agreement",
+      "transaction": "Income / expense"
     },
     "exportResource": {
       "clients": "Clients",
@@ -1024,6 +1109,29 @@
       "PRINTED": "Printed / hand delivered",
       "EMAIL": "Email",
       "IN_PERSON": "In person"
+    },
+    "installmentFrequency": {
+      "MONTHLY": "Monthly",
+      "QUARTERLY": "Quarterly",
+      "HALF_YEARLY": "Half-yearly",
+      "YEARLY": "Yearly",
+      "CUSTOM": "Custom"
+    },
+    "agingBucket": {
+      "CURRENT": "Not yet due",
+      "1_30": "1–30 days",
+      "31_60": "31–60 days",
+      "61_90": "61–90 days",
+      "90_PLUS": "90+ days"
+    },
+    "agingKind": {
+      "COMMISSION": "Commission",
+      "INSTALLMENT": "Installment",
+      "RENT": "Rent",
+      "AGENT": "Agent",
+      "EXTERNAL_DEALER": "Outside dealer",
+      "REFERRAL": "Referral",
+      "BRANCH": "Branch"
     }
   },
   "errors": {
@@ -1092,7 +1200,7 @@
       "confirmPin": "Confirm PIN",
       "wrongPin": "Wrong PIN ({{left}} tries left)",
       "useBiometric": "Use fingerprint / face",
-      "biometricReason": "Unlock Dalliqo",
+      "biometricReason": "Unlock Stateown",
       "enablePin": "App lock with PIN",
       "enableBiometric": "Unlock with biometrics",
       "pinMismatch": "PINs do not match",
@@ -1185,7 +1293,7 @@
         "t1": "Every property, one place",
         "b1": "Capture listings with photos, prices and owners — and know what is available at a glance.",
         "t2": "Matches that find themselves",
-        "b2": "Dalliqo pairs clients with properties automatically, so you call the right buyer first.",
+        "b2": "Stateown pairs clients with properties automatically, so you call the right buyer first.",
         "t3": "Works offline, syncs later",
         "b3": "Keep working in the field without signal. Everything syncs the moment you are back online."
       }
@@ -1325,7 +1433,19 @@
     },
     "approvePayout": "Approve",
     "adjustments": "Adjustments & disputes",
-    "disputeOpen": "Commission disputed:"
+    "disputeOpen": "Commission disputed:",
+    "payoutApproved": "Payout approved",
+    "addAdjustment": "Adjust commission",
+    "noAdjustments": "No adjustments. Use one to correct the expected commission (e.g. a discount agreed with the client) — payments are never edited.",
+    "adjustmentHint": "Positive to add, negative to reduce the expected commission. It is recorded with your name and shown in the audit log.",
+    "adjustmentAmount": "Amount (Rs, + or −)",
+    "reason": "Reason",
+    "openDispute": "Open dispute",
+    "resolveDispute": "Resolve dispute",
+    "disputeHint": "Describe what is disputed (amount, party, terms). Managers are shown a banner until it is resolved.",
+    "resolutionHint": "How was it settled? Add an adjustment too if the amount changed.",
+    "disputeResolved": "Dispute \"{{reason}}\" resolved: {{resolution}}",
+    "payoutApprovalSetting": "Agent payouts must be approved before they are paid"
   },
   "finance": {
     "title": "Income & expense",
@@ -1353,7 +1473,17 @@
     "emptyHint": "Record office expenses like rent and utilities, or other income.",
     "deleteTitle": "Delete this entry?",
     "deleteMessage": "It will be removed from reports.",
-    "nameUr": "Urdu name"
+    "nameUr": "Urdu name",
+    "subtitle": "Office income, expenses and receipts. Commission received on deals is added automatically.",
+    "type": "Type",
+    "categories": "Categories",
+    "linkedTo": "Linked to",
+    "entries": "Entries",
+    "allEntries": "All entries (Excel)",
+    "builtIn": "Built-in",
+    "autoIncome": "Record commission received as income automatically",
+    "autoIncomeHint": "Each commission payment on a deal adds one income entry (never twice); removing the payment removes it.",
+    "noCampaign": "Not a campaign expense"
   },
   "agreement": {
     "title": "Agreements",
@@ -1487,7 +1617,63 @@
       "TIMELINE_UNKNOWN": "Buying timeline unknown"
     },
     "temperature": "Temperature",
-    "score": "Lead score"
+    "score": "Lead score",
+    "manual": "(set manually)",
+    "assigned": "Lead assigned",
+    "assignTo": "Assign to",
+    "assignedTo": "Assigned to",
+    "unassigned": "Unassigned",
+    "unassignedInbox": "Unassigned leads only",
+    "assign": "Assign",
+    "history": "Status & assignment history",
+    "campaign": "Campaign",
+    "campaignHint": "Ad, listing or campaign the lead came from",
+    "lostReason": "Lost reason",
+    "lostNote": "Lost note",
+    "factors": {
+      "budget": "Budget fit",
+      "location": "Location",
+      "category": "Property type",
+      "intent": "Intent",
+      "engagement": "Engagement",
+      "followUps": "Follow-ups",
+      "timeline": "Timeline"
+    },
+    "scoring": {
+      "title": "Lead scoring",
+      "hint": "How much each factor counts towards the 0–100 score, and the scores at which a lead becomes hot or warm.",
+      "hot": "Hot from score",
+      "warm": "Warm from score"
+    },
+    "import": {
+      "button": "Import",
+      "title": "Import leads from Excel",
+      "hint": "Use the template (Name and Mobile are required). Every row is checked like a normal entry: duplicates and invalid numbers are skipped and listed.",
+      "template": "Download template",
+      "fromSheet": "From the sheet",
+      "choose": "Choose .xlsx file",
+      "created": "Imported",
+      "duplicates": "Duplicates skipped",
+      "errors": "Rows with errors",
+      "row": "Row",
+      "existing": "already saved as {{name}}"
+    },
+    "report": {
+      "title": "Leads",
+      "leads": "Leads",
+      "conversion": "Conversion",
+      "unassigned": "Unassigned",
+      "response": "Avg. first response",
+      "won": "Won",
+      "aging": "Open leads by age",
+      "agingBuckets": {
+        "0_7": "0–7 days",
+        "8_30": "8–30 days",
+        "31_90": "31–90 days",
+        "90_PLUS": "90+ days"
+      },
+      "lostReasons": "Lost reasons"
+    }
   },
   "verification": {
     "title": "Verification",
@@ -1510,7 +1696,44 @@
       "SITE_INSPECTED": "Site inspected",
       "PRICE_CONFIRMED": "Price confirmed with owner"
     },
-    "next": "next check {{date}}"
+    "next": "next check {{date}}",
+    "verifiedOn": "Verified {{date}} by {{name}}",
+    "remarks": "Remarks",
+    "notePlaceholder": "Note for the verification officer (optional)",
+    "submit": "Submit for verification",
+    "resubmit": "Submit again",
+    "submitted": "Submitted for verification",
+    "decided": "Verification updated",
+    "approve": "Approve",
+    "sendBack": "Send back",
+    "reject": "Reject",
+    "assignTo": "Verification officer",
+    "checklist": "Checklist",
+    "checklistLocked": "Submit the listing to work on the checklist.",
+    "docMissing": "Document missing",
+    "attention": "Needs attention",
+    "missing": "No document uploaded for: {{item}}",
+    "expiring": "\"{{name}}\" expires on {{date}}",
+    "uploadHint": "Upload documents in the Documents tab with the matching category.",
+    "nextDate": "Next verification",
+    "nextHint": "Leave empty for 6 months from today",
+    "decisionTitle": {
+      "APPROVED": "Approve verification",
+      "REJECTED": "Reject verification",
+      "CHANGES_REQUESTED": "Send back for changes"
+    },
+    "actions": {
+      "submitted": "Submitted",
+      "assigned": "Assigned",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "changes_requested": "Sent back"
+    },
+    "queueTitle": "Verification queue",
+    "queueSubtitle": "Listings waiting for document and site checks",
+    "openOnly": "Open items",
+    "assignedToMe": "Assigned to me",
+    "queueEmpty": "Nothing waiting for verification"
   },
   "rental": {
     "title": "Rentals",
@@ -1582,7 +1805,7 @@
     "search": "Search plan no, buyer, property…",
     "allPlans": "All plans",
     "empty": "No installment plans yet",
-    "emptyHint": "Create a plan when a buyer pays in installments; Dalliqo tracks every due date and flags late payments.",
+    "emptyHint": "Create a plan when a buyer pays in installments; Stateown tracks every due date and flags late payments.",
     "plan": "Plan",
     "buyer": "Buyer",
     "total": "Total",
@@ -1717,7 +1940,28 @@
     "bySource": "Leads by source",
     "emailTitle": "Email notifications",
     "emailLabel": "Also email my notifications to {{email}}",
-    "emailHint": "You still get them in the app and on your phone."
+    "emailHint": "You still get them in the app and on your phone.",
+    "spendBreakdown": "{{other}} typed + {{booked}} from expenses",
+    "waAccountId": "WhatsApp Business Account id",
+    "waAccountIdHint": "Meta Business → WhatsApp → API setup → WhatsApp Business Account ID (for templates)",
+    "templates": "Message templates",
+    "syncTemplates": "Sync from Meta",
+    "noTemplates": "No approved templates yet. Create them in Meta Business Manager, then sync. Templates let you message customers after 24 hours of silence.",
+    "templatesSynced": "{{count}} approved templates",
+    "syncedAt": "Last synced {{date}}",
+    "template": "Template",
+    "freeText": "Free text (within 24 hours of their last message)",
+    "assignTitle": "Who gets new leads",
+    "assignListingAgent": "Give inquiries about a listing to its agent first",
+    "assignMode": "Otherwise",
+    "assign": {
+      "NONE": "Leave unassigned (managers are notified)",
+      "ROUND_ROBIN": "Share in turn between selected agents",
+      "BY_SOURCE": "By source, then in turn"
+    },
+    "assignPool": "Agents taking turns",
+    "assignPoolFallback": "In turn from the agents above",
+    "assignHint": "Applies to website and WhatsApp leads. Inactive members are skipped automatically."
   },
   "ai": {
     "title": "Assistant",
@@ -1948,5 +2192,653 @@
     "lastUsed": "last used {{when}}",
     "neverUsed": "never used",
     "expires": "expires {{date}}"
+  },
+  "mm": {
+    "required": "required",
+    "number": "enter a number",
+    "notes": "Notes",
+    "noAccess": "You do not have access to reports.",
+    "tools": {
+      "title": "More actions"
+    },
+    "period": {
+      "month": "This month",
+      "last30": "30 days",
+      "year": "This year",
+      "all": "All"
+    },
+    "reports": {
+      "title": "Reports",
+      "business": "Business",
+      "finance": "Finance",
+      "summary": "Business overview",
+      "leads": "Leads report",
+      "inventory": "Inventory report",
+      "agents": "Agent performance",
+      "branches": "Branches and targets",
+      "team": "Team this month",
+      "forecast": "Forecast",
+      "campaigns": "Campaign results",
+      "incomeStatement": "Income statement",
+      "cashFlow": "Cash flow",
+      "aging": "Receivables and payables",
+      "agentStatement": "Agent commission statement",
+      "rentRoll": "Rent roll"
+    },
+    "r": {
+      "total": "Total",
+      "active": "Active",
+      "verified": "Verified",
+      "avgDaysOnMarket": "Average days on market",
+      "over90": "Unsold over 90 days",
+      "leadsTitle": "Leads",
+      "newLeads": "Leads",
+      "activeClients": "Active clients",
+      "conversion": "Conversion",
+      "activeDeals": "Open deals",
+      "closedDeals": "Closed deals",
+      "transactionValue": "Transaction value",
+      "avgDaysToClose": "Average days to close",
+      "commission": "Commission",
+      "expected": "Expected",
+      "received": "Received",
+      "outstanding": "Outstanding",
+      "money": "Income and expense",
+      "income": "Income",
+      "expense": "Expense",
+      "netProfit": "Net",
+      "converted": "Converted",
+      "unassigned": "Unassigned",
+      "neverContacted": "Never contacted",
+      "avgResponse": "Average response",
+      "minutes": "min",
+      "byTemperature": "By temperature",
+      "bySource": "By source",
+      "lost": "Lost",
+      "avgScore": "Average score",
+      "leadAging": "Lead age (days)",
+      "lostReasons": "Why leads were lost",
+      "onMarket": "On the market",
+      "inventoryAging": "Days on market",
+      "byStatus": "By status",
+      "byType": "By type",
+      "oldest": "Longest on the market",
+      "days": "days",
+      "leadsAssigned": "Leads assigned",
+      "leadsContacted": "Leads contacted",
+      "followUpsDone": "Follow-ups completed",
+      "siteVisits": "Site visits",
+      "negotiations": "Negotiations",
+      "dealsClosed": "Deals closed",
+      "hotLeads": "Hot leads",
+      "overdueFollowUps": "Overdue follow-ups",
+      "followUpsWeek": "Follow-ups this week",
+      "wonMonth": "Won this month",
+      "commissionMonth": "Commission this month",
+      "setTargets": "Set targets",
+      "targetsHint": "Monthly targets for this branch. Leave empty for no target.",
+      "targetLeads": "Leads target",
+      "targetDeals": "Deals won target",
+      "targetCommission": "Commission target",
+      "forecastNote": "Estimates from open deals, due installments and rent. Not a guarantee.",
+      "weighted": "Likely commission",
+      "bestCase": "Best case",
+      "installmentsDue": "Installments",
+      "rentDue": "Rent",
+      "expectedLeads": "Leads expected next month",
+      "byMonth": "By month",
+      "spend": "Spend",
+      "won": "Won",
+      "revenue": "Revenue",
+      "costPerLead": "Cost per lead",
+      "roi": "Return",
+      "margin": "Margin",
+      "cumulative": "Running total",
+      "receivable": "To receive",
+      "payable": "To pay",
+      "agents": "Agents",
+      "external": "Other dealers",
+      "activeLeases": "Active leases",
+      "monthlyRent": "Monthly rent",
+      "dueThisMonth": "Due this month",
+      "collectedThisMonth": "Collected this month",
+      "overdue": "Overdue",
+      "depositsHeld": "Deposits held",
+      "expiringSoon": "Ending soon",
+      "agent": "Agent",
+      "earned": "Earned",
+      "paidOut": "Paid out",
+      "owed": "Still owed",
+      "share": "Share"
+    },
+    "mk": {
+      "title": "Marketing",
+      "inquiries": "Inquiries",
+      "inquiriesHint": "Messages from your website and WhatsApp",
+      "noInquiries": "No inquiries here",
+      "call": "Call",
+      "markContacted": "Mark contacted",
+      "markSpam": "Spam",
+      "campaigns": "Campaigns",
+      "campaignsHint": "Track spend and leads for each advert",
+      "noCampaigns": "No campaigns yet",
+      "newCampaign": "New campaign",
+      "channel": "Channel",
+      "budget": "Budget",
+      "spend": "Spent",
+      "startDate": "Starts",
+      "endDate": "Ends",
+      "code": "Tracking code",
+      "copyCode": "Copy tracking code",
+      "codeCopied": "Add it to the end of any listing link",
+      "deleteCampaign": "Delete this campaign? Its leads stay.",
+      "website": "Agency website",
+      "websiteHint": "Your public page with published listings",
+      "siteOnline": "Website is online",
+      "siteNeedsAddress": "Choose an address to go online",
+      "published": "Published listings",
+      "newInquiries": "New inquiries",
+      "siteDetails": "Website details",
+      "address": "Address",
+      "tagline": "Tagline",
+      "about": "About us",
+      "showAgents": "Show agents on the site",
+      "copyLink": "Copy link",
+      "linkCopied": "Link copied",
+      "openSite": "Open website",
+      "publishHint": "To put a property on the website, open it and tap the globe button.",
+      "portal": "Client and owner portals",
+      "portalHint": "What clients and owners can see and do",
+      "portalIntro": "These switches apply to every portal link you share.",
+      "whatsapp": "WhatsApp Business",
+      "whatsappHint": "Number, connection and message templates",
+      "assign": "Who gets new leads",
+      "assignHint": "Listing agent, turn by turn, or by source"
+    },
+    "portal": {
+      "showMatches": "Clients see matched properties",
+      "allowPreferenceUpdates": "Clients can update their requirements",
+      "allowVisitRequests": "Clients can request visits",
+      "showDocuments": "Show shared documents",
+      "showOwnerInquiries": "Owners see inquiries on their properties",
+      "showOwnerOffers": "Owners see offers",
+      "allowOwnerAvailabilityUpdates": "Owners can confirm availability"
+    },
+    "wa": {
+      "mode": "How messages are sent",
+      "modeCloud": "Sent by the system",
+      "modeLink": "Opens WhatsApp on your phone",
+      "platform": "Connected to Meta",
+      "number": "WhatsApp number",
+      "phoneNumberId": "Phone number id",
+      "businessAccountId": "Business account id",
+      "cloudHint": "Messages go out through WhatsApp Business. Outside the 24-hour window, use an approved template.",
+      "linkHint": "The system prepares the message and opens WhatsApp; you press Send. Add the ids below to send automatically.",
+      "idsHint": "Both ids are long numbers from your Meta Business account.",
+      "templates": "Message templates",
+      "sync": "Refresh",
+      "noTemplates": "No templates yet."
+    },
+    "la": {
+      "listingAgent": "Give the lead to the listing’s agent first",
+      "mode": "Otherwise",
+      "NONE": "Leave unassigned",
+      "ROUND_ROBIN": "Turn by turn",
+      "BY_SOURCE": "By source",
+      "pool": "Agents who take turns",
+      "hint": "Leads nobody is assigned to stay in the unassigned list."
+    },
+    "ad": {
+      "title": "Administration",
+      "business": "Business profile",
+      "address": "Address",
+      "city": "City",
+      "timezone": "Time zone",
+      "currency": "Currency",
+      "defaultUnit": "Default size unit",
+      "subscription": "Subscription",
+      "automation": "Automation rules",
+      "automationHint": "Alerts for leads, deals, rent and more",
+      "automationIntro": "Switch each alert on or off and choose when it fires.",
+      "afterMinutes": "After (minutes)",
+      "afterDays": "After / before (days)",
+      "scoring": "Lead scoring",
+      "scoringHint": "What makes a lead hot or cold",
+      "scoringIntro": "Give each factor a weight. A higher weight counts more in the score out of 100.",
+      "hotAt": "Hot at or above",
+      "warmAt": "Warm at or above",
+      "pipeline": "Deal pipeline",
+      "pipelineHint": "Stages, names and chance to close",
+      "rules": "Commission rules and approvals",
+      "rulesHint": "Default rates by listing, and what needs approval",
+      "retention": "Data retention",
+      "retentionHint": "How long logs are kept",
+      "apiKeys": "API access",
+      "apiKeysHint": "Keys for your website or other software",
+      "import": "Import from Excel",
+      "importHint": "Add many leads or properties at once",
+      "resetPassword": "Reset a member’s password",
+      "resetPasswordHint": "Give a temporary password they must change",
+      "tempPassword": "Temporary password",
+      "passwordReset": "Password reset",
+      "platform": "Platform administration",
+      "platformHint": "Stateown staff only",
+      "signOutAll": "Sign out of all devices",
+      "signOutAllHint": "Ends every session, including this one."
+    },
+    "auto": {
+      "HOT_LEAD_UNCONTACTED": "Hot lead not contacted",
+      "LEAD_INACTIVE": "Lead going quiet",
+      "PROPERTY_REVERIFY": "Listing needs re-verification",
+      "LISTING_EXPIRY": "Listing about to expire",
+      "DEAL_STUCK_NEGOTIATION": "Deal stuck in negotiation",
+      "AGREEMENT_EXPIRING": "Agreement ending",
+      "VERIFICATION_DUE": "Verification due",
+      "RENT_DUE": "Rent due soon",
+      "RENT_OVERDUE": "Rent overdue",
+      "INSTALLMENT_OVERDUE": "Installment overdue"
+    },
+    "score": {
+      "budget": "Budget fit",
+      "location": "Preferred location",
+      "category": "Client category",
+      "intent": "Buying or renting intent",
+      "engagement": "Engagement",
+      "followUps": "Follow-up history",
+      "timeline": "Buying timeline"
+    },
+    "sub": {
+      "plan": "Plan",
+      "trialEnds": "Trial ends",
+      "renews": "Paid until",
+      "users": "Users",
+      "branches": "Branches",
+      "storage": "Storage",
+      "plans": "Plans",
+      "monthly": "Monthly",
+      "annual": "Yearly",
+      "modules": "Includes",
+      "request": "Request",
+      "requestHint": "We will contact you to arrange payment and switch the plan.",
+      "requested": "Request sent",
+      "cycle": "Billing",
+      "history": "History",
+      "amount": "Amount",
+      "reference": "Payment reference"
+    },
+    "imp": {
+      "intro": "Download the template, fill it in Excel, then choose the file. Rows with a phone number or plot already on record are skipped and listed.",
+      "leads": "Leads",
+      "properties": "Properties",
+      "template": "Get the template",
+      "choose": "Choose Excel file",
+      "result": "Result",
+      "created": "Added",
+      "duplicates": "Already on record",
+      "row": "Row"
+    },
+    "bulk": {
+      "title": "Bulk actions"
+    },
+    "pt": {
+      "title": "Listing tools",
+      "remarks": "Remarks",
+      "nextCheck": "Next check",
+      "missingDocs": "Missing documents",
+      "expiring": "Expiring document",
+      "submit": "Submit for verification",
+      "assign": "Assign officer",
+      "officer": "Verification officer",
+      "decide": "Decide",
+      "decision": "Decision",
+      "history": "History",
+      "quality": "Listing quality",
+      "gradeGOOD": "Good",
+      "gradeFAIR": "Fair",
+      "gradePOOR": "Poor",
+      "listingTools": "For sharing",
+      "describe": "Write a description",
+      "describeHint": "A headline and description from the listing facts",
+      "writtenByAi": "Written by AI from the listing facts. Check before sharing.",
+      "writtenByTemplate": "Written from a built-in template.",
+      "qr": "QR code",
+      "qrHint": "For signboards, files and brochures",
+      "queue": "Verification queue",
+      "mine": "Assigned to me only",
+      "queueEmpty": "Nothing is waiting for verification"
+    },
+    "qc": {
+      "PHOTOS": "Has photos",
+      "PRICE": "Price entered",
+      "ADDRESS": "Society and block entered",
+      "DESCRIPTION": "Has a description",
+      "FEATURES": "Features filled in",
+      "ROOMS": "Rooms entered",
+      "LOCATION_PIN": "Pinned on the map",
+      "OWNER": "Owner linked",
+      "VERIFIED": "Verified",
+      "FRESH": "Recently updated"
+    },
+    "dt": {
+      "title": "Deal tools",
+      "approval": "Closing approval",
+      "approvalPending": "This deal is waiting for approval to close as won.",
+      "approve": "Approve",
+      "reject": "Reject",
+      "payouts": "Agent payouts",
+      "voucher": "Payment voucher",
+      "receipts": "Receipts",
+      "paid": "Paid",
+      "pay": "Pay",
+      "amount": "Amount",
+      "adjustments": "Commission adjustments",
+      "adjustHint": "Use a minus amount to reduce the expected commission.",
+      "noAdjustments": "No adjustments.",
+      "reason": "Reason",
+      "dispute": "Dispute",
+      "disputeOpen": "Open",
+      "openDispute": "Record a dispute",
+      "resolveDispute": "Resolve dispute",
+      "resolution": "Resolution",
+      "approveCommission": "Approve commission"
+    },
+    "tt": {
+      "title": "Entry tools",
+      "amount": "Amount",
+      "refunded": "Refunded",
+      "voucher": "Payment voucher (PDF)",
+      "refund": "Refund",
+      "refundHint": "A refund is saved as its own entry; the original is never changed.",
+      "reason": "Reason",
+      "refundDone": "Refund recorded"
+    },
+    "lt": {
+      "title": "Lease tools",
+      "renew": "Renew",
+      "newEnd": "New end date",
+      "newRent": "New monthly rent",
+      "end": "End lease",
+      "how": "How it ended",
+      "reason": "Reason",
+      "depositRefund": "Deposit refunded",
+      "relist": "Make the property available again",
+      "inspect": "Inspection",
+      "condition": "Condition",
+      "notice": "Tenant notice",
+      "subject": "Subject",
+      "message": "Message",
+      "via": "Delivered by",
+      "unpaid": "Unpaid rent",
+      "waive": "Waive",
+      "receipts": "Receipts",
+      "notices": "Notices",
+      "inspections": "Inspections",
+      "expenses": "Maintenance and expenses"
+    },
+    "it": {
+      "title": "Plan tools",
+      "cancel": "Cancel plan"
+    },
+    "nl": {
+      "title": "New lease",
+      "start": "Starts",
+      "end": "Ends",
+      "dueDay": "Rent due on day of month",
+      "escalation": "Yearly increase (%)",
+      "grace": "Grace days",
+      "lateFee": "Late fee",
+      "lateFeeValue": "Late fee amount or %",
+      "markRented": "Mark the property as rented"
+    },
+    "np": {
+      "title": "New installment plan",
+      "planTitle": "Title",
+      "total": "Total amount",
+      "booking": "Booking amount",
+      "down": "Down payment",
+      "frequency": "Installments are",
+      "count": "Number of installments",
+      "start": "First installment on",
+      "grace": "Grace days",
+      "MONTHLY": "Monthly",
+      "QUARTERLY": "Quarterly",
+      "HALF_YEARLY": "Half-yearly",
+      "YEARLY": "Yearly"
+    }
+  },
+  "subscription": {
+    "current": "Current plan",
+    "plan": "Plan",
+    "billing": "Billing",
+    "requested": "Request sent — our team will confirm the change.",
+    "daysLeft": "{{n}} days left",
+    "ended": "Ended on {{date}}",
+    "users": "Users",
+    "branches": "Branches",
+    "storage": "Storage (MB)",
+    "unlimited": "unlimited",
+    "readOnly": "Your subscription has ended, so the account is read-only. Renew to add or change records.",
+    "compare": "Plans",
+    "request": "Request this plan",
+    "yourPlan": "Your plan",
+    "billingNote": "Plans are activated by the Stateown team once payment is received (bank transfer, JazzCash or EasyPaisa).",
+    "history": "Billing history",
+    "limitsLine": "{{users}} users · {{branches}} branches",
+    "plans": {
+      "STARTER": "Starter",
+      "PROFESSIONAL": "Professional",
+      "BUSINESS": "Business",
+      "ENTERPRISE": "Enterprise"
+    },
+    "status": {
+      "TRIAL": "Trial",
+      "ACTIVE": "Active",
+      "PAST_DUE": "Payment due",
+      "EXPIRED": "Expired",
+      "CANCELLED": "Cancelled"
+    },
+    "cycle": {
+      "MONTHLY": "Monthly",
+      "ANNUAL": "Annual"
+    },
+    "per": {
+      "MONTHLY": "month",
+      "ANNUAL": "year"
+    },
+    "modules": {
+      "crm": "Clients, properties & follow-ups",
+      "matching": "Automatic matching",
+      "deals": "Deals & commission",
+      "reports": "Reports & exports",
+      "agreements": "Agreements",
+      "finance": "Income & expense",
+      "branches": "Multiple branches",
+      "automation": "Automation rules",
+      "marketing": "Marketing",
+      "rentals": "Rental management",
+      "ai": "AI assistant",
+      "api": "API access"
+    },
+    "events": {
+      "TRIAL_STARTED": "Trial started",
+      "UPGRADE_REQUESTED": "Change requested",
+      "PLAN_CHANGED": "Plan changed",
+      "PAYMENT_RECORDED": "Payment recorded",
+      "CANCELLED": "Cancelled"
+    }
+  },
+  "automation": {
+    "title": "Automation rules",
+    "hint": "Stateown checks these every few minutes and notifies the right people once per situation.",
+    "unit": {
+      "minutes": "minutes",
+      "days": "days"
+    },
+    "rules": {
+      "HOT_LEAD_UNCONTACTED": {
+        "title": "Hot lead not contacted",
+        "hint": "Alert the agent and managers when a hot lead is not called within this time."
+      },
+      "LEAD_INACTIVE": {
+        "title": "Lead going cold",
+        "hint": "Remind the assigned agent when a lead has had no contact for this many days."
+      },
+      "PROPERTY_REVERIFY": {
+        "title": "Re-confirm listings",
+        "hint": "Ask the listing agent to re-confirm availability with the owner after this many days."
+      },
+      "LISTING_EXPIRY": {
+        "title": "Listing expiry warning",
+        "hint": "Warn this many days before a listing’s availability date (listings always expire on the date)."
+      },
+      "DEAL_STUCK_NEGOTIATION": {
+        "title": "Deal stuck in negotiation",
+        "hint": "Notify the agents and managers when a deal stays in negotiation this long."
+      },
+      "AGREEMENT_EXPIRING": {
+        "title": "Agreement expiring",
+        "hint": "Notify before a rental or sale agreement reaches its end date."
+      },
+      "VERIFICATION_DUE": {
+        "title": "Re-verification & document expiry",
+        "hint": "Remind before an approved listing is due for re-verification, and before uploaded documents (NOC, tax receipts) expire."
+      },
+      "RENT_DUE": {
+        "title": "Rent due reminder",
+        "hint": "Remind the lease manager this many days before rent falls due."
+      },
+      "RENT_OVERDUE": {
+        "title": "Rent overdue",
+        "hint": "Alert the lease manager and managers when rent is this many days late."
+      }
+    }
+  },
+  "platform": {
+    "title": "Platform admin",
+    "subtitle": "Subscriptions of every business on Stateown",
+    "only": "Only Stateown platform administrators can open this page.",
+    "manage": "Manage",
+    "paidUntil": "Paid until",
+    "amount": "Payment received (PKR)",
+    "reference": "Payment reference"
+  },
+  "views": {
+    "save": "Save view",
+    "saved": "View saved",
+    "shared": "team",
+    "shareWithTeam": "Share with the whole team"
+  },
+  "site": {
+    "waHello": "Assalam-o-Alaikum, I found {{name}} online and have a question.",
+    "waAbout": "Assalam-o-Alaikum, I am interested in {{ref}}: {{url}}",
+    "poweredBy": "Website by",
+    "listings": "Properties",
+    "notFound": "This website does not exist or is offline",
+    "listingGone": "This listing is no longer available",
+    "heroTitle": "Properties by {{name}}",
+    "heroCount": "{{count}} properties available",
+    "heroCount_one": "{{count}} property available",
+    "searchPlaceholder": "Society, area or city",
+    "anyPurpose": "Buy or rent",
+    "anyType": "Any type",
+    "anyPrice": "Any price",
+    "sort": "Sort",
+    "newest": "Newest",
+    "priceLow": "Price: low to high",
+    "priceHigh": "Price: high to low",
+    "noResults": "No properties match your search",
+    "verified": "Verified",
+    "month": "month",
+    "about": "About {{name}}",
+    "contact": "Contact us",
+    "askAbout": "Ask about this property",
+    "sendMessage": "Send us a message",
+    "yourName": "Your name",
+    "yourPhone": "Mobile number",
+    "optional": "optional",
+    "message": "Message",
+    "send": "Send",
+    "sendFailed": "Could not send. Please try again or call us.",
+    "thanks": "Thank you! We have received your message and will call you shortly.",
+    "privacy": "We use your details only to answer your inquiry.",
+    "allListings": "All properties",
+    "photo": "Photo {{n}}",
+    "details": "Details",
+    "size": "Size",
+    "type": "Type",
+    "bedrooms": "Bedrooms",
+    "bathrooms": "Bathrooms",
+    "floors": "Floors",
+    "furnishing": "Furnishing",
+    "possession": "Possession",
+    "corner": "Corner",
+    "parkFacing": "Park facing",
+    "mainRoad": "Main road",
+    "negotiable": "Negotiable",
+    "call": "Call",
+    "approxMap": "Approximate area on the map",
+    "agent": "Your agent",
+    "agentGone": "This agent page is not available",
+    "agentAt": "Agent at {{name}}",
+    "ourAgents": "Our agents",
+    "share": "Share",
+    "copyLink": "Copy link"
+  },
+  "portal": {
+    "title": "Your property portal",
+    "invalid": "This link is not valid",
+    "hello": "Assalam-o-Alaikum, {{name}}",
+    "clientIntro": "Your deals, payment schedules and receipts with {{business}}.",
+    "ownerIntro": "Your properties with {{business}} — status, verification and interest.",
+    "validUntil": "This link works until {{date}}.",
+    "onWebsite": "On website · {{views}} views · {{inquiries}} inquiries",
+    "collected": "Rent collected",
+    "nothing": "Nothing to show yet",
+    "contact": "Message your agent",
+    "messagePlaceholder": "Write your question or request…",
+    "sent": "Sent — your agent will get back to you.",
+    "yourRequirement": "What you are looking for",
+    "change": "Change",
+    "looking": "Looking to",
+    "areas": "Areas / societies",
+    "budget": "Budget",
+    "minBudget": "Minimum budget (Rs)",
+    "maxBudget": "Maximum budget (Rs)",
+    "matches": "Properties picked for you",
+    "noMatches": "No matching properties right now — your agent will add them as they come in.",
+    "matchScore": "{{score}}% match",
+    "save": "Save",
+    "saved": "Saved ★",
+    "notInterested": "Not interested",
+    "requestVisit": "Request a visit",
+    "when": "Preferred date & time",
+    "visitRequested": "Visit requested — your agent will confirm the time.",
+    "documents": "Documents shared with you",
+    "stillAvailable": "Still available",
+    "notAvailable": "No longer available",
+    "changePrice": "Change price",
+    "newPrice": "New asking price",
+    "requestPrice": "Send request",
+    "ownerThanks": "Thank you — your agent has been told.",
+    "inquiries": "Interest in your properties",
+    "agreements": "Agreements"
+  },
+  "roleDash": {
+    "myCommission": "My commission",
+    "statement": "Full statement",
+    "openDeals": "Open deals",
+    "owedToYou": "Owed to you",
+    "team": "Team this month",
+    "member": "Member",
+    "leads": "Leads",
+    "hot": "Hot",
+    "overdue": "Overdue",
+    "doneWeek": "Done (7 days)",
+    "won": "Won",
+    "commission": "Commission",
+    "collections": "Collections",
+    "details": "Details",
+    "lateInstallments": "Late installments",
+    "lateRent": "Late rent"
   }
 }

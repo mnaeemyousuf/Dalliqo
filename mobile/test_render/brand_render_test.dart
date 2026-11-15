@@ -1,5 +1,5 @@
 // ignore_for_file: avoid_print
-// Renders real Dalliqo mobile screens to PNG without a phone or emulator, for visual review of the
+// Renders real Stateown mobile screens to PNG without a phone or emulator, for visual review of the
 // branding (theme, logo, typeface). Not part of the regular suite (lives outside test/):
 //
 //   flutter test test_render            → build/brand_renders/*.png

@@ -1,9 +1,9 @@
-# Dalliqo
+# Stateown
 
-<img src="branding/svg/dalliqo-logo-horizontal.svg" alt="Dalliqo" height="56">
+<img src="branding/svg/stateown-logo-horizontal.svg" alt="Stateown" height="56">
 
 **Every Property. Every Lead. One Platform.** — Real Estate CRM & Business Management Platform.
-Brand assets and guidelines: [`branding/`](branding/) · [`docs/branding/DALLIQO_BRAND_GUIDELINES.md`](docs/branding/DALLIQO_BRAND_GUIDELINES.md).
+Brand assets and guidelines: [`branding/`](branding/) · [`docs/branding/STATEOWN_BRAND_GUIDELINES.md`](docs/branding/STATEOWN_BRAND_GUIDELINES.md).
 
 A multi-tenant real estate CRM for small agencies (initially a father-and-son business in Karachi):
 a **Flutter** mobile app (primary, offline-first), a **React** web CRM, and a shared **Node.js +

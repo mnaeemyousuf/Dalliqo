@@ -63,7 +63,7 @@ export function whatsappDigits(mobile?: string | null): string | null {
   return d.length === 10 ? `92${d}` : d;
 }
 
-const BRAND_LOGO = [join(__dirname, '../../assets/brand/dalliqo-logo-horizontal.png'), join(process.cwd(), 'assets/brand/dalliqo-logo-horizontal.png')].find((p) => existsSync(p));
+const BRAND_LOGO = [join(__dirname, '../../assets/brand/stateown-logo-horizontal.png'), join(process.cwd(), 'assets/brand/stateown-logo-horizontal.png')].find((p) => existsSync(p));
 
 interface BrochureData {
   property: PropertyDoc;

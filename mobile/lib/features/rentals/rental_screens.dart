@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../more/list_tools.dart';
+import '../more/record_tools.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 
@@ -43,7 +45,12 @@ class _RentalsScreenState extends ConsumerState<RentalsScreen> {
     final l = context.l10n;
     final async = ref.watch(_leasesProvider(_overdue));
     return Scaffold(
-      appBar: AppBar(title: Text(l.t('rental.title'))),
+      appBar: AppBar(title: Text(l.t('rental.title')), actions: [
+        if (ref.watch(authProvider).can('rentals:manage'))
+          IconButton(icon: const Icon(Icons.add), tooltip: l.t('mm.nl.title'), onPressed: () async {
+            if (await showNewLeaseForm(context, ref)) ref.invalidate(_leasesProvider);
+          }),
+      ]),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(_leasesProvider(_overdue)),
         child: ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 32), children: [
@@ -138,7 +145,7 @@ class LeaseDetailScreen extends ConsumerWidget {
     final canManage = ref.watch(authProvider).can('rentals:manage');
     final async = ref.watch(_leaseProvider(id));
     return Scaffold(
-      appBar: AppBar(title: Text(async.value?['leaseNo'] as String? ?? l.t('rental.lease'))),
+      appBar: AppBar(title: Text(async.value?['leaseNo'] as String? ?? l.t('rental.lease')), actions: [RecordToolsButton(kind: 'lease', serverId: id)]),
       floatingActionButton: canManage && async.value?['status'] == 'ACTIVE'
           ? FloatingActionButton.extended(
               onPressed: () {

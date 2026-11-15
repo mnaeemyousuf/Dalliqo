@@ -32,6 +32,7 @@ import { dealService } from '../services/dealService';
 import { transactionService } from '../services/transactionService';
 import { agreementService } from '../services/agreementService';
 import { leaseService } from '../services/leaseService';
+import { installmentService } from '../services/installmentService';
 import { websiteService } from '../services/websiteService';
 import { campaignService } from '../services/campaignService';
 import { Client } from '../models/Client';
@@ -383,6 +384,14 @@ export async function seed(opts: { reset?: boolean } = {}): Promise<Record<strin
       monthlyRent: otherRent.askingPrice, dueDay: 1, graceDays: 3, lateFeeType: 'PERCENT', lateFeeValue: 5, securityDeposit: otherRent.askingPrice * 2,
     });
     await leaseService.recordPayment(son, String(l2._id), { date: day(95), amount: otherRent.askingPrice, method: 'JAZZCASH' });
+  }
+  // Installments: a plot sold on a payment plan (booking and down payment received, two installments paid, one late).
+  const plan = await installmentService.create(father, {
+    clientId: clients[3]._id.toString(), propertyId: mainProps[3] ? mainProps[3]._id.toString() : null, title: 'Plot on 12 monthly installments',
+    totalAmount: 12_000_000, bookingAmount: 1_000_000, downPayment: 2_000_000, frequency: 'MONTHLY', count: 12, startDate: day(100), graceDays: 5,
+  });
+  for (const [n, amount] of [[130, 1_000_000], [125, 2_000_000], [95, 750_000], [62, 750_000]] as const) {
+    await installmentService.recordPayment(father, String(plan._id), { date: day(n), amount, method: n % 2 ? 'BANK_TRANSFER' : 'CHEQUE' });
   }
   await agreementService.create(son, {
     kind: 'TOKEN_RECEIPT', language: 'ur', clientId: clients[2]._id.toString(), propertyId: mainProps[2]._id.toString(),

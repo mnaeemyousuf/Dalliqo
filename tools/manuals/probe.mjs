@@ -1,9 +1,31 @@
-import { launch, signIn, go } from './lib.mjs';
-const b = await launch();
-const { page } = await signIn(b, 'owner@demo.recrm.test');
-await page.screenshot({ path: 'C:/Users/HSLAPT~1/AppData/Local/Temp/claude/C--Users-HS-LAPTOP-Documents-Real-Estate-CRM/a8b70284-f72b-4627-a8e8-ba4536d56369/scratchpad/p_dash.jpg', type: 'jpeg', quality: 70 });
-await go(page, '/properties');
-await page.screenshot({ path: 'C:/Users/HSLAPT~1/AppData/Local/Temp/claude/C--Users-HS-LAPTOP-Documents-Real-Estate-CRM/a8b70284-f72b-4627-a8e8-ba4536d56369/scratchpad/p_props.jpg', type: 'jpeg', quality: 70 });
-await go(page, '/users');
-await page.screenshot({ path: 'C:/Users/HSLAPT~1/AppData/Local/Temp/claude/C--Users-HS-LAPTOP-Documents-Real-Estate-CRM/a8b70284-f72b-4627-a8e8-ba4536d56369/scratchpad/p_users.jpg', type: 'jpeg', quality: 70 });
-await b.close();
+// Small diagnostic: finds which field of the "Add client" form the capture step cannot fill.
+import { go, launch, signIn } from './lib.mjs';
+
+const browser = await launch();
+try {
+  const { page } = await signIn(browser, 'owner@demo.recrm.test');
+  page.setDefaultTimeout(5000);
+  await go(page, '/clients');
+  await page.getByRole('button', { name: 'Add client' }).click();
+  const tries = [
+    ['Full name', () => page.getByLabel(/^Full name/).fill('Test')],
+    ['Mobile number', () => page.getByLabel(/^Mobile number/).fill('0300 5512345')],
+    ['Source', () => page.getByLabel(/^Source/).selectOption('WHATSAPP')],
+    ['House', () => page.getByRole('button', { name: 'House', exact: true }).click()],
+    ['Preferred societies', () => page.getByLabel(/^Preferred societies/).fill('DHA Karachi')],
+    ['Min size', () => page.getByLabel(/^Min size/).first().fill('200')],
+    ['Max size', () => page.getByLabel(/^Max size/).first().fill('300')],
+    ['Min budget', () => page.getByLabel(/^Min budget/).first().fill('50000000')],
+    ['Max budget', () => page.getByLabel(/^Max budget/).first().fill('80000000')],
+  ];
+  for (const [name, fn] of tries) {
+    try {
+      await fn();
+      console.log('ok  ', name);
+    } catch (e) {
+      console.log('FAIL', name, String(e.message).split('\n').slice(0, 6).join(' / '));
+    }
+  }
+} finally {
+  await browser.close();
+}

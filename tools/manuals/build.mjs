@@ -21,11 +21,11 @@ mkdirSync(OUT, { recursive: true });
 const DATE = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 const only = process.argv.slice(2);
 
-// Dalliqo branding: logo artwork and typeface come from the generated brand assets (tools/brand).
+// Stateown branding: logo artwork and typeface come from the generated brand assets (tools/brand).
 const REPO = join(here, '../..');
 const svg = (name) => readFileSync(join(REPO, 'branding/svg', name), 'utf8').replace(/<\?xml[^>]*>/, '');
-const LOGO_COVER = svg('dalliqo-logo-horizontal-dark.svg');
-const MARK_DATA = `data:image/png;base64,${readFileSync(join(REPO, 'branding/png/dalliqo-mark-64.png')).toString('base64')}`;
+const LOGO_COVER = svg('stateown-logo-horizontal-dark.svg');
+const MARK_DATA = `data:image/png;base64,${readFileSync(join(REPO, 'branding/png/stateown-mark-64.png')).toString('base64')}`;
 const FONT_DIR = join(REPO, 'mobile/assets/fonts');
 const FONT_CSS = [[400, 'Regular'], [500, 'Medium'], [600, 'SemiBold'], [700, 'Bold'], [800, 'ExtraBold']]
   .map(([w, n]) => `@font-face { font-family: 'Plus Jakarta Sans'; font-weight: ${w}; src: url('${pathToFileURL(join(FONT_DIR, `PlusJakartaSans-${n}.ttf`)).href}') format('truetype'); }`)
@@ -127,7 +127,7 @@ function buildHtml(m, pageMap) {
     <tr><th>Screenshots</th><td>Captured from the running web application signed in as the demo user <b>${esc(m.demoUser)}</b> (synthetic Karachi demo data). Figure numbering: ${figNo} figures.</td></tr></table>
     <p>Words in <span class="ui">this style</span> are labels exactly as they appear on screen. Notes, tips and important warnings are shown in coloured boxes.</p>
     <p>This manual describes what your access level can do as enforced by the system. Your business owner may give you a different set of permissions; if a button described here is missing, your access does not include it.</p></section>`;
-  const rev = `<section class="chapter"><div class="kicker">Appendix</div><h2>Revision history</h2><table><thead><tr><th>Version</th><th>Revision</th><th>Date</th><th>Changes</th></tr></thead><tbody><tr><td>${VERSION}</td><td>Rev. A</td><td>—</td><td>First issue for the MVP release, with screenshots of the current application.</td></tr><tr><td>${VERSION}</td><td>Rev. B</td><td>25 Oct 2026</td><td>Rebranded as ${PRODUCT}: new logo, colours and typeface; all screenshots recaptured from the rebranded application. No change to features or procedures.</td></tr><tr><td>${VERSION}</td><td>${REVISION}</td><td>${DATE}</td><td>Phase 2: new chapter on deals and commission, income and expense, agreements, brochures and branches (as your access allows); new workflows (offer to commission, month-end accounts, renting out); reminders on the phone; branch access and updated permission templates; mobile administration screens; Urdu in PDF reports; updated troubleshooting and FAQ; all screenshots recaptured.</td></tr></tbody></table></section>`;
+  const rev = `<section class="chapter"><div class="kicker">Appendix</div><h2>Revision history</h2><table><thead><tr><th>Version</th><th>Revision</th><th>Date</th><th>Changes</th></tr></thead><tbody><tr><td>1.0</td><td>Rev. A</td><td>—</td><td>First issue for the MVP release, with screenshots of the current application.</td></tr><tr><td>1.0</td><td>Rev. B</td><td>25 Oct 2026</td><td>First rebrand: new logo, colours and typeface; all screenshots recaptured from the rebranded application. No change to features or procedures.</td></tr><tr><td>1.0</td><td>Rev. C</td><td>3 Nov 2026</td><td>Phase 2: new chapter on deals and commission, income and expense, agreements, brochures and branches (as your access allows); new workflows (offer to commission, month-end accounts, renting out); reminders on the phone; branch access and updated permission templates; mobile administration screens; Urdu in PDF reports; updated troubleshooting and FAQ; all screenshots recaptured.</td></tr><tr><td>${VERSION}</td><td>${REVISION}</td><td>${DATE}</td><td>Rebranded as ${PRODUCT} (new name, logo and icons); all screenshots recaptured. New chapters: lead management, verification and listing tools, deal pipeline and negotiation, rental management, installments and finance reports, marketing, the assistant, management reports and the newer business settings (as your access allows). Mobile chapter updated for the new More menu.</td></tr></tbody></table></section>`;
   toc.push({ key: 'rev', find: 'Revision history', level: 'appendix', appendix: true });
   const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${esc(m.title)}</title><style>${CSS}</style></head><body>${tocHtml}${control}${body}${rev}</body></html>`;
   return { html, toc, figures: figList };

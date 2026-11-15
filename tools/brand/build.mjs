@@ -1,8 +1,8 @@
-// Dalliqo brand generator.
+// Stateown brand generator.
 //
 //   cd tools/brand && npm install && node build.mjs
 //
-// Reads shared/brand/dalliqo.tokens.json and writes:
+// Reads shared/brand/stateown.tokens.json and writes:
 //   branding/            master logo set (SVG + transparent PNG), favicons, app icons, splash art
 //   web/                 public favicons + manifest, logo SVGs, generated CSS variables
 //   mobile/              bundled font (TTF), logo PNGs, Android/iOS launcher icons + splash, Dart tokens
@@ -20,7 +20,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(here, '../..');
 const require = createRequire(join(ROOT, 'server/package.json'));
 const sharp = require('sharp');
-const T = JSON.parse(readFileSync(join(ROOT, 'shared/brand/dalliqo.tokens.json'), 'utf8'));
+const T = JSON.parse(readFileSync(join(ROOT, 'shared/brand/stateown.tokens.json'), 'utf8'));
 const L = T.logo;
 const out = (...p) => {
   const f = join(ROOT, ...p);
@@ -99,9 +99,9 @@ function textPath(font, text, size, tracking = 0) {
 }
 
 // ───────────── the mark ─────────────
-// A rounded app tile with a bold "D" whose counter is a house with a door, and an
-// amber dot (the lead / location ping). Drawn on a 512 grid.
-const MARK_PATH = 'M136 112H262C358 112 412 176 412 256C412 336 358 400 262 400H136Z M258 168L338 238V332H276V290H240V332H178V238Z';
+// A rounded app tile holding a bold house (roof, walls and a door) — the "estate" — with an
+// amber dot (the lead / location ping) above its roof. Drawn on a 512 grid.
+const MARK_PATH = 'M256 104L416 240V408H304V304H208V408H96V240Z';
 function markSvg({ tile = true, fg = L.mark, dot = L.dot, square = false, id = 'g' } = {}) {
   const defs = `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${L.gradientFrom}"/><stop offset="1" stop-color="${L.gradientTo}"/></linearGradient></defs>`;
   const bg = tile ? `<rect width="512" height="512" rx="${square ? 0 : 116}" fill="url(#${id})"/>` : '';
@@ -109,7 +109,7 @@ function markSvg({ tile = true, fg = L.mark, dot = L.dot, square = false, id = '
 }
 const svgDoc = (w, h, body, title = T.name) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="${title}"><title>${title}</title>${body}</svg>\n`;
 
-const WORD = textPath(fWord, 'dalliqo', 200, -0.015);
+const WORD = textPath(fWord, 'stateown', 200, -0.015);
 const TAG = textPath(fTag, T.tagline, 40, 0.01);
 
 function horizontal(dark) {
@@ -150,16 +150,16 @@ function wordmark(dark) {
 }
 
 const SVGS = {
-  'dalliqo-mark': svgDoc(512, 512, markSvg()),
-  'dalliqo-mark-square': svgDoc(512, 512, markSvg({ square: true, id: 'gs' })),
-  'dalliqo-mark-white': svgDoc(512, 512, markSvg({ tile: false, fg: '#FFFFFF', dot: L.dot })),
-  'dalliqo-mark-mono': svgDoc(512, 512, markSvg({ tile: false, fg: L.wordmarkOnLight, dot: L.wordmarkOnLight })),
-  'dalliqo-logo-horizontal': horizontal(false),
-  'dalliqo-logo-horizontal-dark': horizontal(true),
-  'dalliqo-logo-primary': primary(false),
-  'dalliqo-logo-primary-dark': primary(true),
-  'dalliqo-wordmark': wordmark(false),
-  'dalliqo-wordmark-white': wordmark(true),
+  'stateown-mark': svgDoc(512, 512, markSvg()),
+  'stateown-mark-square': svgDoc(512, 512, markSvg({ square: true, id: 'gs' })),
+  'stateown-mark-white': svgDoc(512, 512, markSvg({ tile: false, fg: '#FFFFFF', dot: L.dot })),
+  'stateown-mark-mono': svgDoc(512, 512, markSvg({ tile: false, fg: L.wordmarkOnLight, dot: L.wordmarkOnLight })),
+  'stateown-logo-horizontal': horizontal(false),
+  'stateown-logo-horizontal-dark': horizontal(true),
+  'stateown-logo-primary': primary(false),
+  'stateown-logo-primary-dark': primary(true),
+  'stateown-wordmark': wordmark(false),
+  'stateown-wordmark-white': wordmark(true),
 };
 for (const [name, svg] of Object.entries(SVGS)) write(`branding/svg/${name}.svg`, svg);
 
@@ -167,11 +167,11 @@ const png = (svg, width, height) => sharp(Buffer.from(svg), { density: 300 }).re
 const sizeOf = (svg) => svg.match(/width="(\d+)" height="(\d+)"/).slice(1).map(Number);
 
 // Transparent PNG exports.
-for (const name of ['dalliqo-logo-horizontal', 'dalliqo-logo-horizontal-dark', 'dalliqo-logo-primary', 'dalliqo-logo-primary-dark', 'dalliqo-wordmark', 'dalliqo-wordmark-white']) {
+for (const name of ['stateown-logo-horizontal', 'stateown-logo-horizontal-dark', 'stateown-logo-primary', 'stateown-logo-primary-dark', 'stateown-wordmark', 'stateown-wordmark-white']) {
   const [w, h] = sizeOf(SVGS[name]);
   for (const target of [600, 1200, 2400]) write(`branding/png/${name}-${target}w.png`, await png(SVGS[name], target, Math.round((h / w) * target)));
 }
-for (const name of ['dalliqo-mark', 'dalliqo-mark-white', 'dalliqo-mark-mono']) {
+for (const name of ['stateown-mark', 'stateown-mark-white', 'stateown-mark-mono']) {
   for (const s of [16, 32, 48, 64, 128, 256, 512, 1024]) write(`branding/png/${name}-${s}.png`, await png(SVGS[name], s, s));
 }
 
@@ -195,11 +195,11 @@ function ico(images) {
   return Buffer.concat([head, ...images.map((x) => x.data)]);
 }
 const fav = {};
-for (const s of [16, 32, 48]) fav[s] = await png(SVGS['dalliqo-mark'], s, s);
+for (const s of [16, 32, 48]) fav[s] = await png(SVGS['stateown-mark'], s, s);
 const favicon = ico([16, 32, 48].map((size) => ({ size, data: fav[size] })));
-const apple = await sharp(Buffer.from(SVGS['dalliqo-mark-square'])).resize(180, 180).flatten({ background: L.gradientTo }).png().toBuffer();
-const icon192 = await png(SVGS['dalliqo-mark'], 192, 192);
-const icon512 = await png(SVGS['dalliqo-mark'], 512, 512);
+const apple = await sharp(Buffer.from(SVGS['stateown-mark-square'])).resize(180, 180).flatten({ background: L.gradientTo }).png().toBuffer();
+const icon192 = await png(SVGS['stateown-mark'], 192, 192);
+const icon512 = await png(SVGS['stateown-mark'], 512, 512);
 // Maskable: full-bleed background, mark inside the 80% safe zone.
 const maskable = svgDoc(512, 512, `<defs><linearGradient id="gm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${L.gradientFrom}"/><stop offset="1" stop-color="${L.gradientTo}"/></linearGradient></defs><rect width="512" height="512" fill="url(#gm)"/><g transform="translate(76.8 76.8) scale(0.7)">${markSvg({ tile: false })}</g>`);
 const icon512m = await png(maskable, 512, 512);
@@ -219,7 +219,7 @@ const manifest = JSON.stringify({
 }, null, 2);
 for (const base of ['branding/favicon', 'web/public']) {
   write(`${base}/favicon.ico`, favicon);
-  write(`${base}/favicon.svg`, SVGS['dalliqo-mark']);
+  write(`${base}/favicon.svg`, SVGS['stateown-mark']);
   write(`${base}/favicon-16.png`, fav[16]);
   write(`${base}/favicon-32.png`, fav[32]);
   write(`${base}/apple-touch-icon.png`, apple);
@@ -228,7 +228,7 @@ for (const base of ['branding/favicon', 'web/public']) {
   write(`${base}/icons/icon-512-maskable.png`, icon512m);
   write(`${base}/site.webmanifest`, manifest + '\n');
 }
-for (const n of ['dalliqo-mark', 'dalliqo-logo-horizontal', 'dalliqo-logo-horizontal-dark', 'dalliqo-logo-primary', 'dalliqo-logo-primary-dark']) write(`web/src/assets/brand/${n}.svg`, SVGS[n]);
+for (const n of ['stateown-mark', 'stateown-logo-horizontal', 'stateown-logo-horizontal-dark', 'stateown-logo-primary', 'stateown-logo-primary-dark']) write(`web/src/assets/brand/${n}.svg`, SVGS[n]);
 
 // ───────────── Android launcher icons + splash ─────────────
 const RES = 'mobile/android/app/src/main/res';
@@ -237,13 +237,13 @@ const DENS = { mdpi: 1, hdpi: 1.5, xhdpi: 2, xxhdpi: 3, xxxhdpi: 4 };
 const fgSvg = (fg, dot) => svgDoc(432, 432, `<g transform="translate(108 108) scale(${216 / 512})">${markSvg({ tile: false, fg, dot })}</g>`);
 const bgSvg = svgDoc(432, 432, `<defs><linearGradient id="ab" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${L.gradientFrom}"/><stop offset="1" stop-color="${L.gradientTo}"/></linearGradient></defs><rect width="432" height="432" fill="url(#ab)"/>`);
 for (const [d, k] of Object.entries(DENS)) {
-  write(`${RES}/mipmap-${d}/ic_launcher.png`, await png(SVGS['dalliqo-mark'], 48 * k, 48 * k));
-  write(`${RES}/mipmap-${d}/ic_launcher_round.png`, await sharp(await png(SVGS['dalliqo-mark-square'], 48 * k, 48 * k)).composite([{ input: Buffer.from(`<svg width="${48 * k}" height="${48 * k}"><circle cx="${24 * k}" cy="${24 * k}" r="${24 * k}"/></svg>`), blend: 'dest-in' }]).png().toBuffer());
+  write(`${RES}/mipmap-${d}/ic_launcher.png`, await png(SVGS['stateown-mark'], 48 * k, 48 * k));
+  write(`${RES}/mipmap-${d}/ic_launcher_round.png`, await sharp(await png(SVGS['stateown-mark-square'], 48 * k, 48 * k)).composite([{ input: Buffer.from(`<svg width="${48 * k}" height="${48 * k}"><circle cx="${24 * k}" cy="${24 * k}" r="${24 * k}"/></svg>`), blend: 'dest-in' }]).png().toBuffer());
   write(`${RES}/mipmap-${d}/ic_launcher_foreground.png`, await png(fgSvg('#FFFFFF', L.dot), 108 * k, 108 * k));
   write(`${RES}/mipmap-${d}/ic_launcher_monochrome.png`, await png(fgSvg('#FFFFFF', '#FFFFFF'), 108 * k, 108 * k));
   write(`${RES}/mipmap-${d}/ic_launcher_background.png`, await png(bgSvg, 108 * k, 108 * k));
   // Pre-Android-12 splash: logo centred on the brand background.
-  write(`${RES}/drawable-${d}/splash_logo.png`, await png(SVGS['dalliqo-logo-primary-dark'], Math.round(200 * k)));
+  write(`${RES}/drawable-${d}/splash_logo.png`, await png(SVGS['stateown-logo-primary-dark'], Math.round(200 * k)));
   // Android 12+ splash icon (240dp canvas, icon inside the 160dp circle).
   write(`${RES}/drawable-${d}/splash_icon.png`, await png(svgDoc(480, 480, `<g transform="translate(120 120) scale(${240 / 512})">${markSvg({ id: 'si' })}</g>`), 240 * k, 240 * k));
 }
@@ -257,16 +257,16 @@ const adaptive = `<?xml version="1.0" encoding="utf-8"?>
 write(`${RES}/mipmap-anydpi-v26/ic_launcher.xml`, adaptive);
 write(`${RES}/mipmap-anydpi-v26/ic_launcher_round.xml`, adaptive);
 write(`${RES}/values/colors.xml`, `<?xml version="1.0" encoding="utf-8"?>
-<!-- Generated by tools/brand/build.mjs from shared/brand/dalliqo.tokens.json -->
+<!-- Generated by tools/brand/build.mjs from shared/brand/stateown.tokens.json -->
 <resources>
-    <color name="dalliqo_splash">${L.splashBackground}</color>
-    <color name="dalliqo_primary">${T.color.primary['600']}</color>
+    <color name="stateown_splash">${L.splashBackground}</color>
+    <color name="stateown_primary">${T.color.primary['600']}</color>
 </resources>
 `);
 const launchBg = `<?xml version="1.0" encoding="utf-8"?>
-<!-- Dalliqo launch screen (generated by tools/brand/build.mjs). -->
+<!-- Stateown launch screen (generated by tools/brand/build.mjs). -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@color/dalliqo_splash" />
+    <item android:drawable="@color/stateown_splash" />
     <item>
         <bitmap android:gravity="center" android:src="@drawable/splash_logo" />
     </item>
@@ -278,7 +278,7 @@ const v31 = (parent) => `<?xml version="1.0" encoding="utf-8"?>
 <!-- Android 12+ system splash (generated by tools/brand/build.mjs). -->
 <resources>
     <style name="LaunchTheme" parent="${parent}">
-        <item name="android:windowSplashScreenBackground">@color/dalliqo_splash</item>
+        <item name="android:windowSplashScreenBackground">@color/stateown_splash</item>
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
         <item name="android:windowBackground">@drawable/launch_background</item>
     </style>
@@ -299,20 +299,20 @@ if (existsSync(iconDir)) {
     if (!m) continue;
     const px = Math.round(Number(m[1]) * Number(m[2]));
     // iOS masks the corners itself and rejects transparency: full-bleed square, flattened.
-    write(`${IOS}/AppIcon.appiconset/${f}`, await sharp(Buffer.from(SVGS['dalliqo-mark-square'])).resize(px, px).flatten({ background: L.gradientTo }).png().toBuffer());
+    write(`${IOS}/AppIcon.appiconset/${f}`, await sharp(Buffer.from(SVGS['stateown-mark-square'])).resize(px, px).flatten({ background: L.gradientTo }).png().toBuffer());
   }
 }
 for (const [f, k] of [['LaunchImage.png', 1], ['LaunchImage@2x.png', 2], ['LaunchImage@3x.png', 3]]) {
-  write(`${IOS}/LaunchImage.imageset/${f}`, await png(SVGS['dalliqo-logo-primary-dark'], 200 * k));
+  write(`${IOS}/LaunchImage.imageset/${f}`, await png(SVGS['stateown-logo-primary-dark'], 200 * k));
 }
 
 // ───────────── app-embedded logos ─────────────
-for (const [name, w] of [['dalliqo-mark', 512], ['dalliqo-logo-horizontal', 1200], ['dalliqo-logo-horizontal-dark', 1200], ['dalliqo-logo-primary', 900], ['dalliqo-logo-primary-dark', 900]]) {
+for (const [name, w] of [['stateown-mark', 512], ['stateown-logo-horizontal', 1200], ['stateown-logo-horizontal-dark', 1200], ['stateown-logo-primary', 900], ['stateown-logo-primary-dark', 900]]) {
   const [sw, sh] = sizeOf(SVGS[name]);
   write(`mobile/assets/brand/${name}.png`, await png(SVGS[name], w, Math.round((sh / sw) * w)));
 }
-write('server/assets/brand/dalliqo-logo-horizontal.png', await png(SVGS['dalliqo-logo-horizontal'], 900));
-write('server/assets/brand/dalliqo-mark.png', await png(SVGS['dalliqo-mark'], 256, 256));
+write('server/assets/brand/stateown-logo-horizontal.png', await png(SVGS['stateown-logo-horizontal'], 900));
+write('server/assets/brand/stateown-mark.png', await png(SVGS['stateown-mark'], 256, 256));
 
 // ───────────── theme code ─────────────
 const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(' ');
@@ -325,7 +325,7 @@ const css = (mode) => {
     `--ink: ${rgb(c.ink)};`, `--muted: ${rgb(c.muted)};`,
   ].map((l) => `  ${l}`).join('\n');
 };
-write('web/src/styles/brand.css', `/* Generated by tools/brand/build.mjs from shared/brand/dalliqo.tokens.json — do not edit by hand. */
+write('web/src/styles/brand.css', `/* Generated by tools/brand/build.mjs from shared/brand/stateown.tokens.json — do not edit by hand. */
 :root {
 ${css('light')}
   color-scheme: light;
@@ -335,12 +335,12 @@ ${css('dark')}
   color-scheme: dark;
 }
 `);
-write('shared/src/brand.ts', `// Generated by tools/brand/build.mjs from shared/brand/dalliqo.tokens.json — do not edit by hand.
+write('shared/src/brand.ts', `// Generated by tools/brand/build.mjs from shared/brand/stateown.tokens.json — do not edit by hand.
 export const BRAND = ${JSON.stringify({ name: T.name, tagline: T.tagline, description: T.description, color: T.color, logo: T.logo, typography: T.typography, radius: T.radius }, null, 2)} as const;
 `);
 const dc = (hex) => `Color(0xFF${hex.slice(1).toUpperCase()})`;
 const dartSet = (mode) => Object.entries(T.color[mode]).map(([k, v]) => `  static const ${k} = ${dc(v)};`).join('\n');
-write('mobile/lib/core/theme/brand_tokens.dart', `// Generated by tools/brand/build.mjs from shared/brand/dalliqo.tokens.json — do not edit by hand.
+write('mobile/lib/core/theme/brand_tokens.dart', `// Generated by tools/brand/build.mjs from shared/brand/stateown.tokens.json — do not edit by hand.
 import 'package:flutter/material.dart';
 
 class Brand {

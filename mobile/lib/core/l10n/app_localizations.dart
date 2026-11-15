@@ -34,6 +34,13 @@ class AppLocalizations {
   /// Translated label for a shared enum, e.g. enumLabel('propertyType', 'HOUSE').
   String enumLabel(String group, String? value) => value == null ? '—' : t('enums.$group.$value');
 
+  /// Every value of a shared enum, in dictionary order (e.g. all property types).
+  List<String> enumKeys(String group) {
+    final enums = _fallback['enums'];
+    final node = enums is Map<String, dynamic> ? enums[group] : null;
+    return node is Map<String, dynamic> ? node.keys.toList() : const [];
+  }
+
   static String? _lookup(Map<String, dynamic> map, String key) {
     dynamic node = map;
     for (final part in key.split('.')) {

@@ -23,6 +23,11 @@ import '../../features/finance/installment_screens.dart';
 import '../../features/ai/assistant_screen.dart';
 import '../../features/settings/settings_screens.dart';
 import '../../features/settings/sync_screen.dart';
+import '../../features/more/admin_more_screens.dart';
+import '../../features/more/list_tools.dart';
+import '../../features/more/marketing_screens.dart';
+import '../../features/more/record_tools.dart';
+import '../../features/more/reports_screens.dart';
 
 /// Bridges auth state to GoRouter so redirects re-run when it changes.
 class _AuthListenable extends ChangeNotifier {
@@ -108,6 +113,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/installments', builder: (_, _) => const InstallmentsScreen()),
       GoRoute(path: '/installments/:id', builder: (_, s) => InstallmentDetailScreen(id: s.pathParameters['id']!)),
       GoRoute(path: '/assistant', builder: (_, _) => const AssistantScreen()),
+      GoRoute(path: '/reports', builder: (_, _) => const ReportsHubScreen()),
+      GoRoute(path: '/marketing', builder: (_, _) => const MarketingHubScreen()),
+      GoRoute(path: '/administration', builder: (_, _) => const AdminHubScreen()),
+      GoRoute(path: '/verifications', builder: (_, _) => const VerificationQueueScreen()),
+      GoRoute(path: '/bulk', builder: (_, _) => const BulkActionsScreen()),
       GoRoute(path: '/agreements', builder: (_, _) => const AgreementsScreen()),
       GoRoute(
         path: '/agreements/new',

@@ -1,7 +1,7 @@
 {
-  "name": "dalliqo-brand-tools",
+  "name": "stateown-brand-tools",
   "private": true,
-  "description": "Generates Dalliqo logo assets, icons, splash images and theme files from shared/brand/dalliqo.tokens.json.",
+  "description": "Generates Stateown logo assets, icons, splash images and theme files from shared/brand/stateown.tokens.json.",
   "scripts": {
     "build": "node build.mjs"
   },

@@ -63,7 +63,7 @@ export function slugify(input: string): string {
 export const SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]{1,58}[a-z0-9])$/;
 
 /** Slugs that would clash with app routes or look official. */
-export const RESERVED_SLUGS = ['admin', 'api', 'app', 'dalliqo', 'login', 'portal', 'support', 'help', 'www', 'static', 'assets'];
+export const RESERVED_SLUGS = ['admin', 'api', 'app', 'stateown', 'login', 'portal', 'support', 'help', 'www', 'static', 'assets'];
 
 /** wa.me link (digits only, no plus) with an optional pre-filled message. */
 export function whatsappLink(phone: string, text?: string): string {

@@ -26,7 +26,7 @@ import { pdfText, registerUrduFonts } from './pdf/pdfText';
  */
 
 const emptyBuckets = () => Object.fromEntries(AGING_BUCKETS.map((b) => [b.key, 0])) as Record<AgingBucket, number>;
-const LOGO = [join(__dirname, '../../assets/brand/dalliqo-logo-horizontal.png'), join(process.cwd(), 'assets/brand/dalliqo-logo-horizontal.png')].find((p) => existsSync(p));
+const LOGO = [join(__dirname, '../../assets/brand/stateown-logo-horizontal.png'), join(process.cwd(), 'assets/brand/stateown-logo-horizontal.png')].find((p) => existsSync(p));
 
 export const financeReportService = {
   /** Monthly money in / out from the income & expense ledger, with a running balance. */

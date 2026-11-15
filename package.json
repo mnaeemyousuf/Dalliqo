@@ -2,7 +2,7 @@
   "name": "real-estate-crm",
   "private": true,
   "version": "0.1.0",
-  "description": "Dalliqo — Real Estate CRM & Business Management Platform (Node/Express API, React web, Flutter mobile app)",
+  "description": "Stateown — Real Estate CRM & Business Management Platform (Node/Express API, React web, Flutter mobile app)",
   "workspaces": [
     "shared",
     "server",

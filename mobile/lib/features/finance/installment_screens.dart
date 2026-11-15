@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../more/list_tools.dart';
+import '../more/record_tools.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 
@@ -43,7 +45,12 @@ class _InstallmentsScreenState extends ConsumerState<InstallmentsScreen> {
     final l = context.l10n;
     final async = ref.watch(_plansProvider(_overdue));
     return Scaffold(
-      appBar: AppBar(title: Text(l.t('finance5b.title'))),
+      appBar: AppBar(title: Text(l.t('finance5b.title')), actions: [
+        if (ref.watch(authProvider).can('finance:create'))
+          IconButton(icon: const Icon(Icons.add), tooltip: l.t('mm.np.title'), onPressed: () async {
+            if (await showNewPlanForm(context, ref)) ref.invalidate(_plansProvider);
+          }),
+      ]),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(_plansProvider(_overdue)),
         child: ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 32), children: [
@@ -141,7 +148,7 @@ class InstallmentDetailScreen extends ConsumerWidget {
     final canPay = ref.watch(authProvider).can('finance:create');
     final async = ref.watch(_planProvider(id));
     return Scaffold(
-      appBar: AppBar(title: Ltr(async.value?['planNo'] as String? ?? l.t('finance5b.plan'))),
+      appBar: AppBar(title: Ltr(async.value?['planNo'] as String? ?? l.t('finance5b.plan')), actions: [RecordToolsButton(kind: 'installment', serverId: id)]),
       floatingActionButton: canPay && async.value?['status'] == 'ACTIVE'
           ? FloatingActionButton.extended(
               onPressed: () {

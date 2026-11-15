@@ -1,3 +1,4 @@
+import { env } from '../config/env';
 import { Types } from 'mongoose';
 import { ERROR_CODES, RESERVED_SLUGS, SLUG_PATTERN, slugify, type InquiryStatus, type ListingPurpose, type PropertyType } from '@recrm/shared';
 import { Business, type BusinessDoc, type WebsiteSettings } from '../models/Business';
@@ -102,7 +103,7 @@ export const websiteService = {
       Property.countDocuments({ businessId: ctx.businessId, deletedAt: null, 'publicListing.published': true }),
       Inquiry.countDocuments({ businessId: ctx.businessId, status: 'NEW' }),
     ]);
-    return { enabled: !!w.enabled, slug: w.slug ?? null, suggestedSlug: slugify(b?.name ?? ''), tagline: w.tagline ?? null, about: w.about ?? null, phone: w.phone ?? null, whatsapp: w.whatsapp ?? null, email: w.email ?? null, showAgents: w.showAgents ?? true, publishedListings: published, newInquiries: inquiries };
+    return { enabled: !!w.enabled, slug: w.slug ?? null, suggestedSlug: slugify(b?.name ?? ''), tagline: w.tagline ?? null, about: w.about ?? null, phone: w.phone ?? null, whatsapp: w.whatsapp ?? null, email: w.email ?? null, showAgents: w.showAgents ?? true, publishedListings: published, newInquiries: inquiries, url: w.slug ? `${env.APP_WEB_URL.replace(/\/$/, '')}/w/${w.slug}` : null };
   },
 
   async updateSettings(auth: AuthContext, input: Partial<WebsiteSettings>) {

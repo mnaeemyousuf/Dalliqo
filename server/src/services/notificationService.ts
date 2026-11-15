@@ -33,7 +33,7 @@ async function emailCopies(ctx: TenantContext, userIds: string[], n: NewNotifica
         mailService.send({
           to: u.email,
           subject: `${n.title}${business ? ` — ${business.name}` : ''}`,
-          text: `${n.body}\n\nOpen in Dalliqo: ${link}\n\nYou receive these emails because email notifications are on in your profile.`,
+          text: `${n.body}\n\nOpen in Stateown: ${link}\n\nYou receive these emails because email notifications are on in your profile.`,
         }),
       ),
     );

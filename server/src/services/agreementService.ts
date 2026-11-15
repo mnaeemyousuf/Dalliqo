@@ -183,7 +183,7 @@ function assertEditable(a: AgreementDoc) {
   if (isAgreementLocked(a.status)) throw conflict(ERROR_CODES.AGREEMENT_LOCKED, `This agreement is ${a.status.toLowerCase()} and can no longer be changed`);
 }
 
-const BRAND_LOGO = [join(__dirname, '../../assets/brand/dalliqo-logo-horizontal.png'), join(process.cwd(), 'assets/brand/dalliqo-logo-horizontal.png')].find((p) => existsSync(p));
+const BRAND_LOGO = [join(__dirname, '../../assets/brand/stateown-logo-horizontal.png'), join(process.cwd(), 'assets/brand/stateown-logo-horizontal.png')].find((p) => existsSync(p));
 
 export const agreementService = {
   // ── Templates ──

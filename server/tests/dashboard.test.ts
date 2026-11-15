@@ -108,7 +108,7 @@ describe('exports', () => {
     const pages = (res.body.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length;
     expect(pages).toBeGreaterThanOrEqual(2);
     expect(pages).toBeLessThanOrEqual(3);
-    expect(res.body.toString('latin1')).toContain('Dalliqo');
+    expect(res.body.toString('latin1')).toContain('Stateown');
   }, 120_000);
 
   it('embeds an Urdu font for Urdu text in PDF exports', async () => {

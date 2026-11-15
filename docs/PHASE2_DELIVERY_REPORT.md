@@ -1,6 +1,6 @@
 # Phase 2 delivery report — gaps closed and future features built
 
-Dalliqo (MERN + Flutter real-estate CRM) · 3 November 2026 · plan: [IMPLEMENTATION_PLAN_PHASE2.md](IMPLEMENTATION_PLAN_PHASE2.md)
+Stateown (MERN + Flutter real-estate CRM) · 3 November 2026 · plan: [IMPLEMENTATION_PLAN_PHASE2.md](IMPLEMENTATION_PLAN_PHASE2.md)
 
 Phase 2 closed three gaps from the original requirements and built the five "future features" on the API, the web CRM and the
 Flutter app, then brought the two apps to parity. Every phase was committed separately and all test suites were run after each one.

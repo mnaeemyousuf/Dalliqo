@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 
 import 'brand_tokens.dart';
 
-/// Dalliqo Material 3 theme for light and dark modes.
+/// Stateown Material 3 theme for light and dark modes.
 ///
 /// All colours, radii and the typeface come from [Brand] / [BrandLight] / [BrandDark], which are
-/// generated from shared/brand/dalliqo.tokens.json (the same source as the web CSS variables), so
+/// generated from shared/brand/stateown.tokens.json (the same source as the web CSS variables), so
 /// both apps stay visually identical. Urdu uses Noto Nastaliq when installed on the device.
 class AppTheme {
   static const brand = Brand.primary600;

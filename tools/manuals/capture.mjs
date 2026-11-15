@@ -9,7 +9,12 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 import { BASE, go, launch, settle, signIn, setLanguage } from './lib.mjs';
+
+// Role templates come from the shared package, so a screen is only captured for roles that can open it.
+const { ROLE_PRESETS, ALL_PERMISSIONS } = createRequire(import.meta.url)('../../shared/dist/index.js');
+const PRESET = { owner: ALL_PERMISSIONS, manager: ROLE_PRESETS.MANAGER, agent: ROLE_PRESETS.AGENT, member: ROLE_PRESETS.MEMBER, accountant: ROLE_PRESETS.ACCOUNTANT, viewer: ROLE_PRESETS.VIEWER };
 
 const here = dirname(fileURLToPath(import.meta.url));
 const OUT = join(here, '../../docs/user-manuals/screenshots');
@@ -206,10 +211,10 @@ async function workflows(page, role, can, suffix) {
       await page.getByLabel(/^Source/).selectOption('WHATSAPP');
       await page.getByRole('button', { name: 'House', exact: true }).click();
       await page.getByLabel(/^Preferred societies/).fill('DHA Karachi');
-      await page.getByLabel(/^Min size/).first().fill('200');
-      await page.getByLabel(/^Max size/).first().fill('300');
-      await page.getByLabel(/^Min budget/).first().fill('50000000');
-      await page.getByLabel(/^Max budget/).first().fill('80000000');
+      await page.getByRole('dialog').getByLabel(/^Min size/).first().fill('200');
+      await page.getByRole('dialog').getByLabel(/^Max size/).first().fill('300');
+      await page.getByRole('dialog').getByLabel(/^Min budget/).first().fill('50000000');
+      await page.getByRole('dialog').getByLabel(/^Max budget/).first().fill('80000000');
       await page.getByLabel(/^Full name/).scrollIntoViewIfNeeded();
       await page.getByRole('dialog').evaluate((d) => d.querySelectorAll('*').forEach((el) => { if (el.scrollTop) el.scrollTop = 0; }));
       await settle(page, 300);
@@ -459,6 +464,119 @@ async function looks(browser, role, email) {
   });
 }
 
+/** Screens added after the first manuals: leads, verification, rentals, installments, marketing, AI, reports and settings. */
+async function newer(page, role) {
+  const P = new Set(PRESET[role]);
+  const can = (...p) => p.every((x) => P.has(x));
+  const first = async (prefix) => {
+    const link = page.locator(`main a[href^="${prefix}/"]`).first();
+    if (await link.count()) return go(page, await link.getAttribute('href'));
+    // Lists that open a record by clicking its row.
+    await page.locator('main tbody tr').first().click();
+    await page.waitForURL((u) => u.pathname.startsWith(`${prefix}/`), { timeout: 10_000 });
+    await settle(page, 700);
+  };
+  if (can('deals:read')) {
+    await step(role, 'x-deal-negotiation', async () => {
+      await go(page, '/deals?view=list');
+      await first('/deals');
+      await tab(page, 'Negotiation').catch(() => undefined);
+      await shot(page, role, 'x-deal-negotiation');
+    });
+  }
+  await step(role, 'x-client-lead', async () => {
+    await openMatchedClient(page);
+    // Bring the lead panel into the middle of the view (a plain "scroll if needed" leaves it at the edge).
+    await page.getByText(/Lead score/i).first().evaluate((el) => el.scrollIntoView({ block: 'center' }));
+    await settle(page, 500);
+    await shot(page, role, 'x-client-lead');
+  });
+  if (can('clients:update')) {
+    await step(role, 'x-bulk', async () => {
+      await go(page, '/clients?view=list');
+      const boxes = page.locator('tbody input[type=checkbox]');
+      await boxes.nth(0).click();
+      await boxes.nth(1).click();
+      await settle(page, 300);
+      await shot(page, role, 'x-bulk');
+      await boxes.nth(0).click();
+      await boxes.nth(1).click();
+    });
+  }
+  if (can('verification:submit') || can('verification:decide')) {
+    await step(role, 'x-verifications', async () => {
+      await go(page, '/verifications');
+      await shot(page, role, 'x-verifications');
+    });
+  }
+  if (can('rentals:read')) {
+    await step(role, 'x-leases', async () => {
+      await go(page, '/leases');
+      await shot(page, role, 'x-leases');
+    });
+    await step(role, 'x-lease', async () => {
+      await go(page, '/leases');
+      await first('/leases');
+      await shot(page, role, 'x-lease');
+    });
+  }
+  if (can('finance:read')) {
+    await step(role, 'x-installments', async () => {
+      await go(page, '/installments');
+      await shot(page, role, 'x-installments');
+    });
+    await step(role, 'x-installment', async () => {
+      await go(page, '/installments');
+      await first('/installments');
+      await shot(page, role, 'x-installment');
+    });
+  }
+  if (can('clients:read')) {
+    await step(role, 'x-inquiries', async () => {
+      await go(page, '/marketing?tab=inquiries');
+      await shot(page, role, 'x-inquiries');
+    });
+    await step(role, 'x-campaigns', async () => {
+      await go(page, '/marketing?tab=campaigns');
+      await shot(page, role, 'x-campaigns');
+    });
+  }
+  if (can('marketing:manage')) {
+    await step(role, 'x-website', async () => {
+      await go(page, '/marketing?tab=website');
+      await shot(page, role, 'x-website');
+    });
+  }
+  await step(role, 'x-assistant', async () => {
+    await go(page, '/assistant');
+    await shot(page, role, 'x-assistant');
+  });
+  if (can('reports:read')) {
+    await step(role, 'x-reports', async () => {
+      await go(page, '/reports');
+      await page.getByText(/Agent performance/i).first().evaluate((el) => el.scrollIntoView({ block: 'start' }));
+      await page.mouse.wheel(0, -90);
+      await settle(page, 600);
+      await shot(page, role, 'x-reports');
+    });
+  }
+  if (role === 'owner') {
+    for (const [id, tabName, text] of [['x-automation', 'automation', null], ['x-pipeline', 'matching', 'Deal pipeline'], ['x-security', 'security', 'API access'], ['x-subscription', 'subscription', null]]) {
+      await step(role, id, async () => {
+        await go(page, `/settings?tab=${tabName}`);
+        if (text) await page.getByText(text, { exact: true }).first().evaluate((el) => el.scrollIntoView({ block: 'start' }));
+        if (text) await page.mouse.wheel(0, -80);
+        await settle(page, 600);
+        await shot(page, role, id);
+      });
+    }
+    await step(role, 'x-public-site', async () => {
+      await go(page, '/w/yousuf-estate-demo');
+      await shot(page, role, 'x-public-site');
+    });
+  }
+}
+
 // ───────────────────────── run ─────────────────────────
 
 const CAN = {
@@ -484,6 +602,7 @@ try {
     await everyday(page, role, CAN[role]);
     await workflows(page, role, CAN[role], NEW_CLIENT[role]);
     await phase2(page, role, CAN[role]);
+    await newer(page, role);
     if (role === 'owner') await admin(page, role);
     if (CAN[role].reports) await reports(page, role);
     if (role === 'owner' || role === 'manager') await audit(page, role);

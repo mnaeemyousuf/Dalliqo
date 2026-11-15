@@ -29,7 +29,7 @@ interface PublicListing {
   media?: { kind: string; url: string; thumbnailUrl: string }[]; agents?: { _id: string; fullName: string; mobileNumber?: string }[];
 }
 
-const CAMPAIGN_KEY = 'dalliqo.campaign';
+const CAMPAIGN_KEY = 'stateown.campaign';
 function useCampaign() {
   const [sp] = useSearchParams();
   const c = sp.get('c');
@@ -64,7 +64,7 @@ function Shell({ site, children }: { site?: Pick<Site, 'slug' | 'name' | 'taglin
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
-      <footer className="mx-auto max-w-6xl px-4 pb-8 pt-4 text-center text-xs text-muted">{t('site.poweredBy')} <a className="font-semibold hover:text-brand-600" href="/" target="_blank" rel="noopener">Dalliqo</a></footer>
+      <footer className="mx-auto max-w-6xl px-4 pb-8 pt-4 text-center text-xs text-muted">{t('site.poweredBy')} <a className="font-semibold hover:text-brand-600" href="/" target="_blank" rel="noopener">Stateown</a></footer>
     </div>
   );
 }

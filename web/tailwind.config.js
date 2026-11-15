@@ -29,7 +29,7 @@ export default {
         subtle: 'rgb(var(--subtle) / <alpha-value>)',
       },
       fontFamily: {
-        // Dalliqo typeface (self-hosted via @fontsource, same family as the mobile app).
+        // Stateown typeface (self-hosted via @fontsource, same family as the mobile app).
         sans: ['"Plus Jakarta Sans"', 'system-ui', 'Segoe UI', 'Roboto', 'sans-serif'],
         urdu: ['"Noto Nastaliq Urdu"', '"Noto Naskh Arabic"', 'serif'],
       },

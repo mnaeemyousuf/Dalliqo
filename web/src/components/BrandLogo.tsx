@@ -1,16 +1,16 @@
 import clsx from 'clsx';
 import { BRAND } from '@recrm/shared';
-import horizontalDark from '@/assets/brand/dalliqo-logo-horizontal-dark.svg';
-import horizontalLight from '@/assets/brand/dalliqo-logo-horizontal.svg';
-import mark from '@/assets/brand/dalliqo-mark.svg';
-import primaryDark from '@/assets/brand/dalliqo-logo-primary-dark.svg';
-import primaryLight from '@/assets/brand/dalliqo-logo-primary.svg';
+import horizontalDark from '@/assets/brand/stateown-logo-horizontal-dark.svg';
+import horizontalLight from '@/assets/brand/stateown-logo-horizontal.svg';
+import mark from '@/assets/brand/stateown-mark.svg';
+import primaryDark from '@/assets/brand/stateown-logo-primary-dark.svg';
+import primaryLight from '@/assets/brand/stateown-logo-primary.svg';
 
 type Variant = 'horizontal' | 'primary' | 'mark';
 
 /**
- * The Dalliqo logo. Light/dark artwork switches with the theme (the `dark` class on <html>),
- * so the wordmark always has the right contrast. Generated from shared/brand/dalliqo.tokens.json.
+ * The Stateown logo. Light/dark artwork switches with the theme (the `dark` class on <html>),
+ * so the wordmark always has the right contrast. Generated from shared/brand/stateown.tokens.json.
  */
 export function BrandLogo({ variant = 'horizontal', className }: { variant?: Variant; className?: string }) {
   const alt = `${BRAND.name} — ${BRAND.tagline}`;

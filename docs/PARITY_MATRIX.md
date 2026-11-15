@@ -60,9 +60,33 @@ Test files: server `server/tests/*.test.ts` (Jest), web `web/src/test/*.test.tsx
 | Urdu / RTL for all new screens and PDFs | ✅ | ✅ | EN/UR strings for every new key; Urdu PDFs and images laid out right to left | — | — | agreements (Urdu PDF), brochures (Urdu PNG/PDF) |
 | Pagination | All new lists | Lists read the phone's database | `page`/`limit`; sync pull pages | — | — | perf (page 50, sync pull) |
 
+## Phases 3–9 and the final batches
+
+All of these are online on the phone (they need a connection); the offline store is unchanged.
+
+| Feature | Web | Mobile |
+|---|---|---|
+| Lead score, temperature, AI lead brief | Client page | Client page (lead score card, brief button) |
+| Verification workflow and queue | Property page, Verifications | Property ⋯ → Listing tools; More → Verification queue |
+| Listing quality, AI description, QR, price guide, publish | Property page | Property ⋯ → Listing tools; price guide and publish buttons |
+| Deal checklist, offers, approvals, adjustments, disputes, external shares, vouchers, receipts | Deal page | Deal page (offers) and Deal ⋯ → Deal tools |
+| Configurable pipeline | Settings → Matching; deals board | Administration → Deal pipeline; stage chips follow it |
+| Rentals: leases, rent, renew / end / waive, inspections, notices, expenses, rent roll | Rentals | More → Rentals; Lease ⋯ → Lease tools; + New lease; Reports → Rent roll |
+| Installment plans, payments, receipts, cancel | Installments | More → Installments; + New plan; Plan ⋯ → Plan tools |
+| Refunds, payment vouchers | Income & expense | Entry ⋯ → Entry tools |
+| Finance reports (income statement, cash flow, aging, agent statement) | Income & expense, Reports | More → Reports |
+| Business overview, lead / inventory reports, agent performance, branches and targets, team, forecast | Reports, Dashboard | More → Reports |
+| Marketing: inquiries, campaigns and results, website, portals, WhatsApp Business, lead assignment | Marketing | More → Marketing |
+| Portal links | Client / owner page | Client / owner page |
+| Assistant | Assistant | More → Assistant |
+| Bulk actions | Tick-boxes on client / property tables | More → Bulk actions |
+| Automation, lead scoring, commission rules, approvals, retention, API keys, subscription, business profile, platform admin | Settings | More → Administration |
+| Excel import (leads, properties) | Import buttons | Administration → Import from Excel |
+| Saved views | Clients / properties filters | — (web only; the phone has its own filter sheet) |
+
 ## Remaining differences
 
-None in features. Presentation differs where the phone screen requires it: analytics are bar lists instead of charts, and the
+Saved views are web-only. Otherwise none in features. Presentation differs where the phone screen requires it: analytics are bar lists instead of charts, and the
 income & expense report on the phone is computed from the phone's entries (same maths and Karachi month boundaries as the server,
 `finance_test`), so it also works offline. The web reset-password page is opened from the e-mail link on any device.
 

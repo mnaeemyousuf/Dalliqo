@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../more/record_tools.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 
@@ -267,6 +268,7 @@ class DealDetailScreen extends ConsumerWidget {
             appBar: AppBar(
               title: Ltr(d.dealNo),
               actions: [
+                RecordToolsButton(kind: 'deal', serverId: d.serverId),
                 if (canEdit) IconButton(icon: const Icon(Icons.edit_outlined), onPressed: () => context.push('/deals/${d.id}/edit')),
                 if (auth.can('deals:delete'))
                   IconButton(

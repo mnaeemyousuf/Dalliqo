@@ -138,7 +138,7 @@ export const subscriptionService = {
     return this.get(auth);
   },
 
-  // ── Platform administration (Dalliqo staff; PLATFORM_ADMIN_EMAILS) ──
+  // ── Platform administration (Stateown staff; PLATFORM_ADMIN_EMAILS) ──
 
   async isPlatformAdmin(userId: string): Promise<boolean> {
     const admins = (env.PLATFORM_ADMIN_EMAILS ?? '').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);

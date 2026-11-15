@@ -683,7 +683,7 @@ export function AutomationSettings({ settings, onSaved }: { settings: Settings; 
   );
 }
 
-/* ═════════════ Platform administration (Dalliqo staff) ═════════════ */
+/* ═════════════ Platform administration (Stateown staff) ═════════════ */
 
 export function PlatformPage() {
   const { t } = useTranslation();

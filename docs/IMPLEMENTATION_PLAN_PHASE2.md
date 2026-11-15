@@ -1,4 +1,4 @@
-# Dalliqo — Phase 2 Implementation Plan
+# Stateown — Phase 2 Implementation Plan
 
 Scope: close the review gaps (Part A), build the remaining future features (Part B) on backend, web and
 mobile with full parity (Part C). Written after reading the code; it follows the existing conventions:

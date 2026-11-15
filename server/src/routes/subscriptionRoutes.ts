@@ -26,7 +26,7 @@ subscriptionRoutes.post(
   }),
 );
 
-/** /platform — Dalliqo staff (PLATFORM_ADMIN_EMAILS) manage every business's subscription. */
+/** /platform — Stateown staff (PLATFORM_ADMIN_EMAILS) manage every business's subscription. */
 export const platformRoutes = Router();
 
 platformRoutes.use(

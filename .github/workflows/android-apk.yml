@@ -44,19 +44,19 @@ jobs:
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
           mkdir -p ../dist
-          cp build/app/outputs/flutter-apk/app-release.apk "../dist/Dalliqo-${VERSION}-${GITHUB_RUN_NUMBER}.apk"
+          cp build/app/outputs/flutter-apk/app-release.apk "../dist/Stateown-${VERSION}-${GITHUB_RUN_NUMBER}.apk"
           ls -la ../dist
 
       - uses: actions/upload-artifact@v4
         with:
-          name: dalliqo-apk
+          name: stateown-apk
           path: dist/*.apk
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: apk-build-${{ github.run_number }}
-          name: Dalliqo APK (build ${{ github.run_number }})
+          name: Stateown APK (build ${{ github.run_number }})
           prerelease: true
           body: |
             Android APK built from `${{ github.sha }}`.

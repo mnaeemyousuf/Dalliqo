@@ -10,7 +10,7 @@ import '../database/app_database.dart';
 import '../network/api_client.dart';
 import 'reminder_scheduler.dart';
 
-const _channel = AndroidNotificationChannel('crm_default', 'Dalliqo notifications',
+const _channel = AndroidNotificationChannel('crm_default', 'Stateown notifications',
     description: 'Follow-up reminders, new matches and property updates', importance: Importance.high);
 
 NotificationDetails _details() => NotificationDetails(

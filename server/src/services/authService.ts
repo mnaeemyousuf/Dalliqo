@@ -260,11 +260,11 @@ export const authService = {
     const link = `${env.APP_WEB_URL.replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(raw)}`;
     await mailService.send({
       to: user.email,
-      subject: 'Reset your Dalliqo password',
+      subject: 'Reset your Stateown password',
       text:
-        `Hello ${user.fullName},\n\nUse the link below to reset your Dalliqo password. ` +
+        `Hello ${user.fullName},\n\nUse the link below to reset your Stateown password. ` +
         `It expires in ${env.PASSWORD_RESET_TTL_MINUTES} minutes and can be used once.\n\n${link}\n\n` +
-        `Reset code (for the mobile app): ${raw}\n\nIf you did not request this, you can ignore this email.\n\n— Dalliqo · Every Property. Every Lead. One Platform.`,
+        `Reset code (for the mobile app): ${raw}\n\nIf you did not request this, you can ignore this email.\n\n— Stateown · Every Property. Every Lead. One Platform.`,
     });
   },
 

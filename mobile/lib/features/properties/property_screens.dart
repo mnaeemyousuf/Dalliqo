@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../more/record_tools.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -323,6 +324,7 @@ class PropertyDetailScreen extends ConsumerWidget {
                         if (p.hasLocation) 'https://www.google.com/maps/search/?api=1&query=${p.latitude},${p.longitude}',
                       ].join('\n'))),
                     ),
+                    RecordToolsButton(kind: 'property', serverId: p.serverId),
                     PriceEstimateButton(propertyServerId: p.serverId),
                     PublishOnWebsiteButton(propertyServerId: p.serverId, published: (p.json['publicListing'] as Map?)?['published'] == true),
                     if (auth.can('exports:create'))

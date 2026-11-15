@@ -52,7 +52,7 @@ flutter:
   assets:
     - assets/i18n/
     - assets/brand/
-  # Dalliqo typeface (Plus Jakarta Sans, OFL) — generated into assets/fonts by tools/brand.
+  # Stateown typeface (Plus Jakarta Sans, OFL) — generated into assets/fonts by tools/brand.
   fonts:
     - family: Plus Jakarta Sans
       fonts:
