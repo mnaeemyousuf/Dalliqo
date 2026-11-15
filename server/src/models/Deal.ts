@@ -64,6 +64,27 @@ export interface DealPayout {
   date?: Date | null;
   status: PayoutStatus;
   notes?: string;
+  approvedBy?: Types.ObjectId | null;
+  approvedAt?: Date | null;
+  history?: { status: PayoutStatus; by: Types.ObjectId; at: Date; note?: string | null }[];
+}
+
+export interface DealAdjustment {
+  _id: string;
+  amount: number;
+  reason: string;
+  by: Types.ObjectId;
+  at: Date;
+}
+
+export interface DealDispute {
+  status: 'OPEN' | 'RESOLVED';
+  reason: string;
+  openedBy: Types.ObjectId;
+  openedAt: Date;
+  resolution?: string | null;
+  resolvedBy?: Types.ObjectId | null;
+  resolvedAt?: Date | null;
 }
 
 export interface DealDoc extends SyncDoc {
@@ -97,6 +118,8 @@ export interface DealDoc extends SyncDoc {
   commission: { buyer: { mode: CommissionMode; value: number }; seller: { mode: CommissionMode; value: number } };
   payments: DealPayment[];
   payouts: DealPayout[];
+  adjustments?: DealAdjustment[];
+  dispute?: DealDispute | null;
   // Denormalised from summarizeCommission() for lists, filters and reports.
   expectedTotal: number;
   receivedTotal: number;
@@ -223,9 +246,29 @@ const schema = new Schema<DealDoc>(
           date: { type: Date, default: null },
           status: { type: String, enum: PAYOUT_STATUSES, default: 'PENDING' },
           notes: { type: String, maxlength: 500 },
+          approvedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+          approvedAt: { type: Date, default: null },
+          history: { type: [{ _id: false, status: { type: String, enum: PAYOUT_STATUSES }, by: { type: Schema.Types.ObjectId, ref: 'User' }, at: Date, note: String }], default: [] },
         },
       ],
       default: [],
+    },
+    adjustments: {
+      type: [{ _id: { type: String, default: () => randomUUID() }, amount: { type: Number, required: true }, reason: { type: String, required: true, maxlength: 500 }, by: { type: Schema.Types.ObjectId, ref: 'User' }, at: { type: Date, default: () => new Date() } }],
+      default: [],
+    },
+    dispute: {
+      type: {
+        _id: false,
+        status: { type: String, enum: ['OPEN', 'RESOLVED'] },
+        reason: { type: String, maxlength: 1000 },
+        openedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+        openedAt: Date,
+        resolution: { type: String, maxlength: 1000, default: null },
+        resolvedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+        resolvedAt: { type: Date, default: null },
+      },
+      default: null,
     },
     expectedTotal: { type: Number, default: 0 },
     receivedTotal: { type: Number, default: 0 },

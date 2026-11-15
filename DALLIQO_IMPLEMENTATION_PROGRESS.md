@@ -232,6 +232,63 @@ Server 242 passed (6 new rental tests: schedule maths, allocation, summary, full
 - Server: 6 new tests (`server/tests/followups8.test.ts`); 271 passed + 1 skipped in total.
 - Web: 38. Flutter: 81. `flutter analyze` clean; web build OK.
 
+## Gap-closing batch ✅ (15 Nov 2026)
+
+### Features implemented
+- **Matching:** client requirements now take minimum bedrooms and bathrooms, possession and construction status, and must-have amenities. These score as a "features" factor (weight 15, configurable) that only counts when the client stated such preferences; scores are rescaled to 100, so existing clients score exactly as before. New reasons: "Has the features asked for", "Meets 2 of 3 preferences", "Has 2 bedrooms (wanted 4)".
+- **Commission:**
+  - Optional payout approval (Settings): a payout goes PENDING → APPROVED (`deals:approve`) → PAID, with history and approver recorded.
+  - Commission adjustments (+ / −, with a reason) change the expected commission and are audited with old and new values.
+  - Commission disputes can be opened and resolved, with a banner on the deal while one is open.
+  - The Android commission maths includes adjustments.
+- **Finance:**
+  - Refunds on income entries: a separate REFUNDS expense linked to the income. The original entry is never edited; its refunded total is tracked and capped at the income amount.
+  - Payment vouchers (PDF) for expenses and agent payouts.
+  - Income statement by category and by branch with margin, printable.
+  - Maintenance and other costs can be booked against a lease.
+- **Rentals:** tenant notices (rent reminder, rent increase, renewal, vacate, maintenance, general), recorded with how they were delivered, printable on the letterhead, and sent through WhatsApp when chosen. The lease page gets a "Maintenance & costs" tab.
+- **Lead assignment rules:** website and WhatsApp leads go to the listing's agent first (optional), otherwise round-robin between chosen agents or by source. The round-robin cursor is atomic and inactive members are skipped.
+- **Portals** (controlled by seven agency switches):
+  - Clients see their requirement and can change budget, areas and bedrooms. They see matched properties (public fields only) and can save favourites, mark "not interested" and request a site visit; a visit request becomes a PROPERTY_VISIT follow-up for their agent, and only properties they were matched with can be requested.
+  - Owners confirm availability, which refreshes the listing's "availability confirmed" date. They can ask for a price change; this is never applied automatically — the agent is notified. They also see inquiries on their properties (first name only), offers on their deals, signed / sent agreements and maintenance costs.
+  - Documents shared from the CRM appear in the portal; CNIC and title documents can never be shared. Downloads use signed links and are audited.
+- **Reports:**
+  - Business overview for a period with branch and property-type filters: listings, verified, unsold 90+ days, new leads, conversion, active and closed deals, value of deals closed, average days to close, commission received and outstanding, net profit.
+  - Agent performance: leads, contacted, follow-ups done, site visits, negotiations, deals closed, commission share, conversion and average response time. It has date, branch and agent filters and Excel / PDF export; agents see only their own row.
+  - Branch targets (monthly leads, deals won, commission) with progress bars.
+- **Listing quality:** a 0–100 score with 10 checks and a fix list, shown under the price estimate.
+- **Property page:** an "Inquiries & viewings" tab (website / WhatsApp inquiries and site-visit follow-ups).
+- **Public listing:** Facebook, X, LinkedIn, WhatsApp and copy-link sharing.
+- **Bug fixes found during the audit:**
+  - The settings schema silently dropped the new matching weight and payout-approval flag; both are now stored.
+  - Report ranges ending "today" excluded today's records; a date-only end date now means the end of that day.
+
+### Database / APIs
+- **New fields (additive):**
+  - Client requirement: `bathroomsMin`, `constructionStatuses`, `possessionStatuses`, `amenities`.
+  - Match `breakdown.features`.
+  - Deal: `adjustments[]`, `dispute`; payouts gain `approvedBy`, `approvedAt` and `history`.
+  - Transaction: `leaseId`, `refundOf`, `refundedAmount`.
+  - Lease `notices[]`.
+  - Branch `targets`.
+  - Settings: `leadAssignment` (with an atomic cursor), `matching.weights.features`, `commission.payoutApprovalRequired`.
+  - Business `portal` switches.
+  - Document `sharedWithPortal`.
+- **New categories:** REFUNDS and MAINTENANCE, seeded idempotently on start.
+- **New endpoints:**
+  - `POST /deals/:id/payouts/:payoutId/approve`, `POST /deals/:id/adjustments`, `POST /deals/:id/dispute`
+  - `POST /transactions/:id/refund`, `GET /vouchers/:kind/:id[/:subId]`
+  - `GET /reports/income-statement`, `/reports/agent-performance` (json | xlsx | pdf), `/reports/business-summary`, `/reports/branches`
+  - `POST /leases/:id/notices`, `GET /leases/:id/notices/:noticeId/pdf`, `GET /leases/:id/expenses`
+  - `GET /ai/properties/:id/quality`
+  - `GET|PUT /portal-settings`
+  - Public portal: `PATCH /public/portal/:token/preferences`, `POST …/matches/:matchId`, `POST …/visits`, `POST …/properties/:id/availability`, `GET …/documents/:docId`
+- **Modified:** `PATCH /settings` accepts `leadAssignment` and `commission.payoutApprovalRequired`; `PATCH /documents/:id` accepts `sharedWithPortal`; `PATCH /branches/:id` accepts `targets`.
+
+### Tests
+- Server: 7 new tests in `server/tests/phase9.test.ts`, plus 2 new feature-matching tests; 280 passed + 1 skipped in total.
+- Web: 38. Flutter: 81. `flutter analyze` clean; web build OK.
+
 ## What is left
 Every item of the brief and the follow-ups is implemented. Live use of WhatsApp Business and the AI assistant needs the credentials listed above; device testing of the Android screens is still to be done on real phones.
 

@@ -15,6 +15,7 @@ import { PropertyImportModal, PropertyQrButton, SavedViews, VerificationBadgeSma
 import { PublishButton } from '@/pages/MarketingPages';
 import { MultiPicker, useOwnerNames } from '@/components/domain/MultiPicker';
 import { PropertyAiPanel } from '@/pages/AiPages';
+import { PropertyInterestPanel } from '@/pages/OpsPages';
 import { toApiError } from '@/api/client';
 import { BrochureDialog } from '@/components/domain/BrochureDialog';
 import { Badge, Button, Card, Checkbox, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column, FilterBar, ViewToggle } from '@/components/ui';
@@ -542,7 +543,7 @@ function MediaGallery({ property }: { property: Property }) {
 
 /* ───────────── Detail ───────────── */
 
-type PropTab = 'overview' | 'media' | 'matches' | 'followups' | 'deals' | 'verification' | 'documents' | 'notes' | 'activity';
+type PropTab = 'overview' | 'media' | 'matches' | 'interest' | 'followups' | 'deals' | 'verification' | 'documents' | 'notes' | 'activity';
 
 function Info({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -695,6 +696,7 @@ export function PropertyDetailPage() {
           { value: 'verification', label: t('verification.title') },
           { value: 'documents', label: t('property.tabs.documents') },
           { value: 'notes', label: t('property.tabs.notes') },
+          { value: 'interest', label: t('ops.interest') },
           { value: 'activity', label: t('property.tabs.activity') },
         ]}
       />
@@ -780,6 +782,7 @@ export function PropertyDetailPage() {
       {tab === 'documents' && <Card><DocumentsPanel entityType="property" entityId={id} /></Card>}
       {tab === 'notes' && <Card><NotesPanel entityType="property" entityId={id} /></Card>}
       {tab === 'verification' && <VerificationPanel property={p} />}
+      {tab === 'interest' && <PropertyInterestPanel propertyId={id} />}
       {tab === 'activity' && <Card><ActivityPanel entityId={id} /></Card>}
 
       {editing && <PropertyFormDrawer open property={p} onClose={() => setEditing(false)} />}

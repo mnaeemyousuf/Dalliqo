@@ -1,4 +1,8 @@
 import { randomUUID } from 'node:crypto';
+export const TENANT_NOTICE_TYPES = ['RENT_REMINDER', 'RENT_INCREASE', 'RENEWAL', 'VACATE', 'MAINTENANCE', 'GENERAL'] as const;
+export type TenantNoticeType = (typeof TENANT_NOTICE_TYPES)[number];
+export const NOTICE_DELIVERY = ['WHATSAPP', 'PRINTED', 'EMAIL', 'IN_PERSON'] as const;
+export type NoticeDelivery = (typeof NOTICE_DELIVERY)[number];
 import { Schema, model, type Types } from 'mongoose';
 import {
   DEPOSIT_STATUSES,
@@ -80,6 +84,8 @@ export interface LeaseDoc extends SyncDoc {
   schedule: RentItemDoc[];
   payments: RentPaymentDoc[];
   inspections: InspectionDoc[];
+  /** Notices given to the tenant (rent reminder, renewal, rent increase, vacate…), with how they were delivered. */
+  notices?: { _id: string; type: TenantNoticeType; date: Date; subject: string; message: string; deliveredVia: NoticeDelivery; by: Types.ObjectId }[];
   endedAt?: Date | null;
   endReason?: string | null;
   notes?: string;
@@ -148,6 +154,20 @@ const schema = new Schema<LeaseDoc>(
           allocations: { type: [{ _id: false, itemId: String, amount: Number }], default: [] },
           transactionId: { type: Schema.Types.ObjectId, ref: 'Transaction', default: null },
           createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
+        },
+      ],
+      default: [],
+    },
+    notices: {
+      type: [
+        {
+          _id: id,
+          type: { type: String, enum: TENANT_NOTICE_TYPES, required: true },
+          date: { type: Date, required: true },
+          subject: { type: String, maxlength: 200, required: true },
+          message: { type: String, maxlength: 4000, required: true },
+          deliveredVia: { type: String, enum: NOTICE_DELIVERY, default: 'PRINTED' },
+          by: { type: Schema.Types.ObjectId, ref: 'User' },
         },
       ],
       default: [],

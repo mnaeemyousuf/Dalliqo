@@ -290,7 +290,7 @@
     "budget": "Budget (PKR)",
     "minBudget": "Min budget",
     "maxBudget": "Max budget",
-    "bedroomsMin": "Min bedrooms",
+    "bedroomsMin": "Bedrooms (at least)",
     "lastContacted": "Last contacted",
     "matchingProperties": "{{count}} matching properties",
     "noClients": "No clients yet",
@@ -314,7 +314,12 @@
     "duplicateTitle": "Possible duplicate client",
     "duplicateHint": "Another client already uses this phone number. Open the existing record, or save anyway if this really is a different person.",
     "saveAnyway": "Save anyway",
-    "matchingProperties_one": "{{count}} matching property"
+    "matchingProperties_one": "{{count}} matching property",
+    "morePreferences": "More preferences (bedrooms, possession, amenities)",
+    "bathroomsMin": "Bathrooms (at least)",
+    "possessionStatuses": "Possession",
+    "constructionStatuses": "Construction",
+    "amenities": "Must-have features"
   },
   "property": {
     "title": "Properties",
@@ -663,7 +668,9 @@
     "clientCount_one": "{{count}} client",
     "branches": "Branches",
     "automation": "Automation & scoring",
-    "subscription": "Subscription"
+    "subscription": "Subscription",
+    "featuresWeight": "Bedrooms & features (extra)",
+    "featuresHint": "The bedrooms & features weight is extra: it only counts for clients who stated such preferences, and scores are rescaled to 100."
   },
   "enums": {
     "propertyType": {
@@ -837,7 +844,10 @@
       "SIZE_WITHIN": "Size",
       "SIZE_CLOSE": "Size close",
       "SIZE_ANY": "Any size",
-      "PURPOSE_MATCH": "Purpose"
+      "PURPOSE_MATCH": "Purpose",
+      "FEATURES_MATCH": "Has the bedrooms / features asked for",
+      "FEATURES_PARTIAL": "Meets {{met}} of {{total}} stated preferences",
+      "BEDROOMS_SHORT": "Has {{has}} bedrooms (wanted {{wanted}})"
     },
     "permission": {
       "clients:read": "View clients",
@@ -930,7 +940,8 @@
     },
     "payoutStatus": {
       "PENDING": "Pending",
-      "PAID": "Paid"
+      "PAID": "Paid",
+      "APPROVED": "Approved"
     },
     "transactionType": {
       "INCOME": "Income",
@@ -1106,6 +1117,20 @@
       "NEW": "New",
       "CONTACTED": "Contacted",
       "SPAM": "Spam"
+    },
+    "noticeType": {
+      "RENT_REMINDER": "Rent reminder",
+      "RENT_INCREASE": "Rent increase",
+      "RENEWAL": "Renewal",
+      "VACATE": "Vacate notice",
+      "MAINTENANCE": "Maintenance",
+      "GENERAL": "General"
+    },
+    "noticeDelivery": {
+      "WHATSAPP": "WhatsApp",
+      "PRINTED": "Printed / hand delivered",
+      "EMAIL": "Email",
+      "IN_PERSON": "In person"
     }
   },
   "errors": {
@@ -1267,7 +1292,22 @@
       "settingHint": "Agents can request it; members with “Approve deal closings” confirm it.",
       "pending": "Waiting for approval to close as won.",
       "requestedBy": "Requested by {{name}} {{time}}"
-    }
+    },
+    "approvePayout": "Approve",
+    "payoutApproved": "Payout approved",
+    "adjustments": "Adjustments & disputes",
+    "addAdjustment": "Adjust commission",
+    "noAdjustments": "No adjustments. Use one to correct the expected commission (e.g. a discount agreed with the client) — payments are never edited.",
+    "adjustmentHint": "Positive to add, negative to reduce the expected commission. It is recorded with your name and shown in the audit log.",
+    "adjustmentAmount": "Amount (Rs, + or −)",
+    "reason": "Reason",
+    "openDispute": "Open dispute",
+    "resolveDispute": "Resolve dispute",
+    "disputeOpen": "Commission disputed:",
+    "disputeHint": "Describe what is disputed (amount, party, terms). Managers are shown a banner until it is resolved.",
+    "resolutionHint": "How was it settled? Add an adjustment too if the amount changed.",
+    "disputeResolved": "Dispute \"{{reason}}\" resolved: {{resolution}}",
+    "payoutApprovalSetting": "Agent payouts must be approved before they are paid"
   },
   "finance": {
     "title": "Income & expense",
@@ -1885,7 +1925,18 @@
     "templatesSynced": "{{count}} approved templates",
     "syncedAt": "Last synced {{date}}",
     "template": "Template",
-    "freeText": "Free text (within 24 hours of their last message)"
+    "freeText": "Free text (within 24 hours of their last message)",
+    "assignTitle": "Who gets new leads",
+    "assignListingAgent": "Give inquiries about a listing to its agent first",
+    "assignMode": "Otherwise",
+    "assign": {
+      "NONE": "Leave unassigned (managers are notified)",
+      "ROUND_ROBIN": "Share in turn between selected agents",
+      "BY_SOURCE": "By source, then in turn"
+    },
+    "assignPool": "Agents taking turns",
+    "assignPoolFallback": "In turn from the agents above",
+    "assignHint": "Applies to website and WhatsApp leads. Inactive members are skipped automatically."
   },
   "site": {
     "waHello": "Assalam-o-Alaikum, I found {{name}} online and have a question.",
@@ -1939,7 +1990,9 @@
     "agent": "Your agent",
     "agentGone": "This agent page is not available",
     "agentAt": "Agent at {{name}}",
-    "ourAgents": "Our agents"
+    "ourAgents": "Our agents",
+    "share": "Share",
+    "copyLink": "Copy link"
   },
   "portal": {
     "title": "Your property portal",
@@ -1953,7 +2006,32 @@
     "nothing": "Nothing to show yet",
     "contact": "Message your agent",
     "messagePlaceholder": "Write your question or request…",
-    "sent": "Sent — your agent will get back to you."
+    "sent": "Sent — your agent will get back to you.",
+    "yourRequirement": "What you are looking for",
+    "change": "Change",
+    "looking": "Looking to",
+    "areas": "Areas / societies",
+    "budget": "Budget",
+    "minBudget": "Minimum budget (Rs)",
+    "maxBudget": "Maximum budget (Rs)",
+    "matches": "Properties picked for you",
+    "noMatches": "No matching properties right now — your agent will add them as they come in.",
+    "matchScore": "{{score}}% match",
+    "save": "Save",
+    "saved": "Saved ★",
+    "notInterested": "Not interested",
+    "requestVisit": "Request a visit",
+    "when": "Preferred date & time",
+    "visitRequested": "Visit requested — your agent will confirm the time.",
+    "documents": "Documents shared with you",
+    "stillAvailable": "Still available",
+    "notAvailable": "No longer available",
+    "changePrice": "Change price",
+    "newPrice": "New asking price",
+    "requestPrice": "Send request",
+    "ownerThanks": "Thank you — your agent has been told.",
+    "inquiries": "Interest in your properties",
+    "agreements": "Agreements"
   },
   "ai": {
     "title": "Assistant",
@@ -2045,5 +2123,93 @@
     "details": "Details",
     "lateInstallments": "Late installments",
     "lateRent": "Late rent"
+  },
+  "ops": {
+    "refund": "Refund",
+    "refunded": "Refund recorded",
+    "refundHint": "Records a separate refund expense; the original income stays as it was. Up to {{left}} can still be refunded.",
+    "refundedAmount": "({{amount}} refunded)",
+    "voucher": "Payment voucher",
+    "incomeStatement": "Income statement",
+    "print": "Print",
+    "netProfit": "Net profit",
+    "margin": "Margin",
+    "byBranch": "By branch",
+    "businessSummary": "Business overview",
+    "allBranches": "All branches",
+    "allTypes": "All types",
+    "properties": "Active / total listings",
+    "verified": "Verified listings",
+    "unsold90": "Unsold 90+ days",
+    "newLeads": "New leads",
+    "conversion": "Conversion",
+    "activeDeals": "Active deals",
+    "closedDeals": "Deals closed",
+    "transactionValue": "Value of deals closed",
+    "daysToClose": "Avg days to close",
+    "commissionReceived": "Commission received",
+    "commissionOutstanding": "Commission outstanding",
+    "agentPerformance": "Agent performance",
+    "agent": "Agent",
+    "allAgents": "All agents",
+    "assigned": "Leads",
+    "contacted": "Contacted",
+    "followUpsDone": "Follow-ups done",
+    "siteVisits": "Site visits",
+    "negotiations": "Negotiations",
+    "dealsClosed": "Deals closed",
+    "commission": "Commission",
+    "responseMin": "Avg response (min)",
+    "branchTargets": "Branch targets this month",
+    "branch": "Branch",
+    "noTarget": "no target",
+    "setTargets": "Set targets",
+    "targetsHint": "Monthly targets. Leave blank for no target.",
+    "quality": "Listing quality",
+    "grade": {
+      "GOOD": "good",
+      "FAIR": "fair",
+      "POOR": "needs work"
+    },
+    "check": {
+      "PHOTOS": "At least 3 photos",
+      "DESCRIPTION": "Description of 80+ characters",
+      "LOCATION_PIN": "Map location set",
+      "ADDRESS": "Society and block / phase",
+      "PRICE": "Asking price",
+      "FRESH": "Availability confirmed in the last 30 days",
+      "VERIFIED": "Verified",
+      "OWNER": "Owner linked",
+      "ROOMS": "Bedrooms and bathrooms",
+      "FEATURES": "Features (corner, park facing, amenities…)"
+    },
+    "interest": "Inquiries & viewings",
+    "inquiryHistory": "Inquiries",
+    "noInquiries": "No inquiries yet",
+    "viewingHistory": "Site visits",
+    "noViewings": "No site visits yet",
+    "notices": "Notices",
+    "addNotice": "Notice to tenant",
+    "noNotices": "No notices sent yet.",
+    "noticeSaved": "Notice recorded",
+    "deliveredVia": "Delivered by",
+    "subject": "Subject",
+    "maintenance": "Maintenance & costs",
+    "addExpense": "Add cost",
+    "noMaintenance": "No maintenance costs recorded for this lease.",
+    "portalSettings": "Client & owner portal",
+    "portalHint": "Controls what clients and owners can see and do through their private portal links.",
+    "portal": {
+      "showMatches": "Clients see matching properties and can save favourites",
+      "allowPreferenceUpdates": "Clients can update their budget and areas",
+      "allowVisitRequests": "Clients can request site visits",
+      "showDocuments": "Show documents you share in the portal",
+      "showOwnerInquiries": "Owners see inquiries on their properties (first name only)",
+      "showOwnerOffers": "Owners see offers on their properties",
+      "allowOwnerAvailabilityUpdates": "Owners can confirm availability / ask for a price change"
+    },
+    "shareInPortal": "Share in portal",
+    "inPortal": "In portal ✓",
+    "portalShareHint": "Clients / owners linked to this record see it in their portal. CNIC and title documents can never be shared."
   }
 }

@@ -129,6 +129,12 @@ export const agreementController = {
   },
 };
 
+export const refundController = {
+  async refund(req: Request, res: Response) {
+    sendSuccess(res, await transactionService.refund(authOf(req), req.params.id, req.body, requestMeta(req)), { status: 201, message: 'Refund recorded' });
+  },
+};
+
 export const transactionController = {
   async list(req: Request, res: Response) {
     const q = query<Q>(req);
@@ -280,6 +286,22 @@ export const financeReportController = {
     }
     sendSuccess(res, await financeReportService.agentStatement(authOf(req), q.userId, q));
   },
+  async incomeStatement(req: Request, res: Response) {
+    sendSuccess(res, await financeReportService.incomeStatement(authOf(req), req.query as never));
+  },
+  async voucher(req: Request, res: Response) {
+    const { kind, id: rid, subId } = req.params as { kind: 'transaction' | 'payout'; id: string; subId?: string };
+    const { PassThrough } = await import('node:stream');
+    const buf = new PassThrough();
+    const chunks: Buffer[] = [];
+    buf.on('data', (c: Buffer) => chunks.push(c));
+    const done = new Promise<void>((r) => buf.on('end', () => r()));
+    await financeReportService.voucherPdf(authOf(req), kind, rid, subId, buf);
+    await done;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="payment-voucher.pdf"');
+    res.end(Buffer.concat(chunks));
+  },
   async receipt(req: Request, res: Response) {
     const { kind, id: rid, paymentId } = req.params as { kind: 'lease' | 'installment' | 'deal'; id: string; paymentId: string };
     const { PassThrough } = await import('node:stream');
@@ -291,6 +313,27 @@ export const financeReportController = {
     await done;
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="receipt-${paymentId.slice(0, 8)}.pdf"`);
+    res.end(Buffer.concat(chunks));
+  },
+};
+
+export const leaseExtraController = {
+  async addNotice(req: Request, res: Response) {
+    sendSuccess(res, await leaseService.addNotice(authOf(req), req.params.id, req.body), { status: 201, message: 'Notice recorded' });
+  },
+  async expenses(req: Request, res: Response) {
+    sendSuccess(res, await leaseService.expenses(authOf(req), req.params.id));
+  },
+  async noticePdf(req: Request, res: Response) {
+    const { PassThrough } = await import('node:stream');
+    const buf = new PassThrough();
+    const chunks: Buffer[] = [];
+    buf.on('data', (c: Buffer) => chunks.push(c));
+    const done = new Promise<void>((r) => buf.on('end', () => r()));
+    await financeReportService.noticePdf(authOf(req), req.params.id, req.params.subId, buf);
+    await done;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="tenant-notice.pdf"');
     res.end(Buffer.concat(chunks));
   },
 };

@@ -107,6 +107,19 @@ Data sent to Anthropic: the user's question, and the records the tools return fo
 | Role panels | `web/src/pages/RoleDashboards.tsx` |
 | Android | `mobile/lib/features/finance/installment_screens.dart`, `mobile/lib/features/ai/assistant_screen.dart` |
 
+## Gap-closing batch
+| Concern | Where |
+|---|---|
+| Feature preferences in matching | `scoreFeatures` in `server/src/services/matching/scoring.ts` (rescaled over the factors that apply) |
+| Payout approval, adjustments, disputes | `dealService.approvePayout / addAdjustment / setDispute`, `summarizeCommission` (adjustments) and the Dart mirror |
+| Refunds | `transactionService.refund` (separate expense, `refundedAmount` via `$inc` in one transaction) |
+| Vouchers, income statement, tenant-notice PDF | `financeReportService.voucherPdf / incomeStatement / noticePdf` |
+| Performance, business overview, branch targets | `server/src/services/performanceService.ts`, `performanceExport.ts` (xlsx / pdf) |
+| Lead assignment rules | `settingsService.pickAssignee` (atomic cursor), used by `leadIntakeService` |
+| Portal self-service and agency switches | `portalService` (`updatePreferences`, `reactToMatch`, `requestVisit`, `ownerAvailability`, `document`, `getSettings / updateSettings`) |
+| Listing quality | `aiService.listingQuality` |
+| Web | `web/src/pages/OpsPages.tsx` (reports, refunds, vouchers, quality, interest, notices, maintenance, portal switches); `PublicPages.tsx` portal sections |
+
 ## Configuration
 AI (optional): `ANTHROPIC_API_KEY`, `AI_MODEL` (default `claude-opus-5-5`), `AI_MONTHLY_LIMIT` (default 3000).
 WhatsApp Business (optional): `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_API_VERSION` (default v21.0). Email: `SMTP_*` (inquiry acknowledgements, notification copies).

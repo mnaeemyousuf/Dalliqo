@@ -4,11 +4,12 @@ import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Copy, ExternalLink, Globe, Link2, Megaphone, MessageCircle, Plus, Send, Trash2 } from 'lucide-react';
 import { CAMPAIGN_CHANNELS, CAMPAIGN_STATUSES, PERMISSIONS, whatsappLink, type PortalKind } from '@recrm/shared';
-import { authApi, campaignApi, inquiryApi, portalApi, websiteApi, whatsappApi } from '@/api/endpoints';
+import { authApi, campaignApi, inquiryApi, portalApi, settingsApi, websiteApi, whatsappApi } from '@/api/endpoints';
 import type { Campaign, Inquiry, Property } from '@/api/types';
+import { PortalSettingsCard } from '@/pages/OpsPages';
 import { Badge, Button, Card, DataTable, EmptyState, ErrorState, Input, MetricTile, Modal, PageHeader, PageLoader, Select, Switch, Tabs, Textarea, type BadgeColor, type Column } from '@/components/ui';
 import { formatDate, formatPkr } from '@/lib/format';
-import { useEnumOptions, useOnError, useUrlState } from '@/lib/hooks';
+import { useEnumOptions, useMembers, useOnError, useUrlState } from '@/lib/hooks';
 import { useAuth, useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
 
@@ -222,6 +223,8 @@ function WebsiteTab() {
           <MetricTile tone="brand" label={t('marketing.published')} value={q.data.publishedListings} />
           <MetricTile tone="warn" label={t('marketing.newInquiries')} value={q.data.newInquiries} />
         </div>
+        <LeadAssignmentCard />
+        <PortalSettingsCard />
         <Card title={t('marketing.howItWorks')}>
           <ol className="list-decimal space-y-1.5 ps-5 text-sm text-muted">
             <li>{t('marketing.how1')}</li>
@@ -288,6 +291,50 @@ function WhatsAppTab() {
         {s.templatesSyncedAt && <p className="mt-2 text-2xs text-muted">{t('marketing.syncedAt', { date: formatDate(s.templatesSyncedAt, true) })}</p>}
       </Card>
     </div>
+  );
+}
+
+/** Who receives website / WhatsApp leads: listing agent first, then round-robin or by source. */
+function LeadAssignmentCard() {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const onError = useOnError();
+  const canManage = useCan(PERMISSIONS.SETTINGS_MANAGE);
+  const q = useQuery({ queryKey: ['settings'], queryFn: settingsApi.get });
+  const members = useMembers();
+  const sources = useEnumOptions('source', ['WEBSITE', 'WHATSAPP']);
+  const [d, setD] = useState<{ mode: 'NONE' | 'ROUND_ROBIN' | 'BY_SOURCE'; preferListingAgent: boolean; agentIds: string[]; bySource: { source: string; userId: string }[] } | null>(null);
+  useEffect(() => {
+    if (q.data && !d) setD(q.data.leadAssignment ?? { mode: 'NONE', preferListingAgent: true, agentIds: [], bySource: [] });
+  }, [q.data, d]);
+  const save = useMutation({ mutationFn: () => settingsApi.update({ leadAssignment: d }), onSuccess: (s) => (toast.success(t('common.saved')), qc.setQueryData(['settings'], s)), onError });
+  if (!d) return null;
+  const sourceUser = (src: string) => d.bySource.find((r) => r.source === src)?.userId ?? '';
+  const setSourceUser = (src: string, userId: string) => setD({ ...d, bySource: [...d.bySource.filter((r) => r.source !== src), ...(userId ? [{ source: src, userId }] : [])] });
+  return (
+    <Card title={t('marketing.assignTitle')}>
+      <div className="space-y-3">
+        <Switch checked={d.preferListingAgent} disabled={!canManage} onChange={(v) => setD({ ...d, preferListingAgent: v })} label={t('marketing.assignListingAgent')} />
+        <Select label={t('marketing.assignMode')} disabled={!canManage} options={(['NONE', 'ROUND_ROBIN', 'BY_SOURCE'] as const).map((m) => ({ value: m, label: t(`marketing.assign.${m}`) }))} value={d.mode} onChange={(e) => setD({ ...d, mode: e.target.value as typeof d.mode })} />
+        {d.mode !== 'NONE' && (
+          <div>
+            <p className="label">{t('marketing.assignPool')}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {members.options.map((m) => (
+                <button key={m.value} type="button" disabled={!canManage} onClick={() => setD({ ...d, agentIds: d.agentIds.includes(m.value) ? d.agentIds.filter((x) => x !== m.value) : [...d.agentIds, m.value] })} className={`chip border ${d.agentIds.includes(m.value) ? 'border-brand-600 bg-brand-50 text-brand-600' : 'border-line text-muted'}`}>
+                  {m.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {d.mode === 'BY_SOURCE' && sources.map((s) => (
+          <Select key={s.value} label={s.label} disabled={!canManage} placeholder={t('marketing.assignPoolFallback')} options={members.options} value={sourceUser(s.value)} onChange={(e) => setSourceUser(s.value, e.target.value)} />
+        ))}
+        <p className="text-2xs text-muted">{t('marketing.assignHint')}</p>
+        {canManage && <div className="flex justify-end"><Button size="sm" loading={save.isPending} onClick={() => save.mutate()}>{t('common.save')}</Button></div>}
+      </div>
+    </Card>
   );
 }
 

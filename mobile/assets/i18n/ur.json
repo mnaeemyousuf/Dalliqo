@@ -250,7 +250,7 @@
     "budget": "بجٹ (روپے)",
     "minBudget": "کم از کم بجٹ",
     "maxBudget": "زیادہ سے زیادہ بجٹ",
-    "bedroomsMin": "کم از کم بیڈ رومز",
+    "bedroomsMin": "بیڈروم (کم از کم)",
     "lastContacted": "آخری رابطہ",
     "matchingProperties": "{{count}} میچنگ پراپرٹیز",
     "noClients": "ابھی کوئی کلائنٹ نہیں",
@@ -274,7 +274,9 @@
     "duplicateTitle": "ممکنہ طور پر یہ کلائنٹ پہلے سے موجود ہے",
     "duplicateHint": "یہ فون نمبر پہلے سے کسی اور کلائنٹ کے ریکارڈ میں درج ہے۔ موجودہ ریکارڈ کھولیں، یا اگر یہ واقعی کوئی دوسرا شخص ہے تو پھر بھی محفوظ کریں۔",
     "saveAnyway": "پھر بھی محفوظ کریں",
-    "matchingProperties_one": "{{count}} میچنگ پراپرٹیز"
+    "matchingProperties_one": "{{count}} میچنگ پراپرٹیز",
+    "bathroomsMin": "باتھ روم (کم از کم)",
+    "amenities": "لازمی سہولیات"
   },
   "property": {
     "title": "پراپرٹیز",
@@ -758,7 +760,10 @@
       "SIZE_WITHIN": "رقبہ",
       "SIZE_CLOSE": "رقبہ قریب",
       "SIZE_ANY": "کوئی بھی رقبہ",
-      "PURPOSE_MATCH": "مقصد"
+      "PURPOSE_MATCH": "مقصد",
+      "FEATURES_MATCH": "مطلوبہ بیڈروم / سہولیات موجود",
+      "FEATURES_PARTIAL": "{{total}} میں سے {{met}} ترجیحات پوری",
+      "BEDROOMS_SHORT": "{{has}} بیڈروم ({{wanted}} درکار)"
     },
     "permission": {
       "clients:read": "کلائنٹس دیکھیں",
@@ -851,7 +856,8 @@
     },
     "payoutStatus": {
       "PENDING": "زیرِ التوا",
-      "PAID": "ادا شدہ"
+      "PAID": "ادا شدہ",
+      "APPROVED": "منظور شدہ"
     },
     "transactionType": {
       "INCOME": "آمدنی",
@@ -1004,6 +1010,20 @@
       "NEW": "نئی",
       "CONTACTED": "رابطہ ہو گیا",
       "SPAM": "اسپام"
+    },
+    "noticeType": {
+      "RENT_REMINDER": "کرایہ یاد دہانی",
+      "RENT_INCREASE": "کرایہ میں اضافہ",
+      "RENEWAL": "تجدید",
+      "VACATE": "خالی کرنے کا نوٹس",
+      "MAINTENANCE": "مرمت",
+      "GENERAL": "عمومی"
+    },
+    "noticeDelivery": {
+      "WHATSAPP": "واٹس ایپ",
+      "PRINTED": "پرنٹ / دستی",
+      "EMAIL": "ای میل",
+      "IN_PERSON": "بالمشافہ"
     }
   },
   "errors": {
@@ -1302,7 +1322,10 @@
       "settingHint": "ایجنٹ درخواست دے سکتے ہیں؛ \"ڈیل بند کرنے کی منظوری\" والے ارکان تصدیق کرتے ہیں۔",
       "pending": "کامیاب بند کرنے کی منظوری کا انتظار ہے۔",
       "requestedBy": "{{name}} نے {{time}} درخواست کی"
-    }
+    },
+    "approvePayout": "منظور کریں",
+    "adjustments": "ترامیم اور تنازعات",
+    "disputeOpen": "کمیشن پر تنازع:"
   },
   "finance": {
     "title": "آمدنی و اخراجات",
@@ -1768,5 +1791,93 @@
     "confirm": "تصدیق اور محفوظ کریں",
     "saved": "محفوظ",
     "q5": "میری سب سے گرم لیڈ کے ساتھ کل کال طے کریں"
+  },
+  "ops": {
+    "refund": "رقم واپسی",
+    "refunded": "واپسی درج ہو گئی",
+    "refundHint": "الگ واپسی کا خرچ درج ہوتا ہے؛ اصل آمدنی تبدیل نہیں ہوتی۔ مزید {{left}} واپس ہو سکتے ہیں۔",
+    "refundedAmount": "({{amount}} واپس)",
+    "voucher": "ادائیگی واؤچر",
+    "incomeStatement": "آمدنی کا گوشوارہ",
+    "print": "پرنٹ",
+    "netProfit": "خالص منافع",
+    "margin": "مارجن",
+    "byBranch": "برانچ وار",
+    "businessSummary": "کاروبار کا جائزہ",
+    "allBranches": "تمام برانچز",
+    "allTypes": "تمام اقسام",
+    "properties": "فعال / کل لسٹنگز",
+    "verified": "تصدیق شدہ",
+    "unsold90": "90+ دن سے غیر فروخت",
+    "newLeads": "نئی لیڈز",
+    "conversion": "کنورژن",
+    "activeDeals": "فعال سودے",
+    "closedDeals": "مکمل سودے",
+    "transactionValue": "مکمل سودوں کی مالیت",
+    "daysToClose": "اوسط دن (سودا مکمل)",
+    "commissionReceived": "وصول شدہ کمیشن",
+    "commissionOutstanding": "بقایا کمیشن",
+    "agentPerformance": "ایجنٹ کارکردگی",
+    "agent": "ایجنٹ",
+    "allAgents": "تمام ایجنٹس",
+    "assigned": "لیڈز",
+    "contacted": "رابطہ",
+    "followUpsDone": "مکمل فالو اپ",
+    "siteVisits": "سائٹ وزٹ",
+    "negotiations": "مذاکرات",
+    "dealsClosed": "مکمل سودے",
+    "commission": "کمیشن",
+    "responseMin": "اوسط جواب (منٹ)",
+    "branchTargets": "اس ماہ برانچ اہداف",
+    "branch": "برانچ",
+    "noTarget": "ہدف نہیں",
+    "setTargets": "اہداف مقرر کریں",
+    "targetsHint": "ماہانہ اہداف۔ خالی چھوڑیں تو ہدف نہیں۔",
+    "quality": "لسٹنگ کا معیار",
+    "grade": {
+      "GOOD": "اچھا",
+      "FAIR": "درمیانہ",
+      "POOR": "بہتری درکار"
+    },
+    "check": {
+      "PHOTOS": "کم از کم 3 تصاویر",
+      "DESCRIPTION": "80+ حروف کی تفصیل",
+      "LOCATION_PIN": "نقشے پر مقام",
+      "ADDRESS": "سوسائٹی اور بلاک / فیز",
+      "PRICE": "مانگی گئی قیمت",
+      "FRESH": "پچھلے 30 دن میں دستیابی کی تصدیق",
+      "VERIFIED": "تصدیق شدہ",
+      "OWNER": "مالک منسلک",
+      "ROOMS": "بیڈروم اور باتھ روم",
+      "FEATURES": "خصوصیات (کارنر، پارک فیسنگ…)"
+    },
+    "interest": "انکوائریاں اور وزٹ",
+    "inquiryHistory": "انکوائریاں",
+    "noInquiries": "ابھی کوئی انکوائری نہیں",
+    "viewingHistory": "سائٹ وزٹ",
+    "noViewings": "ابھی کوئی وزٹ نہیں",
+    "notices": "نوٹس",
+    "addNotice": "کرایہ دار کو نوٹس",
+    "noNotices": "ابھی کوئی نوٹس نہیں بھیجا گیا۔",
+    "noticeSaved": "نوٹس درج ہو گیا",
+    "deliveredVia": "ذریعہ",
+    "subject": "موضوع",
+    "maintenance": "مرمت اور اخراجات",
+    "addExpense": "خرچ شامل کریں",
+    "noMaintenance": "اس لیز پر کوئی مرمت کا خرچ درج نہیں۔",
+    "portalSettings": "کلائنٹ اور مالک پورٹل",
+    "portalHint": "طے کرتا ہے کہ کلائنٹس اور مالکان اپنے نجی پورٹل لنک سے کیا دیکھ اور کر سکتے ہیں۔",
+    "portal": {
+      "showMatches": "کلائنٹس میچنگ پراپرٹیز دیکھیں اور پسندیدہ محفوظ کریں",
+      "allowPreferenceUpdates": "کلائنٹس بجٹ اور علاقے بدل سکیں",
+      "allowVisitRequests": "کلائنٹس سائٹ وزٹ کی درخواست کر سکیں",
+      "showDocuments": "پورٹل میں شیئر کردہ دستاویزات دکھائیں",
+      "showOwnerInquiries": "مالکان اپنی پراپرٹی کی انکوائریاں دیکھیں (صرف پہلا نام)",
+      "showOwnerOffers": "مالکان پیشکشیں دیکھیں",
+      "allowOwnerAvailabilityUpdates": "مالکان دستیابی کی تصدیق / قیمت تبدیلی کی درخواست کر سکیں"
+    },
+    "shareInPortal": "پورٹل میں شیئر",
+    "inPortal": "پورٹل میں ✓",
+    "portalShareHint": "اس ریکارڈ سے منسلک کلائنٹ / مالک اسے پورٹل میں دیکھیں گے۔ شناختی کارڈ اور ملکیتی کاغذات کبھی شیئر نہیں ہو سکتے۔"
   }
 }

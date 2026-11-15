@@ -9,6 +9,9 @@ import { Deal, type DealDoc } from '../models/Deal';
 import { InstallmentPlan, type InstallmentPlanDoc } from '../models/InstallmentPlan';
 import { Lease, type LeaseDoc } from '../models/Lease';
 import { Transaction } from '../models/Transaction';
+import { TransactionCategory } from '../models/TransactionCategory';
+import { Branch } from '../models/Branch';
+import { endOfDay } from './performanceService';
 import { User } from '../models/User';
 import type { AuthContext, TenantContext } from '../types/context';
 import { forbidden, notFound } from '../utils/AppError';
@@ -167,6 +170,135 @@ export const financeReportService = {
   },
 
   /** Printable receipt for a rent, installment or commission payment. */
+  /**
+   * Income statement for a period: income and expenses by category, net and margin, plus the same
+   * figures per branch (only branches the user can see). Refunds show as an expense line.
+   */
+  async incomeStatement(ctx: TenantContext, q: { from?: Date; to?: Date }) {
+    const to = q.to ? endOfDay(new Date(q.to)) : new Date();
+    const from = q.from ?? new Date(Date.UTC(to.getUTCFullYear(), to.getUTCMonth(), 1));
+    const match = { businessId: new Types.ObjectId(ctx.businessId), deletedAt: null, date: { $gte: from, $lte: to }, ...branchFilter(ctx) };
+    const [byCat, byBranch] = await Promise.all([
+      Transaction.aggregate<{ _id: { c: Types.ObjectId; t: string }; total: number; n: number }>([{ $match: match }, { $group: { _id: { c: '$categoryId', t: '$type' }, total: { $sum: '$amount' }, n: { $sum: 1 } } }]),
+      Transaction.aggregate<{ _id: { b: Types.ObjectId; t: string }; total: number }>([{ $match: match }, { $group: { _id: { b: '$branchId', t: '$type' }, total: { $sum: '$amount' } } }]),
+    ]);
+    const [cats, branches] = await Promise.all([
+      TransactionCategory.find({ businessId: ctx.businessId, _id: { $in: byCat.map((r) => r._id.c) } }).select('name nameUr key').lean(),
+      Branch.find({ businessId: ctx.businessId, _id: { $in: byBranch.map((r) => r._id.b) } }).select('name').lean(),
+    ]);
+    const line = (t: string) =>
+      byCat
+        .filter((r) => r._id.t === t)
+        .map((r) => {
+          const c = cats.find((x) => String(x._id) === String(r._id.c));
+          return { categoryId: String(r._id.c), key: c?.key ?? null, name: c?.name ?? '—', nameUr: c?.nameUr ?? null, total: r.total, entries: r.n };
+        })
+        .sort((a, b) => b.total - a.total);
+    const income = line('INCOME');
+    const expenses = line('EXPENSE');
+    const ti = income.reduce((s, r) => s + r.total, 0);
+    const te = expenses.reduce((s, r) => s + r.total, 0);
+    const branchRows = [...new Set(byBranch.map((r) => String(r._id.b)))].map((b) => {
+      const inc = byBranch.find((r) => String(r._id.b) === b && r._id.t === 'INCOME')?.total ?? 0;
+      const exp = byBranch.find((r) => String(r._id.b) === b && r._id.t === 'EXPENSE')?.total ?? 0;
+      return { branchId: b, name: branches.find((x) => String(x._id) === b)?.name ?? '—', income: inc, expense: exp, net: inc - exp, marginPct: inc > 0 ? Math.round(((inc - exp) / inc) * 1000) / 10 : null };
+    }).sort((a, b) => b.net - a.net);
+    return { from, to, income, expenses, totals: { income: ti, expense: te, net: ti - te, marginPct: ti > 0 ? Math.round(((ti - te) / ti) * 1000) / 10 : null }, branches: branchRows };
+  },
+
+  /** Payment voucher (money paid OUT): an expense entry or an agent payout. Audited like receipts. */
+  async voucherPdf(auth: AuthContext, kind: 'transaction' | 'payout', id: string, subId: string | undefined, out: Writable) {
+    const base = { businessId: new Types.ObjectId(auth.businessId), _id: new Types.ObjectId(id), deletedAt: null, ...branchFilter(auth) };
+    let no = '';
+    let date = new Date();
+    let paidTo = '';
+    let forWhat = '';
+    let amount = 0;
+    let method = '';
+    let reference: string | null | undefined;
+    let approved: string | null = null;
+    if (kind === 'transaction') {
+      if (!auth.permissions.includes(PERMISSIONS.FINANCE_READ)) throw forbidden();
+      const t = await Transaction.findOne(base).populate({ path: 'categoryId', select: 'name', options: { skipTenantGuard: true } }).populate({ path: 'clientId', select: 'fullName', options: { skipTenantGuard: true } }).lean();
+      if (!t || t.type !== 'EXPENSE') throw notFound(ERROR_CODES.NOT_FOUND, 'Expense not found');
+      no = `PV-${String(t._id).slice(-8).toUpperCase()}`;
+      date = t.date;
+      paidTo = (t.clientId as unknown as { fullName?: string })?.fullName ?? t.description ?? '—';
+      forWhat = [(t.categoryId as unknown as { name?: string })?.name, t.description].filter(Boolean).join(' — ');
+      amount = t.amount;
+      method = t.method;
+      reference = t.reference;
+    } else {
+      if (!auth.permissions.includes(PERMISSIONS.COMMISSIONS_MANAGE) && !auth.permissions.includes(PERMISSIONS.DEALS_READ_ALL)) throw forbidden();
+      const d = await Deal.findOne(base).lean<DealDoc>();
+      const p = d?.payouts.find((x) => x._id === subId);
+      if (!d || !p) throw notFound(ERROR_CODES.PAYMENT_NOT_FOUND, 'Payout not found');
+      const [agent, approver] = await Promise.all([User.findById(p.userId).select('fullName').lean(), p.approvedBy ? User.findById(p.approvedBy).select('fullName').lean() : null]);
+      no = `PV-${d.dealNo}-${p._id.slice(0, 6).toUpperCase()}`;
+      date = p.date ?? new Date();
+      paidTo = agent?.fullName ?? '—';
+      forWhat = `Commission share on ${d.dealNo} (${p.status.toLowerCase()})`;
+      amount = p.amount;
+      method = 'payout';
+      reference = p.notes;
+      approved = approver ? `${approver.fullName}${p.approvedAt ? ` on ${new Date(p.approvedAt).toISOString().slice(0, 10)}` : ''}` : null;
+    }
+    const business = await Business.findById(auth.businessId).select('name phone address city').lean();
+    await auditService.record(auth, { action: 'voucher.generated', entityType: kind === 'payout' ? 'deal' : 'transaction', entityId: new Types.ObjectId(id), entityLabel: no });
+    return writeDoc(out, (doc, w, left) => {
+      header(doc, business?.name ?? BRAND.name, 'Payment voucher', left, w);
+      doc.fontSize(9).fillColor('#475569').text([business?.address, business?.city, business?.phone].filter(Boolean).join(' · ')).moveDown(1);
+      const row = (k: string, v: string) => {
+        const y = doc.y;
+        doc.font('Helvetica').fontSize(10).fillColor('#64748b').text(k, left, y, { width: 140 });
+        doc.fillColor('#0f172a');
+        pdfText(doc, v, left + 150, y, { width: w - 150 });
+        doc.moveDown(0.5);
+      };
+      row('Voucher no.', no);
+      row('Date', new Date(date).toISOString().slice(0, 10));
+      row('Paid to', paidTo);
+      row('For', forWhat || '—');
+      row('Amount', formatPkr(amount));
+      row('In words', rupeesInWords(amount));
+      row('Method', method.replace('_', ' ').toLowerCase());
+      if (reference) row('Reference', reference);
+      if (approved) row('Approved by', approved);
+      doc.moveDown(3).fontSize(9).fillColor('#64748b');
+      const y = doc.y;
+      doc.text('______________________', left, y).text('Prepared by', left);
+      doc.text('______________________', left + w / 2, y).text('Received by (signature)', left + w / 2);
+      doc.moveDown(2).fontSize(7).text(`Generated by ${BRAND.name} on ${new Date().toISOString().slice(0, 10)}. Computer-generated voucher.`, left);
+    });
+  },
+
+  /** Printable tenant notice on the agency letterhead. */
+  async noticePdf(auth: AuthContext, leaseId: string, noticeId: string, out: Writable) {
+    if (!auth.permissions.includes(PERMISSIONS.RENTALS_READ)) throw forbidden();
+    const l = await Lease.findOne({ businessId: new Types.ObjectId(auth.businessId), _id: new Types.ObjectId(leaseId), deletedAt: null, ...branchFilter(auth) })
+      .populate({ path: 'tenantId', select: 'fullName', options: { skipTenantGuard: true } })
+      .populate({ path: 'propertyId', select: 'propertyId society block city', options: { skipTenantGuard: true } })
+      .lean<LeaseDoc>();
+    const n = l?.notices?.find((x) => x._id === noticeId);
+    if (!l || !n) throw notFound(ERROR_CODES.NOT_FOUND, 'Notice not found');
+    const business = await Business.findById(auth.businessId).select('name phone address city').lean();
+    const prop = l.propertyId as unknown as { propertyId: string; society?: string; block?: string; city?: string };
+    return writeDoc(out, (doc, w, left) => {
+      header(doc, business?.name ?? BRAND.name, 'Notice to tenant', left, w);
+      doc.fontSize(9).fillColor('#475569').text([business?.address, business?.city, business?.phone].filter(Boolean).join(' · ')).moveDown(1);
+      doc.fontSize(10).fillColor('#0f172a');
+      pdfText(doc, `Date: ${new Date(n.date).toISOString().slice(0, 10)}`, left, doc.y, { width: w });
+      pdfText(doc, `To: ${(l.tenantId as unknown as { fullName: string }).fullName}`, left, doc.y, { width: w });
+      pdfText(doc, `Premises: ${[prop.propertyId, prop.block, prop.society, prop.city].filter(Boolean).join(', ')} (lease ${l.leaseNo})`, left, doc.y, { width: w });
+      doc.moveDown(1).fontSize(12);
+      pdfText(doc, n.subject, left, doc.y, { width: w }, true);
+      doc.moveDown(0.5).fontSize(10).font('Helvetica');
+      pdfText(doc, n.message, left, doc.y, { width: w });
+      doc.moveDown(3).fontSize(9).fillColor('#64748b').text('______________________________', left).text(`For ${business?.name ?? ''}`);
+      doc.moveDown(2).fontSize(7).text(`Generated by ${BRAND.name} on ${new Date().toISOString().slice(0, 10)}.`);
+    });
+  },
+
   async receiptPdf(auth: AuthContext, kind: 'lease' | 'installment' | 'deal', id: string, paymentId: string, out: Writable) {
     const base = { businessId: new Types.ObjectId(auth.businessId), _id: new Types.ObjectId(id), deletedAt: null, ...branchFilter(auth) };
     let title = '';

@@ -14,6 +14,7 @@ import { FinanceReport } from '@/pages/FinancePages';
 import { AgentStatementCard, AgingCard, CashFlowCard } from '@/pages/InstallmentPages';
 import { CampaignReportCard, PortalLinkButton } from '@/pages/MarketingPages';
 import { ForecastCard } from '@/pages/AiPages';
+import { AgentPerformanceCard, BranchTargetsCard, BusinessSummaryCard, IncomeStatementCard } from '@/pages/OpsPages';
 import { InventoryReportCard, LeadReportCard } from '@/pages/Phase3Pages';
 import { Badge, Button, Card, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column, Avatar } from '@/components/ui';
 import { formatBytes, formatDate, formatPkr } from '@/lib/format';
@@ -416,6 +417,7 @@ export function ReportsPage() {
   const [busy, setBusy] = useState(false);
   const canDeals = useCan(PERMISSIONS.DEALS_READ);
   const canFinance = useCan(PERMISSIONS.FINANCE_READ);
+  const canReports = useCan(PERMISSIONS.REPORTS_READ);
   const canAgreements = useCan(PERMISSIONS.AGREEMENTS_READ);
   const resources = useEnumOptions('exportResource', ['clients', 'properties', 'owners', 'followups', 'matches', ...(canDeals ? ['deals', 'commissions'] : []), ...(canFinance ? ['transactions', 'finance'] : []), ...(canAgreements ? ['agreements'] : [])]);
   const f = (k: string) => (e: { target: { value: string } }) => setFilters((x) => ({ ...x, [k]: e.target.value }));
@@ -459,10 +461,14 @@ export function ReportsPage() {
   return (
     <div className="max-w-5xl space-y-4">
       <PageHeader title={t('report.title')} subtitle={t('report.subtitle')} />
+      {canReports && <BusinessSummaryCard />}
+      <AgentPerformanceCard />
+      {canReports && <BranchTargetsCard />}
       <LeadReportCard />
       <InventoryReportCard />
       {canDeals && <CommissionReport />}
       {canFinance && <FinanceReport />}
+      {canFinance && <IncomeStatementCard />}
       {canFinance && <CashFlowCard />}
       {canFinance && <AgingCard />}
       {canDeals && <AgentStatementCard />}

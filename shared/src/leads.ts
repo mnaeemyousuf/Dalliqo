@@ -24,6 +24,22 @@ export interface LeadScoringSettings {
   warmThreshold: number;
 }
 
+/**
+ * Who gets new website / WhatsApp leads. The listing's agent always comes first when
+ * `preferListingAgent` is on; otherwise (or when there is none) the mode decides.
+ */
+export const LEAD_ASSIGNMENT_MODES = ['NONE', 'ROUND_ROBIN', 'BY_SOURCE'] as const;
+export type LeadAssignmentMode = (typeof LEAD_ASSIGNMENT_MODES)[number];
+export interface LeadAssignmentSettings {
+  mode: LeadAssignmentMode;
+  preferListingAgent: boolean;
+  /** Round-robin pool (user ids). */
+  agentIds: string[];
+  /** BY_SOURCE: source → user id (sources without a rule fall back to the round-robin pool). */
+  bySource: { source: string; userId: string }[];
+}
+export const DEFAULT_LEAD_ASSIGNMENT: LeadAssignmentSettings = { mode: 'NONE', preferListingAgent: true, agentIds: [], bySource: [] };
+
 export const DEFAULT_LEAD_SCORING: LeadScoringSettings = {
   weights: { budget: 20, location: 15, category: 10, intent: 10, engagement: 20, followUps: 10, timeline: 15 },
   hotThreshold: 70,

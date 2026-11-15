@@ -51,6 +51,18 @@ export interface WhatsAppTemplate {
   params: number;
 }
 
+/** What clients and owners can see / do in their portal (agency-controlled). */
+export interface PortalSettings {
+  showMatches: boolean;
+  allowPreferenceUpdates: boolean;
+  allowVisitRequests: boolean;
+  showDocuments: boolean;
+  showOwnerInquiries: boolean;
+  showOwnerOffers: boolean;
+  allowOwnerAvailabilityUpdates: boolean;
+}
+export const DEFAULT_PORTAL_SETTINGS: PortalSettings = { showMatches: true, allowPreferenceUpdates: true, allowVisitRequests: true, showDocuments: true, showOwnerInquiries: true, showOwnerOffers: true, allowOwnerAvailabilityUpdates: true };
+
 export interface SubscriptionDoc {
   plan: PlanKey;
   status: SubscriptionStatus;
@@ -76,6 +88,7 @@ export interface BusinessDoc {
   status: (typeof BUSINESS_STATUSES)[number];
   subscription?: SubscriptionDoc;
   website?: WebsiteSettings;
+  portal?: Partial<PortalSettings>;
   whatsapp?: WhatsAppSettings;
   createdBy: Types.ObjectId;
   updatedBy: Types.ObjectId;
@@ -130,6 +143,15 @@ const businessSchema = new Schema<BusinessDoc>(
       whatsapp: { type: String, trim: true, maxlength: 20, default: null },
       email: { type: String, trim: true, lowercase: true, maxlength: 200, default: null },
       showAgents: { type: Boolean, default: true },
+    },
+    portal: {
+      showMatches: { type: Boolean, default: true },
+      allowPreferenceUpdates: { type: Boolean, default: true },
+      allowVisitRequests: { type: Boolean, default: true },
+      showDocuments: { type: Boolean, default: true },
+      showOwnerInquiries: { type: Boolean, default: true },
+      showOwnerOffers: { type: Boolean, default: true },
+      allowOwnerAvailabilityUpdates: { type: Boolean, default: true },
     },
     whatsapp: {
       phoneNumberId: { type: String, trim: true, maxlength: 40, default: null },

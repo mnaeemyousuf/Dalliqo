@@ -43,6 +43,10 @@ export interface RequirementInput {
   minBudget?: number;
   maxBudget?: number;
   bedroomsMin?: number;
+  bathroomsMin?: number;
+  constructionStatuses?: string[];
+  possessionStatuses?: string[];
+  amenities?: string[];
   notes?: string;
 }
 
@@ -154,6 +158,10 @@ function mergeFlatIntoRequirement(existing: RequirementDoc | undefined, f: FlatR
     minBudget: has(f, 'minBudget') ? fresh.minBudget : existing.minBudget,
     maxBudget: has(f, 'maxBudget') ? fresh.maxBudget : existing.maxBudget,
     bedroomsMin: existing.bedroomsMin,
+    bathroomsMin: existing.bathroomsMin,
+    constructionStatuses: existing.constructionStatuses,
+    possessionStatuses: existing.possessionStatuses,
+    amenities: existing.amenities,
     notes: existing.notes,
     active: existing.active,
   };
@@ -203,6 +211,10 @@ function buildRequirements(inputs: RequirementInput[], settings: EffectiveSettin
       minBudget: r.minBudget,
       maxBudget: r.maxBudget,
       bedroomsMin: r.bedroomsMin,
+      bathroomsMin: r.bathroomsMin,
+      constructionStatuses: (r.constructionStatuses ?? []).filter(Boolean),
+      possessionStatuses: (r.possessionStatuses ?? []).filter(Boolean),
+      amenities: (r.amenities ?? []).map((a) => a.trim()).filter(Boolean),
       notes: r.notes,
     };
   });

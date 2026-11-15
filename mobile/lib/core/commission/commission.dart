@@ -40,6 +40,7 @@ class CommissionSummary {
     required this.receivedBuyer,
     required this.receivedSeller,
     required this.agents,
+    this.adjustments = 0,
     this.external = const [],
     this.agencyExpected = 0,
     this.agencyReceived = 0,
@@ -52,6 +53,8 @@ class CommissionSummary {
   final int receivedBuyer;
   final int receivedSeller;
   final List<AgentShareSummary> agents;
+  /// Sum of commission adjustments (+ / −) recorded on the deal.
+  final int adjustments;
   final List<ExternalShareSummary> external;
   final int agencyExpected;
   final int agencyReceived;
@@ -59,7 +62,7 @@ class CommissionSummary {
   /// EXPECTED / APPROVED / PARTIALLY_RECEIVED / RECEIVED / DISTRIBUTED / PAID (same rule as the API).
   final String lifecycle;
 
-  int get expected => expectedBuyer + expectedSeller;
+  int get expected => (expectedBuyer + expectedSeller + adjustments) < 0 ? 0 : expectedBuyer + expectedSeller + adjustments;
   int get received => receivedBuyer + receivedSeller;
   int get outstanding => expected - received > 0 ? expected - received : 0;
 
@@ -86,7 +89,8 @@ CommissionSummary summarizeCommission(Map<String, dynamic> deal) {
   int paid(String side) => payments.where((p) => p['side'] == side).fold(0, (s, p) => s + ((p['amount'] as num?) ?? 0).round());
   final rBuyer = paid('BUYER');
   final rSeller = paid('SELLER');
-  final total = buyer + seller;
+  final adjustments = ((deal['adjustments'] as List?) ?? const []).whereType<Map>().fold<int>(0, (s, a) => s + ((a['amount'] as num?) ?? 0).round());
+  final total = (buyer + seller + adjustments) < 0 ? 0 : buyer + seller + adjustments;
   final received = rBuyer + rSeller;
   // Outside shares come off the top; agents split what the agency keeps.
   final ratio = total > 0 ? (received / total).clamp(0, 1) : 0;
@@ -127,6 +131,7 @@ CommissionSummary summarizeCommission(Map<String, dynamic> deal) {
     receivedBuyer: rBuyer,
     receivedSeller: rSeller,
     agents: agents,
+    adjustments: adjustments,
     external: external,
     agencyExpected: agencyExpected,
     agencyReceived: agencyReceived,

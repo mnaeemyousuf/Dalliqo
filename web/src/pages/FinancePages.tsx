@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Archive, Download, Lock, Paperclip, Pencil, Plus, Tags, Trash2, Wallet } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { PAYMENT_METHODS, PERMISSIONS, TRANSACTION_TYPES, type TransactionType } from '@recrm/shared';
 import { campaignApi, exportApi, transactionApi } from '@/api/endpoints';
 import type { Transaction, TransactionCategory } from '@/api/types';
 import { BranchField } from '@/components/branches';
+import { RefundButton, VoucherButton } from '@/pages/OpsPages';
 import { DocumentsPanel } from '@/components/domain/panels';
 import { Badge, Button, Card, ConfirmDialog, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Table, Tabs, type Column, MetricTile } from '@/components/ui';
 import { formatDate, formatPkr } from '@/lib/format';
@@ -34,7 +35,7 @@ function TypeBadge({ type }: { type: TransactionType }) {
 
 /* ═════════════ Entry form ═════════════ */
 
-export function TransactionFormDrawer({ onClose, entry, defaults }: { onClose(): void; entry?: Transaction; defaults?: { type?: TransactionType; dealId?: string; clientId?: string } }) {
+export function TransactionFormDrawer({ onClose, entry, defaults }: { onClose(): void; entry?: Transaction; defaults?: { type?: TransactionType; dealId?: string; clientId?: string; leaseId?: string; categoryKey?: string; onSaved?: () => void } }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const onError = useOnError();
@@ -46,7 +47,7 @@ export function TransactionFormDrawer({ onClose, entry, defaults }: { onClose():
   const [form, setForm] = useState({
     branchId: entry?.branchId ?? '',
     type: (entry?.type ?? defaults?.type ?? 'EXPENSE') as TransactionType,
-    categoryId: refId(entry?.categoryId),
+    categoryId: refId(entry?.categoryId) || '',
     amount: entry ? String(entry.amount) : '',
     date: (entry?.date ?? new Date().toISOString()).slice(0, 10),
     method: entry?.method ?? 'CASH',
@@ -58,6 +59,12 @@ export function TransactionFormDrawer({ onClose, entry, defaults }: { onClose():
   const campaigns = useQuery({ queryKey: ['campaigns', 'pick'], queryFn: () => campaignApi.list({ limit: 100 }), enabled: hasMarketing && form.type === 'EXPENSE', staleTime: 60_000 });
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const options = (cats.data ?? []).filter((c) => c.type === form.type).map((c) => ({ value: c._id, label: label(c) }));
+  useEffect(() => {
+    if (!entry && defaults?.categoryKey && !form.categoryId) {
+      const c = (cats.data ?? []).find((x) => x.key === defaults.categoryKey);
+      if (c) setForm((f) => ({ ...f, categoryId: c._id }));
+    }
+  }, [cats.data, defaults?.categoryKey, entry, form.categoryId]);
   const save = useMutation({
     mutationFn: () => {
       const body = {
@@ -71,6 +78,7 @@ export function TransactionFormDrawer({ onClose, entry, defaults }: { onClose():
         reference: form.reference || undefined,
         ...(form.type === 'EXPENSE' && hasMarketing ? { campaignId: form.campaignId || null } : {}),
         ...(!entry && defaults?.dealId ? { dealId: defaults.dealId } : {}),
+        ...(!entry && defaults?.leaseId ? { leaseId: defaults.leaseId } : {}),
         ...(!entry && defaults?.clientId ? { clientId: defaults.clientId } : {}),
       };
       return entry ? transactionApi.update(entry._id, { ...body, baseVersion: entry.version }) : transactionApi.create({ ...body, uuid: crypto.randomUUID() });
@@ -80,6 +88,7 @@ export function TransactionFormDrawer({ onClose, entry, defaults }: { onClose():
       void qc.invalidateQueries({ queryKey: ['transactions'] });
       void qc.invalidateQueries({ queryKey: ['reports', 'finance'] });
       void qc.invalidateQueries({ queryKey: ['dashboard'] });
+      defaults?.onSaved?.();
       onClose();
     },
     onError: (e) => setErrors(onError(e)),
@@ -213,7 +222,7 @@ export function FinancePage() {
           refName(x.clientId, 'fullName') || '—'
         ),
     },
-    { key: 'desc', header: t('finance.description'), render: (x) => <span className="line-clamp-1">{x.description || '—'}</span> },
+    { key: 'desc', header: t('finance.description'), render: (x) => <span className="line-clamp-1">{x.description || '—'}{!!x.refundedAmount && <span className="ms-2 text-xs text-amber-600">{t('ops.refundedAmount', { amount: formatPkr(x.refundedAmount) })}</span>}</span> },
     {
       key: 'actions',
       header: '',
@@ -224,6 +233,8 @@ export function FinancePage() {
             <Badge color="blue">{t('finance.fromCommission')}</Badge>
           ) : (
             <>
+              <RefundButton entry={x} />
+              {x.type === 'EXPENSE' && <VoucherButton kind="transaction" id={x._id} />}
               {canUpdate && <Button variant="ghost" size="sm" aria-label={t('common.edit')} onClick={() => setEditing(x)}><Pencil className="h-4 w-4" /></Button>}
               {canDelete && <Button variant="ghost" size="sm" aria-label={t('common.delete')} onClick={() => setRemoving(x)}><Trash2 className="h-4 w-4" /></Button>}
             </>

@@ -20,9 +20,10 @@ export interface BranchInput {
   code?: string;
   address?: string;
   phone?: string;
+  targets?: { leads?: number | null; dealsWon?: number | null; commission?: number | null };
 }
 
-const FIELDS = ['name', 'nameUr', 'code', 'address', 'phone'] as const;
+const FIELDS = ['name', 'nameUr', 'code', 'address', 'phone', 'targets'] as const;
 
 export const branchService = {
   /** Default branch for a business being registered (inside the registration transaction). */

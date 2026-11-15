@@ -292,13 +292,15 @@ export const mediaService = {
     return { url, expiresAt: new Date(Date.now() + expiresInSec * 1000), fileName: d.fileName, mimeType: d.mimeType };
   },
 
-  async updateDocument(auth: AuthContext, id: string, input: { fileName?: string; category?: DocumentCategory; expiresAt?: Date | null }) {
-    await this.getDocument(auth, id);
+  async updateDocument(auth: AuthContext, id: string, input: { fileName?: string; category?: DocumentCategory; expiresAt?: Date | null; sharedWithPortal?: boolean }) {
+    const current = await this.getDocument(auth, id);
+    if (input.sharedWithPortal && isSensitiveCategory(input.category ?? current.category)) throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'CNIC copies and title documents cannot be shared in the portal');
     if (isSensitiveCategory(input.category) && !canSeeSensitive(auth)) throw forbidden();
     const set: Record<string, unknown> = { updatedBy: auth.userId };
     if (input.expiresAt !== undefined) set.expiresAt = input.expiresAt;
     if (input.fileName) set.fileName = safeDisplayName(input.fileName);
     if (input.category) set.category = input.category;
+    if (input.sharedWithPortal !== undefined) set.sharedWithPortal = input.sharedWithPortal;
     const d = await Document.findOneAndUpdate({ businessId: auth.businessId, _id: id, deletedAt: null, ...branchFilter(auth) }, { $set: set }, { new: true }).lean<FileAssetDoc>();
     if (!d) throw notFound(ERROR_CODES.DOCUMENT_NOT_FOUND, 'Document not found');
     return withUrls(d);

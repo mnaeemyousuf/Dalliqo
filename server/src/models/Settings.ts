@@ -13,6 +13,7 @@ import {
   type SizeUnit,
 } from '@recrm/shared';
 import { tenantGuardPlugin } from './plugins/tenant';
+import type { LeadAssignmentSettings } from '@recrm/shared';
 
 /** One document per business. Missing values fall back to the defaults. */
 export interface SettingsDoc {
@@ -24,6 +25,7 @@ export interface SettingsDoc {
   commission: CommissionDefaults;
   leadScoring?: Partial<LeadScoringSettings>;
   automation?: Partial<AutomationSettings>;
+  leadAssignment?: Partial<LeadAssignmentSettings> & { cursor?: number };
   updatedBy?: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -39,6 +41,7 @@ const schema = new Schema<SettingsDoc>(
         budget: { type: Number, default: DEFAULT_MATCHING_SETTINGS.weights.budget },
         size: { type: Number, default: DEFAULT_MATCHING_SETTINGS.weights.size },
         purpose: { type: Number, default: DEFAULT_MATCHING_SETTINGS.weights.purpose },
+        features: { type: Number, default: DEFAULT_MATCHING_SETTINGS.weights.features },
       },
       storeThreshold: { type: Number, default: DEFAULT_MATCHING_SETTINGS.storeThreshold },
       notifyThreshold: { type: Number, default: DEFAULT_MATCHING_SETTINGS.notifyThreshold },
@@ -59,6 +62,15 @@ const schema = new Schema<SettingsDoc>(
       defaultSellerPct: { type: Number, default: DEFAULT_COMMISSION_SETTINGS.defaultSellerPct },
       autoCreateIncome: { type: Boolean, default: DEFAULT_COMMISSION_SETTINGS.autoCreateIncome },
       closeApprovalRequired: { type: Boolean, default: DEFAULT_COMMISSION_SETTINGS.closeApprovalRequired },
+      payoutApprovalRequired: { type: Boolean, default: DEFAULT_COMMISSION_SETTINGS.payoutApprovalRequired },
+    },
+    leadAssignment: {
+      mode: { type: String, enum: ['NONE', 'ROUND_ROBIN', 'BY_SOURCE'], default: 'NONE' },
+      preferListingAgent: { type: Boolean, default: true },
+      agentIds: { type: [String], default: [] },
+      bySource: { type: [{ _id: false, source: String, userId: String }], default: [] },
+      /** Round-robin position (internal). */
+      cursor: { type: Number, default: 0 },
     },
     // Missing values fall back to DEFAULT_LEAD_SCORING / DEFAULT_AUTOMATION_SETTINGS (see settingsService).
     leadScoring: {

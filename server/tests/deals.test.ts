@@ -26,7 +26,7 @@ describe('commission maths (shared)', () => {
       payouts: [{ userId: 'a', amount: 50_000, status: 'PAID' }, { userId: 'a', amount: 20_000, status: 'PENDING' }],
     });
     expect(s.basePrice).toBe(19_500_000);
-    expect(s.expected).toEqual({ buyer: 195_000, seller: 150_000, total: 345_000 });
+    expect(s.expected).toEqual({ buyer: 195_000, seller: 150_000, adjustments: 0, total: 345_000 });
     expect(s.received).toEqual({ buyer: 195_000, seller: 0, total: 195_000 });
     expect(s.outstanding).toBe(150_000);
     expect(s.status).toBe('PARTIALLY_RECEIVED');

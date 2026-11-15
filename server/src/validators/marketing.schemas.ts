@@ -90,5 +90,24 @@ export const publicInquirySchema = z
 export const tokenParams = z.object({ token: z.string().min(30).max(80) });
 export const portalReceiptParams = tokenParams.extend({ kind: z.enum(['lease', 'installment', 'deal']), id: z.string().max(40), paymentId: z.string().min(8).max(64) });
 export const portalRequestSchema = z.object({ message: text(1000).min(2) }).strict();
+export const portalSettingsSchema = z
+  .object({ showMatches: z.boolean(), allowPreferenceUpdates: z.boolean(), allowVisitRequests: z.boolean(), showDocuments: z.boolean(), showOwnerInquiries: z.boolean(), showOwnerOffers: z.boolean(), allowOwnerAvailabilityUpdates: z.boolean() })
+  .partial()
+  .strict();
+export const portalPreferencesSchema = z
+  .object({
+    minBudget: z.coerce.number().int().min(0).max(1e12).nullable().optional(),
+    maxBudget: z.coerce.number().int().min(0).max(1e12).nullable().optional(),
+    societies: z.array(text(120)).max(10).optional(),
+    bedroomsMin: z.coerce.number().int().min(0).max(20).nullable().optional(),
+    notes: text(1000).nullable().optional(),
+  })
+  .strict();
+export const portalMatchParams = tokenParams.extend({ matchId: z.string().max(40) });
+export const portalReactionSchema = z.object({ reaction: z.enum(['FAVORITE', 'UNFAVORITE', 'NOT_INTERESTED']) }).strict();
+export const portalVisitSchema = z.object({ propertyId: z.string().max(40), preferredAt: z.coerce.date(), note: text(500).optional() }).strict();
+export const portalPropertyParams = tokenParams.extend({ propertyId: z.string().max(40) });
+export const portalAvailabilitySchema = z.object({ available: z.boolean(), askingPrice: z.coerce.number().int().min(1).max(1e12).nullable().optional(), note: text(500).optional() }).strict();
+export const portalDocParams = tokenParams.extend({ docId: z.string().max(40) });
 export const emailPrefsSchema = z.object({ emailNotifications: z.boolean() }).strict();
 export { bool };

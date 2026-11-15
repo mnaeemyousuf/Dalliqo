@@ -14,7 +14,8 @@ import {
   type PaymentMethod,
 } from '@recrm/shared';
 import { nextSequence } from '../models/Counter';
-import { Lease, type LeaseDoc, type RentItemDoc } from '../models/Lease';
+import { Lease, type LeaseDoc, type NoticeDelivery, type RentItemDoc, type TenantNoticeType } from '../models/Lease';
+import { Transaction } from '../models/Transaction';
 import { Property } from '../models/Property';
 import { TransactionCategory } from '../models/TransactionCategory';
 import { clientRepository, ownerRepository, propertyRepository } from '../repositories/entityRepositories';
@@ -239,6 +240,26 @@ export const leaseService = {
     const updated = await leaseRepository.update(auth, id, { inspections: [...lease.inspections, inspection] });
     await activityService.record(auth, 'LEASE_UPDATED', `${lease.leaseNo}: ${input.type.toLowerCase().replace('_', '-')} inspection (${input.condition.toLowerCase()})`, refs(lease));
     return updated;
+  },
+
+  async addNotice(auth: AuthContext, id: string, input: { type: TenantNoticeType; subject: string; message: string; deliveredVia: NoticeDelivery; date?: Date }) {
+    const lease = await leaseRepository.getById(auth, id, 'Lease not found');
+    const notice = { _id: randomUUID(), type: input.type, date: input.date ? new Date(input.date) : new Date(), subject: input.subject.trim(), message: input.message.trim(), deliveredVia: input.deliveredVia, by: new Types.ObjectId(auth.userId) };
+    const updated = await leaseRepository.update(auth, id, { notices: [...(lease.notices ?? []), notice] });
+    await activityService.record(auth, 'LEASE_UPDATED', `${lease.leaseNo}: notice to tenant — ${notice.subject} (${notice.deliveredVia.toLowerCase().replace('_', ' ')})`, refs(lease));
+    await auditService.record(auth, { action: 'lease.notice_added', entityType: 'lease', entityId: lease._id, entityLabel: lease.leaseNo, meta: { type: notice.type, noticeId: notice._id } });
+    return updated;
+  },
+
+  /** Maintenance and other costs booked against this lease (expense entries with leaseId). */
+  async expenses(ctx: TenantContext, id: string) {
+    const lease = await leaseRepository.getById(ctx, id, 'Lease not found');
+    const rows = await Transaction.find({ businessId: ctx.businessId, deletedAt: null, leaseId: lease._id, type: 'EXPENSE' })
+      .populate({ path: 'categoryId', select: 'name nameUr', options: { skipTenantGuard: true } })
+      .sort({ date: -1 })
+      .limit(200)
+      .lean();
+    return { items: rows, total: rows.reduce((s, r) => s + r.amount, 0) };
   },
 
   /** Extends the lease and adds schedule months (with the yearly escalation continuing). */

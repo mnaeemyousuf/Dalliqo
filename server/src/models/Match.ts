@@ -17,7 +17,7 @@ export interface MatchDoc {
   propertyId: Types.ObjectId;
   matchScore: number;
   band: MatchBand;
-  breakdown: { type: number; location: number; budget: number; size: number; purpose: number };
+  breakdown: { type: number; location: number; budget: number; size: number; purpose: number; features?: number };
   matchReasons: MatchReason[];
   status: MatchStatus;
   notified: boolean;
@@ -41,6 +41,7 @@ const schema = new Schema<MatchDoc>(
       budget: { type: Number, default: 0 },
       size: { type: Number, default: 0 },
       purpose: { type: Number, default: 0 },
+      features: { type: Number, default: 0 },
     },
     matchReasons: { type: [{ _id: false, code: String, params: Schema.Types.Mixed }], default: [] },
     status: { type: String, enum: MATCH_STATUSES, default: 'NEW' },

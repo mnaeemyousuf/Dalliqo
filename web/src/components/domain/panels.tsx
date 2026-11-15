@@ -3,7 +3,7 @@ import { Download, FileText, Pencil, Plus, StickyNote, Trash2, Upload } from 'lu
 import { useRef, useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { DOCUMENT_CATEGORIES, FOLLOWUP_TYPES, PERMISSIONS, PRIORITIES } from '@recrm/shared';
+import { DOCUMENT_CATEGORIES, FOLLOWUP_TYPES, PERMISSIONS, PRIORITIES, isSensitiveCategory } from '@recrm/shared';
 import { activityApi, clientApi, documentApi, followUpApi, noteApi, propertyApi } from '@/api/endpoints';
 import type { FollowUp } from '@/api/types';
 import { Badge, Button, ConfirmDialog, Drawer, EmptyState, ErrorState, Modal, PageLoader, Select, Textarea, DatePicker, Input } from '@/components/ui';
@@ -154,6 +154,7 @@ export function DocumentsPanel({ entityType, entityId }: { entityType: 'client' 
   const { t } = useTranslation();
   const qc = useQueryClient();
   const onError = useOnError();
+  const portalShare = useMutation({ mutationFn: (v: { id: string; on: boolean }) => documentApi.update(v.id, { sharedWithPortal: v.on }), onSuccess: () => void qc.invalidateQueries({ queryKey: ['documents'] }), onError });
   const canUpload = useCan(PERMISSIONS.DOCUMENTS_UPLOAD);
   const canDelete = useCan(PERMISSIONS.DOCUMENTS_DELETE);
   const categories = useEnumOptions('documentCategory', DOCUMENT_CATEGORIES);
@@ -241,6 +242,11 @@ export function DocumentsPanel({ entityType, entityId }: { entityType: 'client' 
               <Button size="sm" variant="ghost" onClick={() => void share(d._id)}>
                 {t('common.share')}
               </Button>
+              {canUpload && !isSensitiveCategory(d.category) && (
+                <Button size="sm" variant="ghost" title={t('ops.portalShareHint')} onClick={() => portalShare.mutate({ id: d._id, on: !d.sharedWithPortal })}>
+                  {d.sharedWithPortal ? t('ops.inPortal') : t('ops.shareInPortal')}
+                </Button>
+              )}
               {canUpload && (
                 <Button size="sm" variant="ghost" onClick={() => setToRename(d)} aria-label={t('document.rename')}>
                   <Pencil className="h-4 w-4" />

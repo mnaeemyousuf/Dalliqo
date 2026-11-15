@@ -25,6 +25,11 @@ export interface ScoringProperty {
   askingPrice: number;
   minimumPrice?: number;
   negotiable?: boolean;
+  bedrooms?: number;
+  bathrooms?: number;
+  constructionStatus?: string;
+  possessionStatus?: string;
+  amenities?: string[];
 }
 
 export interface ScoringRequirement {
@@ -37,12 +42,17 @@ export interface ScoringRequirement {
   maxSizeSqft?: number;
   minBudget?: number;
   maxBudget?: number;
+  bedroomsMin?: number;
+  bathroomsMin?: number;
+  constructionStatuses?: string[];
+  possessionStatuses?: string[];
+  amenities?: string[];
 }
 
 export interface ScoreResult {
   matchScore: number;
   band: MatchBand;
-  breakdown: { type: number; location: number; budget: number; size: number; purpose: number };
+  breakdown: { type: number; location: number; budget: number; size: number; purpose: number; features?: number };
   matchReasons: MatchReason[];
 }
 
@@ -121,6 +131,34 @@ export function scoreSize(req: ScoringRequirement, p: ScoringProperty): Part {
   return { fraction: 0 };
 }
 
+/**
+ * Stated preferences beyond type / place / price / size. Returns null when the client stated none,
+ * so the factor is left out instead of handing out free points. Each preference counts equally;
+ * a property one bedroom short earns half for that preference, more than one short earns nothing.
+ */
+export function scoreFeatures(req: ScoringRequirement, p: ScoringProperty): Part | null {
+  const checks: number[] = [];
+  let bedroomsShort = false;
+  if (req.bedroomsMin) {
+    const b = p.bedrooms ?? 0;
+    checks.push(b >= req.bedroomsMin ? 1 : b === req.bedroomsMin - 1 ? 0.5 : 0);
+    bedroomsShort = b < req.bedroomsMin;
+  }
+  if (req.bathroomsMin) checks.push((p.bathrooms ?? 0) >= req.bathroomsMin ? 1 : 0);
+  if (req.constructionStatuses?.length) checks.push(p.constructionStatus && req.constructionStatuses.includes(p.constructionStatus) ? 1 : 0);
+  if (req.possessionStatuses?.length) checks.push(p.possessionStatus && req.possessionStatuses.includes(p.possessionStatus) ? 1 : 0);
+  const wanted = (req.amenities ?? []).map((a) => normalizeText(a)).filter(Boolean);
+  if (wanted.length) {
+    const have = new Set((p.amenities ?? []).map((a) => normalizeText(a)));
+    checks.push(wanted.filter((a) => have.has(a)).length / wanted.length);
+  }
+  if (!checks.length) return null;
+  const fraction = checks.reduce((s, x) => s + x, 0) / checks.length;
+  const met = checks.filter((x) => x === 1).length;
+  if (bedroomsShort && fraction < 1) return { fraction, reason: { code: 'BEDROOMS_SHORT', params: { wanted: req.bedroomsMin ?? 0, has: p.bedrooms ?? 0 } } };
+  return { fraction, reason: fraction === 1 ? { code: 'FEATURES_MATCH' } : fraction > 0 ? { code: 'FEATURES_PARTIAL', params: { met, total: checks.length } } : undefined };
+}
+
 /** Returns null when the purpose is incompatible (a hard disqualifier). */
 export function scoreMatch(req: ScoringRequirement, p: ScoringProperty, weights: MatchingSettings['weights']): ScoreResult | null {
   if (!purposeCompatible(req.purpose, p.listingPurpose)) return null;
@@ -132,6 +170,8 @@ export function scoreMatch(req: ScoringRequirement, p: ScoringProperty, weights:
     size: scoreSize(req, p),
     purpose: { fraction: 1, reason: { code: 'PURPOSE_MATCH' } } as Part,
   };
+  const features = scoreFeatures(req, p);
+  const fw = features ? Math.max(0, weights.features ?? 15) : 0;
   const round1 = (n: number) => Math.round(n * 10) / 10;
   const breakdown = {
     type: round1(weights.type * parts.type.fraction),
@@ -139,12 +179,13 @@ export function scoreMatch(req: ScoringRequirement, p: ScoringProperty, weights:
     budget: round1(weights.budget * parts.budget.fraction),
     size: round1(weights.size * parts.size.fraction),
     purpose: round1(weights.purpose * parts.purpose.fraction),
+    features: round1(fw * (features?.fraction ?? 0)),
   };
-  const matchScore = Math.max(
-    0,
-    Math.min(100, Math.round(breakdown.type + breakdown.location + breakdown.budget + breakdown.size + breakdown.purpose)),
-  );
-  const matchReasons = Object.values(parts)
+  // Scaled to 100 over the factors that apply, so clients without feature preferences score exactly as before.
+  const possible = weights.type + weights.location + weights.budget + weights.size + weights.purpose + fw || 1;
+  const earned = breakdown.type + breakdown.location + breakdown.budget + breakdown.size + breakdown.purpose + breakdown.features;
+  const matchScore = Math.max(0, Math.min(100, Math.round((earned / possible) * 100)));
+  const matchReasons = [...Object.values(parts), ...(features ? [features] : [])]
     .map((x) => x.reason)
     .filter((r): r is MatchReason => !!r);
   return { matchScore, band: matchBand(matchScore), breakdown, matchReasons };

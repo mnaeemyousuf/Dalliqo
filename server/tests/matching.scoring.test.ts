@@ -43,7 +43,7 @@ describe('matching scoring', () => {
     expect(r.matchScore).toBe(100);
     expect(r.band).toBe('EXCELLENT');
     expect(r.matchReasons.map((x) => x.code)).toEqual(['TYPE_MATCH', 'SOCIETY_MATCH', 'BUDGET_WITHIN', 'SIZE_WITHIN', 'PURPOSE_MATCH']);
-    expect(r.breakdown).toEqual({ type: 25, location: 25, budget: 25, size: 15, purpose: 10 });
+    expect(r.breakdown).toEqual({ type: 25, location: 25, budget: 25, size: 15, purpose: 10, features: 0 });
   });
 
   it('treats a purpose mismatch as disqualifying', () => {
@@ -133,5 +133,26 @@ describe('matching scoring', () => {
     const vague = scoreMatch({ ...buyer, societies: [], propertyTypes: [] }, plot, W)!.matchScore;
     const precise = scoreMatch(buyer, plot, W)!.matchScore;
     expect(precise).toBeGreaterThanOrEqual(vague);
+  });
+});
+
+describe('feature preferences (bedrooms, bathrooms, status, amenities)', () => {
+  const house: ScoringProperty = { ...plot, propertyType: 'HOUSE', bedrooms: 4, bathrooms: 3, constructionStatus: 'COMPLETED', possessionStatus: 'READY', amenities: ['Gas', 'Park nearby'] };
+  const family: ScoringRequirement = { ...buyer, propertyTypes: ['HOUSE'], bedroomsMin: 4, bathroomsMin: 3, amenities: ['gas'], possessionStatuses: ['READY'] };
+
+  it('keeps scores unchanged for clients without feature preferences', () => {
+    expect(scoreMatch(buyer, plot, W)!.matchScore).toBe(100);
+    expect(scoreMatch(buyer, plot, W)!.breakdown.features).toBe(0);
+  });
+
+  it('rewards meeting stated preferences and penalises a house short of bedrooms', () => {
+    const full = scoreMatch(family, house, W)!;
+    expect(full.matchScore).toBe(100);
+    expect(full.matchReasons.map((r) => r.code)).toContain('FEATURES_MATCH');
+    const short = scoreMatch(family, { ...house, bedrooms: 2 }, W)!;
+    expect(short.matchScore).toBeLessThan(full.matchScore);
+    expect(short.matchReasons.find((r) => r.code === 'BEDROOMS_SHORT')?.params).toEqual({ wanted: 4, has: 2 });
+    const partial = scoreMatch({ ...family, bedroomsMin: undefined }, { ...house, amenities: [] }, W)!;
+    expect(partial.matchReasons.find((r) => r.code === 'FEATURES_PARTIAL')?.params).toEqual({ met: 2, total: 3 });
   });
 });

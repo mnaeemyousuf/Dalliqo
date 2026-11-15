@@ -18,13 +18,13 @@ import { intakeLead } from './leadIntakeService';
 /** Statuses a published listing is visible in; anything else (sold, rented, withdrawn…) drops off the site. */
 const LIVE_STATUSES = ['AVAILABLE', 'RESERVED', 'UNDER_NEGOTIATION'];
 
-const PUBLIC_FIELDS =
+export const PUBLIC_FIELDS =
   'propertyId propertyType listingPurpose status title area society block phase sector city size sizeUnit askingPrice negotiable bedrooms bathrooms floors furnishing facing corner mainRoad parkFacing possessionStatus developmentStatus constructionStatus amenities description coverImageUrl coverThumbnailUrl latitude longitude agentIds verification.status publicListing createdAt';
 
 type PublicProperty = Pick<PropertyDoc, '_id' | 'propertyId' | 'propertyType' | 'listingPurpose' | 'status' | 'title' | 'area' | 'society' | 'block' | 'phase' | 'sector' | 'city' | 'size' | 'sizeUnit' | 'askingPrice' | 'negotiable' | 'bedrooms' | 'bathrooms' | 'floors' | 'furnishing' | 'facing' | 'corner' | 'mainRoad' | 'parkFacing' | 'possessionStatus' | 'amenities' | 'description' | 'coverImageUrl' | 'coverThumbnailUrl' | 'latitude' | 'longitude' | 'agentIds' | 'verification' | 'publicListing'>;
 
 /** What the public may see of a listing: no owner, plot / street / unit number, floor price or exact pin. */
-function toPublic(p: PublicProperty) {
+export function toPublic(p: PublicProperty) {
   const round = (n?: number) => (typeof n === 'number' ? Math.round(n * 500) / 500 : undefined); // ≈ 200 m
   return {
     _id: String(p._id),

@@ -102,6 +102,9 @@ export const dealApi = {
   remove: (id: string) => api<null>({ method: 'DELETE', url: `/deals/${id}` }),
   addOffer: (id: string, body: Body) => api<Deal>({ method: 'POST', url: `/deals/${id}/offers`, data: body }),
   respondOffer: (id: string, offerId: string, status: 'ACCEPTED' | 'REJECTED' | 'WITHDRAWN') => api<Deal>({ method: 'POST', url: `/deals/${id}/offers/${offerId}/respond`, data: { status } }),
+  approvePayout: (id: string, payoutId: string) => api<Deal>({ method: 'POST', url: `/deals/${id}/payouts/${payoutId}/approve`, data: {} }),
+  addAdjustment: (id: string, amount: number, reason: string) => api<Deal>({ method: 'POST', url: `/deals/${id}/adjustments`, data: { amount, reason } }),
+  dispute: (id: string, action: 'OPEN' | 'RESOLVE', text: string) => api<Deal>({ method: 'POST', url: `/deals/${id}/dispute`, data: { action, text } }),
   approveCommission: (id: string) => api<Deal>({ method: 'POST', url: `/deals/${id}/commission/approve` }),
   payExternal: (id: string, shareId: string, amount: number) => api<Deal>({ method: 'POST', url: `/deals/${id}/external/${shareId}/pay`, data: { amount } }),
   decideApproval: (id: string, decision: 'APPROVED' | 'REJECTED', note?: string) => api<Deal>({ method: 'POST', url: `/deals/${id}/approval`, data: { decision, ...(note ? { note } : {}) } }),
@@ -270,12 +273,29 @@ export const inventoryApi = {
   removeView: (id: string) => api<null>({ method: 'DELETE', url: `/saved-views/${id}` }),
 };
 
+export const opsApi = {
+  refund: (transactionId: string, body: Body) => api<Transaction>({ method: 'POST', url: `/transactions/${transactionId}/refund`, data: clean(body) }),
+  voucher: (kind: 'transaction' | 'payout', id: string, subId?: string) => blobDownload(`/vouchers/${kind}/${id}${subId ? `/${subId}` : ''}`, 'payment-voucher.pdf'),
+  incomeStatement: (params: Params) => api<{ totals: { income: number; expense: number; net: number; marginPct: number | null }; income: { categoryId: string; name: string; nameUr?: string | null; total: number }[]; expenses: { categoryId: string; name: string; nameUr?: string | null; total: number }[]; branches: { branchId: string; name: string; income: number; expense: number; net: number }[] }>({ url: '/reports/income-statement', params: clean(params) }),
+  businessSummary: (params: Params) => api<{ properties: { total: number; active: number; verified: number; avgDaysOnMarket: number | null; over90Days: number }; leads: { new: number; activeClients: number; conversionPct: number | null }; deals: { active: number; closed: number; transactionValue: number; avgDaysToClose: number | null }; commission: { expected: number; received: number; outstanding: number }; finance: { income: number; expense: number; netProfit: number } }>({ url: '/reports/business-summary', params: clean(params) }),
+  agentPerformance: (params: Params) => api<{ rows: { userId: string; fullName: string; leadsAssigned: number; leadsContacted: number; followUpsCompleted: number; siteVisits: number; negotiations: number; dealsClosed: number; commission: number; conversionPct: number | null; avgResponseMinutes: number | null }[] }>({ url: '/reports/agent-performance', params: clean(params) }),
+  agentPerformanceFile: (params: Params, format: 'xlsx' | 'pdf') => blobDownload(`/reports/agent-performance?${new URLSearchParams({ ...(clean(params) as Record<string, string>), format }).toString()}`, `agent-performance.${format}`),
+  branches: (params: Params) => api<{ rows: { branchId: string; name: string; leads: number; dealsWon: number; commission: number; income: number; expense: number; net: number; targets: { leads?: number | null; dealsWon?: number | null; commission?: number | null }; progress: { leads: number | null; dealsWon: number | null; commission: number | null } }[] }>({ url: '/reports/branches', params: clean(params) }),
+  setBranchTargets: (branchId: string, targets: Body) => api<unknown>({ method: 'PATCH', url: `/branches/${branchId}`, data: { targets } }),
+};
+
+export const portalSettingsApi = {
+  get: () => api<Record<string, boolean>>({ url: '/portal-settings' }),
+  update: (body: Body) => api<Record<string, boolean>>({ method: 'PUT', url: '/portal-settings', data: body }),
+};
+
 export const aiApi = {
   status: () => api<{ configured: boolean; model: string | null; usedThisMonth: number; monthlyLimit: number; tools: string[] }>({ url: '/ai/status' }),
   assistant: (messages: { role: 'user' | 'assistant'; content: string }[]) => api<{ answer: string; toolsUsed: string[]; proposals?: unknown[] }>({ method: 'POST', url: '/ai/assistant', data: { messages }, timeout: 180_000 }),
   describe: (propertyId: string, language: 'en' | 'ur') => api<{ headline: string; description: string; source: 'ai' | 'template' }>({ method: 'POST', url: `/ai/properties/${propertyId}/description`, data: { language }, timeout: 120_000 }),
   priceEstimate: (propertyId: string) => api<{ low?: number; mid?: number | null; high?: number; perSqft?: number; comparables: number; sold?: number; confidence?: 'LOW' | 'MEDIUM' | 'HIGH'; scope?: string; position?: 'ABOVE' | 'BELOW' | 'WITHIN'; askingPrice?: number; disclaimer: string }>({ url: `/ai/properties/${propertyId}/price-estimate` }),
   brief: (clientId: string, language: 'en' | 'ur') => api<{ summary: string; nextAction: string; message: string; risks: string[]; source: 'ai' | 'rules' }>({ method: 'POST', url: `/ai/clients/${clientId}/brief`, data: { language }, timeout: 120_000 }),
+  quality: (propertyId: string) => api<{ score: number; grade: 'GOOD' | 'FAIR' | 'POOR'; photos: number; checks: { key: string; ok: boolean }[] }>({ url: `/ai/properties/${propertyId}/quality` }),
   forecast: () => api<{ months: { month: string; weighted: number; bestCase: number; deals: number; installments: number; rent: number }[]; totals: { weightedCommission: number; bestCaseCommission: number; installments: number; rent: number }; leads: { month: string; created: number; won: number }[]; expectedLeadsNextMonth: number; method: string }>({ url: '/ai/forecast' }),
 };
 
@@ -341,6 +361,9 @@ export const leaseApi = {
   renew: (id: string, body: Body) => api<Lease>({ method: 'POST', url: `/leases/${id}/renew`, data: body }),
   end: (id: string, body: Body) => api<Lease>({ method: 'POST', url: `/leases/${id}/end`, data: clean(body) }),
   rentRoll: () => api<RentRoll>({ url: '/leases/rent-roll' }),
+  addNotice: (id: string, body: Body) => api<Lease>({ method: 'POST', url: `/leases/${id}/notices`, data: body }),
+  noticePdf: (id: string, noticeId: string) => blobDownload(`/leases/${id}/notices/${noticeId}/pdf`, 'tenant-notice.pdf'),
+  expenses: (id: string) => api<{ items: Transaction[]; total: number }>({ url: `/leases/${id}/expenses` }),
 };
 
 export const subscriptionApi = {

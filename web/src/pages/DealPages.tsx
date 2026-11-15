@@ -12,6 +12,7 @@ import { AgreementsPanel } from '@/pages/AgreementPages';
 import { ChecklistPanel, NegotiationPanel } from '@/pages/Phase3Pages';
 import { ApprovalBanner } from '@/pages/Phase4Pages';
 import { ReceiptButton } from '@/pages/InstallmentPages';
+import { VoucherButton } from '@/pages/OpsPages';
 import { Badge, Button, Card, ConfirmDialog, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Table, Tabs, Textarea, type BadgeColor, type Column, ViewToggle, MetricTile } from '@/components/ui';
 import { formatDate, formatPkr } from '@/lib/format';
 import { useDebounce, useEnumOptions, useErrorText, useMembers, useOnError, useUrlState, useOpenOnNew } from '@/lib/hooks';
@@ -362,6 +363,10 @@ export function DealDetailPage() {
   const approve = useMutation({ mutationFn: () => dealApi.approveCommission(id), onSuccess: () => (toast.success(t('finance5b.approved')), refresh()), onError });
   const payExternal = useMutation({ mutationFn: (v: { shareId: string; amount: number }) => dealApi.payExternal(id, v.shareId, v.amount), onSuccess: refresh, onError });
   const [sharesOpen, setSharesOpen] = useState(false);
+  const canApprove = useCan(PERMISSIONS.DEALS_APPROVE);
+  const approvePayout = useMutation({ mutationFn: (pid: string) => dealApi.approvePayout(id, pid), onSuccess: () => (toast.success(t('deal.payoutApproved')), refresh()), onError });
+  const [adjOpen, setAdjOpen] = useState(false);
+  const [disputeOpen, setDisputeOpen] = useState(false);
   const remove = useMutation({ mutationFn: () => dealApi.remove(id), onSuccess: () => (toast.success(t('deal.deleted')), navigate('/deals')), onError });
   if (q.isLoading) return <PageLoader />;
   if (q.isError) return <ErrorState onRetry={() => q.refetch()} />;
@@ -403,6 +408,14 @@ export function DealDetailPage() {
         {d.stage === 'CLOSED_LOST' && d.lostReason && <p className="w-full pt-1 text-xs text-red-600">{t('deal.lostReason')}: {d.lostReason}</p>}
       </Card>
       <ApprovalBanner deal={d} />
+      {d.dispute?.status === 'OPEN' && (
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-900/30 dark:text-red-200">
+          <span className="font-semibold">{t('deal.disputeOpen')}</span>
+          <span>{d.dispute.reason}</span>
+          <span className="text-xs opacity-80">{formatDate(d.dispute.openedAt)}</span>
+          {canMoney && <Button size="sm" variant="secondary" className="ms-auto" onClick={() => setDisputeOpen(true)}>{t('deal.resolveDispute')}</Button>}
+        </div>
+      )}
       <div className="stagger mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <MetricTile tone="brand" label={t('deal.expected')} value={formatPkr(s.expected.total)} />
         <MetricTile tone="good" label={t('deal.received')} value={formatPkr(s.received.total)} />
@@ -489,15 +502,45 @@ export function DealDetailPage() {
                     <li key={p._id} className="flex items-center justify-between gap-2 py-2">
                       <span>
                         {name(d.agents.find((a) => refId(a.userId) === String(p.userId))?.userId)} · <span className="ltr-nums">{formatPkr(p.amount)}</span>{' '}
-                        <Badge color={p.status === 'PAID' ? 'green' : 'amber'}>{t(`enums.payoutStatus.${p.status}`)}</Badge> {p.date && <span className="text-xs text-muted">{formatDate(p.date)}</span>}
+                        <Badge color={p.status === 'PAID' ? 'green' : p.status === 'APPROVED' ? 'blue' : 'amber'}>{t(`enums.payoutStatus.${p.status}`)}</Badge> {p.date && <span className="text-xs text-muted">{formatDate(p.date)}</span>} <VoucherButton kind="payout" id={d._id} subId={p._id} />
                       </span>
-                      {canMoney && p.status !== 'PAID' && <Button size="sm" variant="secondary" onClick={() => markPaid.mutate(p._id)}>{t('deal.markPaid')}</Button>}
+                      <span className="flex gap-1">
+                        {canApprove && p.status === 'PENDING' && <Button size="sm" variant="secondary" loading={approvePayout.isPending} onClick={() => approvePayout.mutate(p._id)}>{t('deal.approvePayout')}</Button>}
+                        {canMoney && p.status !== 'PAID' && <Button size="sm" variant="secondary" onClick={() => markPaid.mutate(p._id)}>{t('deal.markPaid')}</Button>}
+                      </span>
                     </li>
                   ))}
                 </ul>
               )}
             </Card>
           </div>
+        )}
+        {tab === 'commission' && (
+          <Card
+            className="mt-4"
+            title={t('deal.adjustments')}
+            actions={canMoney && (
+              <span className="flex gap-2">
+                {d.dispute?.status !== 'OPEN' && <Button size="sm" variant="ghost" onClick={() => setDisputeOpen(true)}>{t('deal.openDispute')}</Button>}
+                <Button size="sm" variant="secondary" onClick={() => setAdjOpen(true)}>{t('deal.addAdjustment')}</Button>
+              </span>
+            )}
+          >
+            {!d.adjustments?.length ? (
+              <p className="text-sm text-muted">{t('deal.noAdjustments')}</p>
+            ) : (
+              <ul className="divide-y divide-line text-sm">
+                {d.adjustments.map((a) => (
+                  <li key={a._id} className="flex flex-wrap items-center gap-2 py-2">
+                    <span className={`ltr-nums font-semibold ${a.amount < 0 ? 'text-red-600' : 'text-emerald-600'}`}>{a.amount > 0 ? '+' : '−'}{formatPkr(Math.abs(a.amount))}</span>
+                    <span>{a.reason}</span>
+                    <span className="ltr-nums ms-auto text-xs text-muted">{formatDate(a.at)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {d.dispute?.status === 'RESOLVED' && <p className="mt-2 text-xs text-muted">{t('deal.disputeResolved', { reason: d.dispute.reason, resolution: d.dispute.resolution ?? '' })}</p>}
+          </Card>
         )}
         {tab === 'commission' && (
           <Card className="mt-4" title={t('finance5b.externalShares')} actions={canMoney && <Button size="sm" variant="secondary" onClick={() => setSharesOpen(true)}>{t('common.edit')}</Button>}>
@@ -535,6 +578,8 @@ export function DealDetailPage() {
       {paying && <PaymentModal deal={d} onClose={() => setPaying(false)} />}
       {payout && <PayoutModal deal={d} onClose={() => setPayout(false)} />}
       {sharesOpen && <ExternalSharesModal deal={d} onClose={() => setSharesOpen(false)} onDone={refresh} />}
+      {adjOpen && <TextAmountModal title={t('deal.addAdjustment')} withAmount hint={t('deal.adjustmentHint')} onClose={() => setAdjOpen(false)} onSave={(text, amount) => dealApi.addAdjustment(id, amount!, text).then(refresh)} />}
+      {disputeOpen && <TextAmountModal title={d.dispute?.status === 'OPEN' ? t('deal.resolveDispute') : t('deal.openDispute')} hint={d.dispute?.status === 'OPEN' ? t('deal.resolutionHint') : t('deal.disputeHint')} onClose={() => setDisputeOpen(false)} onSave={(text) => dealApi.dispute(id, d.dispute?.status === 'OPEN' ? 'RESOLVE' : 'OPEN', text).then(refresh)} />}
       <Modal open={lostOpen} onClose={() => setLostOpen(false)} title={t('enums.dealStage.CLOSED_LOST')} footer={<Button disabled={!lostReason.trim()} loading={stage.isPending} onClick={() => stage.mutate({ stage: 'CLOSED_LOST', lostReason })}>{t('common.save')}</Button>}>
         <Textarea label={t('deal.lostReason')} value={lostReason} onChange={(e) => setLostReason(e.target.value)} />
       </Modal>
@@ -544,6 +589,22 @@ export function DealDetailPage() {
 }
 
 const LIFECYCLE_COLOR: Record<string, BadgeColor> = { EXPECTED: 'gray', APPROVED: 'blue', PARTIALLY_RECEIVED: 'amber', RECEIVED: 'green', DISTRIBUTED: 'purple', PAID: 'green' };
+
+/** Small form: a reason (and optionally a signed amount) — used for adjustments and disputes. */
+function TextAmountModal({ title, hint, withAmount, onClose, onSave }: { title: string; hint: string; withAmount?: boolean; onClose(): void; onSave(text: string, amount?: number): Promise<unknown> }) {
+  const { t } = useTranslation();
+  const onError = useOnError();
+  const [text, setText] = useState('');
+  const [amount, setAmount] = useState('');
+  const save = useMutation({ mutationFn: () => onSave(text, withAmount ? Number(amount) : undefined), onSuccess: () => (toast.success(t('common.saved')), onClose()), onError });
+  return (
+    <Modal open onClose={onClose} title={title} footer={<Button disabled={text.trim().length < 3 || (withAmount && !Number(amount))} loading={save.isPending} onClick={() => save.mutate()}>{t('common.save')}</Button>}>
+      <p className="mb-3 text-xs text-muted">{hint}</p>
+      {withAmount && <Input label={t('deal.adjustmentAmount')} type="number" value={amount} onChange={(e) => setAmount(e.target.value)} wrapperClassName="mb-3" />}
+      <Textarea label={t('deal.reason')} value={text} onChange={(e) => setText(e.target.value)} />
+    </Modal>
+  );
+}
 
 /** Outside dealers / referrers / other branches who take a cut before the agency's agents. */
 function ExternalSharesModal({ deal, onClose, onDone }: { deal: Deal; onClose(): void; onDone(): void }) {

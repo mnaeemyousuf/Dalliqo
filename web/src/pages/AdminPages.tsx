@@ -401,7 +401,7 @@ function MatchingSettings() {
   const w = draft.matching.weights;
   const total = w.type + w.location + w.budget + w.size + w.purpose;
   const setW = (k: keyof typeof w) => (e: { target: { value: string } }) => setDraft({ ...draft, matching: { ...draft.matching, weights: { ...w, [k]: Number(e.target.value) || 0 } } });
-  const labels: Record<keyof typeof w, string> = { type: t('enums.matchReason.TYPE_MATCH'), location: t('enums.matchReason.SOCIETY_MATCH'), budget: t('enums.matchReason.BUDGET_WITHIN'), size: t('enums.matchReason.SIZE_WITHIN'), purpose: t('enums.matchReason.PURPOSE_MATCH') };
+  const labels: Record<keyof typeof w, string> = { type: t('enums.matchReason.TYPE_MATCH'), location: t('enums.matchReason.SOCIETY_MATCH'), budget: t('enums.matchReason.BUDGET_WITHIN'), size: t('enums.matchReason.SIZE_WITHIN'), purpose: t('enums.matchReason.PURPOSE_MATCH'), features: t('settings.featuresWeight') };
   return (
     <Card>
       <p className="mb-2 text-sm font-medium">{t('settings.weights')}</p>
@@ -410,7 +410,7 @@ function MatchingSettings() {
           <Input key={k} label={labels[k]} type="number" min={0} max={100} value={w[k]} onChange={setW(k)} disabled={!canManage} />
         ))}
       </div>
-      <p className={`mt-1 text-xs ${total === 100 ? 'text-muted' : 'text-red-600'}`}>{t('settings.weightsTotal', { total })}</p>
+      <p className={`mt-1 text-xs ${total === 100 ? 'text-muted' : 'text-red-600'}`}>{t('settings.weightsTotal', { total })} {t('settings.featuresHint')}</p>
       <div className="mt-4 grid max-w-3xl gap-3 sm:grid-cols-2">
         <Input label={`${t('settings.storeThreshold')} (%)`} type="number" min={0} max={100} value={draft.matching.storeThreshold} disabled={!canManage} onChange={(e) => setDraft({ ...draft, matching: { ...draft.matching, storeThreshold: Number(e.target.value) } })} />
         <Input label={`${t('settings.notifyThreshold')} (%)`} type="number" min={0} max={100} value={draft.matching.notifyThreshold} disabled={!canManage} onChange={(e) => setDraft({ ...draft, matching: { ...draft.matching, notifyThreshold: Number(e.target.value) } })} />
@@ -428,6 +428,7 @@ function MatchingSettings() {
               <Checkbox label={t('finance.autoIncome')} checked={draft.commission.autoCreateIncome !== false} disabled={!canManage} onChange={(on) => setDraft({ ...draft, commission: { ...draft.commission, autoCreateIncome: on } })} />
               <p className="ms-6 text-xs text-muted">{t('finance.autoIncomeHint')}</p>
               <Checkbox label={t('deal.approval.setting')} checked={!!draft.commission.closeApprovalRequired} disabled={!canManage} onChange={(on) => setDraft({ ...draft, commission: { ...draft.commission, closeApprovalRequired: on } })} />
+              <Checkbox label={t('deal.payoutApprovalSetting')} checked={!!draft.commission.payoutApprovalRequired} disabled={!canManage} onChange={(on) => setDraft({ ...draft, commission: { ...draft.commission, payoutApprovalRequired: on } })} />
               <p className="ms-6 text-xs text-muted">{t('deal.approval.settingHint')}</p>
             </div>
           </>

@@ -48,7 +48,7 @@ const CRM_PREFIXES = [
   '/documents', '/uploads', '/notes', '/activities', '/matches', '/settings', '/followups', '/notifications',
   '/devices', '/exports', '/sync', '/deals', '/reports', '/transactions', '/transaction-categories', '/agreements', '/agreement-templates',
   '/verifications', '/saved-views', '/leases', '/installments', '/receipts',
-  '/website', '/inquiries', '/campaigns', '/portal-links', '/whatsapp', '/ai',
+  '/website', '/inquiries', '/campaigns', '/portal-links', '/portal-settings', '/whatsapp', '/ai', '/vouchers',
 ];
 api.use(CRM_PREFIXES, ...secured, entitlementGuard);
 api.use(marketingRoutes);

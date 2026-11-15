@@ -303,6 +303,14 @@ export function PublicListingPage() {
               {site.phone && <a href={`tel:${site.phone}`} className="btn btn-secondary flex-1 justify-center"><Phone className="h-4 w-4" />{t('site.call')}</a>}
               {wa && <a href={wa} target="_blank" rel="noopener noreferrer" className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"><MessageCircle className="h-4 w-4" />WhatsApp</a>}
             </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+              <span className="text-muted">{t('site.share')}:</span>
+              <a className="rounded-full border border-line px-2.5 py-1 hover:bg-surface-2" target="_blank" rel="noopener noreferrer" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}>Facebook</a>
+              <a className="rounded-full border border-line px-2.5 py-1 hover:bg-surface-2" target="_blank" rel="noopener noreferrer" href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(l.headline ?? l.ref)}`}>X</a>
+              <a className="rounded-full border border-line px-2.5 py-1 hover:bg-surface-2" target="_blank" rel="noopener noreferrer" href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`}>LinkedIn</a>
+              <a className="rounded-full border border-line px-2.5 py-1 hover:bg-surface-2" target="_blank" rel="noopener noreferrer" href={whatsappLink('', `${l.headline ?? l.ref} — ${window.location.href}`).replace('https://wa.me/?', 'https://wa.me/?')}>WhatsApp</a>
+              <button type="button" className="rounded-full border border-line px-2.5 py-1 hover:bg-surface-2" onClick={() => void navigator.clipboard?.writeText(window.location.href)}>{t('site.copyLink')}</button>
+            </div>
             {l.approxLocation && <a className="mt-3 inline-flex items-center gap-1 text-xs text-muted hover:text-brand-600" target="_blank" rel="noopener noreferrer" href={`https://www.google.com/maps/search/?api=1&query=${l.approxLocation.lat},${l.approxLocation.lng}`}><MapPin className="h-3.5 w-3.5" />{t('site.approxMap')}</a>}
             {!!l.agents?.length && (
               <div className="mt-4 border-t border-line pt-3 text-sm">
@@ -329,9 +337,15 @@ interface PortalView {
   expiresAt: string;
   party: { fullName: string };
   business: { name: string; phone?: string | null; whatsapp?: string | null; email?: string | null; address?: string | null };
-  deals?: { _id: string; dealNo: string; stage: string; price?: number | null; property: Prop; payments?: Pay[] }[];
+  deals?: { _id?: string; dealNo: string; stage: string; price?: number | null; property: Prop; payments?: Pay[]; offers?: { party: string; amount: number; status: string; at: string }[] }[];
   installmentPlans?: { _id: string; planNo: string; title?: string; status: string; totalAmount: number; paidTotal: number; outstanding: number; overdueAmount: number; nextDueDate?: string | null; property: Prop; items: { label: string; dueDate: string; amount: number; paid: number; status: string }[]; payments: Pay[] }[];
-  leases?: { _id: string; leaseNo: string; status: string; startDate: string; endDate: string; monthlyRent: number; property: Prop; overdue: number; collected?: number; nextDue?: { dueDate: string; balance: number } | null; schedule?: { period: string; dueDate: string; amount: number; paid: number; status: string }[]; payments?: Pay[] }[];
+  leases?: { _id: string; leaseNo: string; status: string; startDate: string; endDate: string; monthlyRent: number; property: Prop; overdue: number; collected?: number; maintenance?: number; nextDue?: { dueDate: string; balance: number } | null; schedule?: { period: string; dueDate: string; amount: number; paid: number; status: string }[]; payments?: Pay[] }[];
+  settings?: Record<string, boolean>;
+  documents?: { _id: string; fileName: string; category?: string; createdAt: string }[];
+  requirement?: { purpose: string; propertyTypes: string[]; societies: string[]; areas: string[]; minBudget: number | null; maxBudget: number | null; bedroomsMin: number | null; notes: string | null } | null;
+  matches?: { matchId: string; score: number; favorite: boolean; property: PublicListing }[];
+  inquiries?: { name: string; channel: string; at: string; ref: string }[];
+  agreements?: { agreementNo: string; kind: string; title?: string; status: string; updatedAt: string }[];
   properties?: { _id: string; ref: string; propertyType: string; listingPurpose: string; status: string; location: string; size: number; sizeUnit: string; askingPrice: number; verification: string; onWebsite: boolean; views: number; inquiries: number; coverThumbnailUrl?: string | null }[];
 }
 
@@ -348,6 +362,116 @@ function Receipts({ token, kind, id, payments }: { token: string; kind: 'lease' 
         </li>
       ))}
     </ul>
+  );
+}
+
+function PreferencesCard({ token, req, editable, onSaved }: { token: string; req: NonNullable<PortalView['requirement']>; editable: boolean; onSaved(): void }) {
+  const { t } = useTranslation();
+  const [editing, setEditing] = useState(false);
+  const [f, setF] = useState({ minBudget: req.minBudget ? String(req.minBudget) : '', maxBudget: req.maxBudget ? String(req.maxBudget) : '', societies: req.societies.join(', '), bedroomsMin: req.bedroomsMin ? String(req.bedroomsMin) : '', notes: req.notes ?? '' });
+  const save = useMutation({
+    mutationFn: () => pub.patch(`/portal/${token}/preferences`, { minBudget: f.minBudget ? Number(f.minBudget) : null, maxBudget: f.maxBudget ? Number(f.maxBudget) : null, societies: f.societies.split(',').map((s) => s.trim()).filter(Boolean), bedroomsMin: f.bedroomsMin ? Number(f.bedroomsMin) : null, notes: f.notes || null }),
+    onSuccess: () => (setEditing(false), onSaved()),
+  });
+  return (
+    <Card title={t('portal.yourRequirement')} actions={editable && !editing && <Button size="sm" variant="secondary" onClick={() => setEditing(true)}>{t('portal.change')}</Button>}>
+      {!editing ? (
+        <dl className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+          <div><dt className="text-xs text-muted">{t('portal.looking')}</dt><dd>{t(`enums.clientPurpose.${req.purpose}`)}{req.propertyTypes.length ? ` · ${req.propertyTypes.map((x) => t(`enums.propertyType.${x}`)).join(', ')}` : ''}</dd></div>
+          <div><dt className="text-xs text-muted">{t('portal.areas')}</dt><dd>{[...req.societies, ...req.areas].join(', ') || '—'}</dd></div>
+          <div><dt className="text-xs text-muted">{t('portal.budget')}</dt><dd className="ltr-nums">{req.minBudget || req.maxBudget ? `${req.minBudget ? formatPkr(req.minBudget) : '…'} – ${req.maxBudget ? formatPkr(req.maxBudget) : '…'}` : '—'}</dd></div>
+          <div><dt className="text-xs text-muted">{t('site.bedrooms')}</dt><dd>{req.bedroomsMin ? `${req.bedroomsMin}+` : '—'}</dd></div>
+        </dl>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Input label={t('portal.minBudget')} type="number" min={0} value={f.minBudget} onChange={(e) => setF({ ...f, minBudget: e.target.value })} />
+          <Input label={t('portal.maxBudget')} type="number" min={0} value={f.maxBudget} onChange={(e) => setF({ ...f, maxBudget: e.target.value })} />
+          <Input label={t('portal.areas')} value={f.societies} onChange={(e) => setF({ ...f, societies: e.target.value })} hint={t('client.commaHint')} />
+          <Input label={t('site.bedrooms')} type="number" min={0} value={f.bedroomsMin} onChange={(e) => setF({ ...f, bedroomsMin: e.target.value })} />
+          <Textarea label={t('common.notes')} value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} wrapperClassName="sm:col-span-2" />
+          {save.isError && <p className="text-sm text-red-600 sm:col-span-2">{errorText(save.error, t('site.sendFailed'))}</p>}
+          <div className="flex gap-2 sm:col-span-2"><Button loading={save.isPending} onClick={() => save.mutate()}>{t('common.save')}</Button><Button variant="ghost" onClick={() => setEditing(false)}>{t('common.cancel')}</Button></div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function MatchesCard({ token, matches, canVisit, onChange }: { token: string; matches: NonNullable<PortalView['matches']>; canVisit: boolean; onChange(): void }) {
+  const { t } = useTranslation();
+  const size = useSizeLabel();
+  const [visitFor, setVisitFor] = useState<string | null>(null);
+  const [when, setWhen] = useState('');
+  const [note, setNote] = useState('');
+  const react = useMutation({ mutationFn: (v: { id: string; reaction: string }) => pub.post(`/portal/${token}/matches/${v.id}`, { reaction: v.reaction }), onSuccess: onChange });
+  const visit = useMutation({ mutationFn: () => pub.post(`/portal/${token}/visits`, { propertyId: visitFor, preferredAt: new Date(when).toISOString(), note: note || undefined }), onSuccess: () => (setVisitFor(null), setWhen(''), setNote('')) });
+  return (
+    <Card title={t('portal.matches')}>
+      {!matches.length ? <p className="text-sm text-muted">{t('portal.noMatches')}</p> : (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {matches.map((m) => (
+            <div key={m.matchId} className="overflow-hidden rounded-xl border border-line">
+              <div className="aspect-[4/3] bg-surface-2">{m.property.coverThumbnailUrl && <img src={m.property.coverThumbnailUrl} alt="" className="h-full w-full object-cover" loading="lazy" />}</div>
+              <div className="space-y-1 p-3 text-sm">
+                <p className="ltr-nums font-bold text-brand-600">{formatPkr(m.property.price)}</p>
+                <p className="font-medium">{m.property.headline || `${size(m.property.size, m.property.sizeUnit)} ${t(`enums.propertyType.${m.property.propertyType}`)}`}</p>
+                <p className="text-xs text-muted">{placeLabel(m.property.location)} · {t('portal.matchScore', { score: m.score })}</p>
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  <Button size="sm" variant={m.favorite ? 'primary' : 'secondary'} onClick={() => react.mutate({ id: m.matchId, reaction: m.favorite ? 'UNFAVORITE' : 'FAVORITE' })}>{m.favorite ? t('portal.saved') : t('portal.save')}</Button>
+                  {canVisit && <Button size="sm" variant="secondary" onClick={() => setVisitFor(m.property._id)}>{t('portal.requestVisit')}</Button>}
+                  <Button size="sm" variant="ghost" onClick={() => react.mutate({ id: m.matchId, reaction: 'NOT_INTERESTED' })}>{t('portal.notInterested')}</Button>
+                </div>
+                {visitFor === m.property._id && (
+                  <div className="mt-2 space-y-2 rounded-lg bg-surface-2 p-2">
+                    <Input label={t('portal.when')} type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} />
+                    <Input label={t('common.notes')} value={note} onChange={(e) => setNote(e.target.value)} />
+                    {visit.isError && <p className="text-xs text-red-600">{errorText(visit.error, t('site.sendFailed'))}</p>}
+                    <Button size="sm" disabled={!when} loading={visit.isPending} onClick={() => visit.mutate()}>{t('site.send')}</Button>
+                  </div>
+                )}
+                {visit.isSuccess && !visitFor && <p className="text-xs text-emerald-700">{t('portal.visitRequested')}</p>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function DocumentsCard({ token, docs }: { token: string; docs: NonNullable<PortalView['documents']> }) {
+  const { t } = useTranslation();
+  const open = async (id: string) => {
+    const r = await get<{ url: string }>(`/portal/${token}/documents/${id}`);
+    window.open(r.url, '_blank', 'noopener');
+  };
+  if (!docs.length) return null;
+  return (
+    <Card title={t('portal.documents')}>
+      <ul className="divide-y divide-line text-sm">
+        {docs.map((d) => <li key={d._id} className="flex items-center gap-2 py-2"><FileDown className="h-4 w-4 text-muted" /><button type="button" className="hover:text-brand-600" onClick={() => void open(d._id)}>{d.fileName}</button><span className="ltr-nums ms-auto text-xs text-muted">{formatDate(d.createdAt)}</span></li>)}
+      </ul>
+    </Card>
+  );
+}
+
+function OwnerAvailability({ token, propertyId, askingPrice }: { token: string; propertyId: string; askingPrice: number }) {
+  const { t } = useTranslation();
+  const [mode, setMode] = useState<'none' | 'price'>('none');
+  const [price, setPrice] = useState(String(askingPrice));
+  const send = useMutation({ mutationFn: (v: { available: boolean; askingPrice?: number }) => pub.post(`/portal/${token}/properties/${propertyId}/availability`, v) });
+  if (send.isSuccess) return <p className="mt-2 text-xs text-emerald-700">{t('portal.ownerThanks')}</p>;
+  return (
+    <div className="mt-2 flex flex-wrap items-end gap-2">
+      <Button size="sm" variant="secondary" loading={send.isPending} onClick={() => send.mutate({ available: true })}>{t('portal.stillAvailable')}</Button>
+      <Button size="sm" variant="ghost" loading={send.isPending} onClick={() => send.mutate({ available: false })}>{t('portal.notAvailable')}</Button>
+      {mode === 'none' ? <Button size="sm" variant="ghost" onClick={() => setMode('price')}>{t('portal.changePrice')}</Button> : (
+        <>
+          <Input aria-label={t('portal.newPrice')} type="number" min={1} value={price} onChange={(e) => setPrice(e.target.value)} wrapperClassName="w-40" />
+          <Button size="sm" onClick={() => send.mutate({ available: true, askingPrice: Number(price) })}>{t('portal.requestPrice')}</Button>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -368,6 +492,8 @@ export function PortalPage() {
       <h1 className="text-xl font-bold">{t('portal.hello', { name: v.party.fullName })}</h1>
       <p className="mb-5 text-sm text-muted">{v.kind === 'CLIENT' ? t('portal.clientIntro', { business: b.name }) : t('portal.ownerIntro', { business: b.name })} {t('portal.validUntil', { date: formatDate(v.expiresAt) })}</p>
       <div className="space-y-4">
+        {v.requirement && <PreferencesCard token={token} req={v.requirement} editable={!!v.settings?.allowPreferenceUpdates} onSaved={() => void q.refetch()} />}
+        {v.kind === 'CLIENT' && v.settings?.showMatches && <MatchesCard token={token} matches={v.matches ?? []} canVisit={!!v.settings?.allowVisitRequests} onChange={() => void q.refetch()} />}
         {v.properties?.map((p) => (
           <Card key={p._id}>
             <div className="flex flex-wrap items-center gap-3">
@@ -382,6 +508,7 @@ export function PortalPage() {
                 {p.onWebsite && <Badge color="blue">{t('portal.onWebsite', { views: p.views, inquiries: p.inquiries })}</Badge>}
               </span>
             </div>
+            {v.settings?.allowOwnerAvailabilityUpdates && <OwnerAvailability token={token} propertyId={p._id} askingPrice={p.askingPrice} />}
           </Card>
         ))}
         {v.installmentPlans?.map((p) => (
@@ -408,6 +535,7 @@ export function PortalPage() {
               {l.nextDue && <span>{t('rental.nextDue')}: <span className="ltr-nums font-semibold">{formatPkr(l.nextDue.balance)}</span> · {formatDate(l.nextDue.dueDate)}</span>}
               {!!l.overdue && <span className="ms-3 font-semibold text-red-600">{t('rental.overdue')}: <span className="ltr-nums">{formatPkr(l.overdue)}</span></span>}
               {l.collected !== undefined && <span className="ms-3">{t('portal.collected')}: <span className="ltr-nums font-semibold">{formatPkr(l.collected)}</span></span>}
+              {!!l.maintenance && <span className="ms-3">{t('ops.maintenance')}: <span className="ltr-nums font-semibold">{formatPkr(l.maintenance)}</span></span>}
             </p>
             <Receipts token={token} kind="lease" id={l._id} payments={l.payments} />
           </Card>
@@ -420,10 +548,26 @@ export function PortalPage() {
               {d.price ? <span className="ltr-nums text-sm">{formatPkr(d.price)}</span> : null}
               <Badge color={STAGE_COLOR[d.stage] ?? 'blue'} className="ms-auto">{t(`enums.dealStage.${d.stage}`)}</Badge>
             </div>
+            {!!d.offers?.length && (
+              <ul className="mt-2 space-y-1 text-xs">
+                {d.offers.map((o, i) => <li key={i} className="flex gap-2"><span>{t(`enums.offerParty.${o.party}`, { defaultValue: o.party })}</span><span className="ltr-nums font-semibold">{formatPkr(o.amount)}</span><Badge color={o.status === 'ACCEPTED' ? 'green' : o.status === 'REJECTED' ? 'red' : 'gray'}>{t(`enums.offerStatus.${o.status}`, { defaultValue: o.status })}</Badge><span className="ltr-nums ms-auto text-muted">{formatDate(o.at)}</span></li>)}
+              </ul>
+            )}
             {d._id && <Receipts token={token} kind="deal" id={d._id} payments={d.payments} />}
           </Card>
         ))}
-        {!v.properties?.length && !v.installmentPlans?.length && !v.leases?.length && !v.deals?.length && <EmptyState title={t('portal.nothing')} />}
+        {!!v.inquiries?.length && (
+          <Card title={t('portal.inquiries')}>
+            <ul className="divide-y divide-line text-sm">{v.inquiries.map((i, n) => <li key={n} className="flex gap-2 py-1.5"><span className="ltr-nums">{i.ref}</span><span>{i.name}</span><span className="text-xs text-muted">{i.channel === 'WHATSAPP' ? 'WhatsApp' : t('marketing.website')}</span><span className="ltr-nums ms-auto text-xs text-muted">{formatDate(i.at)}</span></li>)}</ul>
+          </Card>
+        )}
+        {!!v.agreements?.length && (
+          <Card title={t('portal.agreements')}>
+            <ul className="divide-y divide-line text-sm">{v.agreements.map((a) => <li key={a.agreementNo} className="flex gap-2 py-1.5"><span className="ltr-nums font-medium">{a.agreementNo}</span><span>{a.title ?? t(`enums.agreementKind.${a.kind}`, { defaultValue: a.kind })}</span><Badge color={a.status === 'SIGNED' ? 'green' : 'gray'}>{t(`enums.agreementStatus.${a.status}`, { defaultValue: a.status })}</Badge><span className="ltr-nums ms-auto text-xs text-muted">{formatDate(a.updatedAt)}</span></li>)}</ul>
+          </Card>
+        )}
+        <DocumentsCard token={token} docs={v.documents ?? []} />
+        {!v.properties?.length && !v.installmentPlans?.length && !v.leases?.length && !v.deals?.length && !v.matches?.length && <EmptyState title={t('portal.nothing')} />}
         <Card title={t('portal.contact')}>
           {send.isSuccess ? <p className="text-sm text-emerald-700">{t('portal.sent')}</p> : (
             <form onSubmit={(e) => (e.preventDefault(), send.mutate())} className="space-y-2">

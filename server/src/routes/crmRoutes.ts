@@ -12,6 +12,8 @@ import {
   leaseController,
   installmentController,
   financeReportController,
+  refundController,
+  leaseExtraController,
   inventoryToolsController,
   negotiationController,
   dealController,
@@ -33,6 +35,9 @@ import {
 import { requirePermission as can } from '../middleware/authorize';
 import { authOf } from '../middleware/authenticate';
 import { teamDashboardService } from '../services/teamDashboardService';
+import { performanceService, type PeriodFilter } from '../services/performanceService';
+import { agentPerformancePdf, agentPerformanceXlsx } from '../services/performanceExport';
+import { dealService } from '../services/dealService';
 import { sendSuccess } from '../utils/http';
 import { validate } from '../middleware/validate';
 import { asyncHandler as h } from '../utils/http';
@@ -96,6 +101,9 @@ r.post('/deals/:id/stage', can(P.DEALS_UPDATE), validate({ params: idParams, bod
 r.post('/deals/:id/payments', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), validate({ params: idParams, body: s.dealPaymentSchema }), h(dealController.addPayment));
 r.delete('/deals/:id/payments/:subId', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), validate({ params: s.subIdParams }), h(dealController.removePayment));
 r.post('/deals/:id/payouts', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), validate({ params: idParams, body: s.dealPayoutSchema }), h(dealController.addPayout));
+r.post('/deals/:id/payouts/:subId/approve', can(P.DEALS_READ, P.DEALS_APPROVE), validate({ params: s.subIdParams, body: s.noteBodySchema }), h(async (req, res) => sendSuccess(res, await dealService.approvePayout(authOf(req), req.params.id, req.params.subId, req.body.note), { message: 'Payout approved' })));
+r.post('/deals/:id/adjustments', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), validate({ params: idParams, body: s.dealAdjustmentSchema }), h(async (req, res) => sendSuccess(res, await dealService.addAdjustment(authOf(req), req.params.id, req.body), { message: 'Commission adjusted' })));
+r.post('/deals/:id/dispute', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), validate({ params: idParams, body: s.dealDisputeSchema }), h(async (req, res) => sendSuccess(res, await dealService.setDispute(authOf(req), req.params.id, req.body))));
 r.patch('/deals/:id/payouts/:subId', can(P.DEALS_READ, P.COMMISSIONS_MANAGE), validate({ params: s.subIdParams, body: s.dealPayoutUpdateSchema }), h(dealController.updatePayout));
 r.delete('/deals/:id', can(P.DEALS_DELETE), id, h(dealController.remove));
 // Agreements (signed copies are documents with entityType 'agreement')
@@ -146,6 +154,22 @@ r.post('/installments', can(P.FINANCE_CREATE), validate({ body: s.installmentPla
 r.get('/installments/:id', can(P.FINANCE_READ), id, h(installmentController.get));
 r.post('/installments/:id/payments', can(P.FINANCE_CREATE), validate({ params: idParams, body: s.rentPaymentSchema }), h(installmentController.pay));
 r.post('/installments/:id/cancel', can(P.FINANCE_UPDATE), validate({ params: idParams, body: s.installmentCancelSchema }), h(installmentController.cancel));
+r.get('/reports/agent-performance', validate({ query: s.performanceQuery }), h(async (req, res) => {
+  const q = req.query as unknown as { format?: 'json' | 'xlsx' | 'pdf' } & PeriodFilter;
+  const data = await performanceService.agents(authOf(req), q);
+  if (!q.format || q.format === 'json') return void sendSuccess(res, data);
+  const title = `Agent performance ${data.from.toISOString().slice(0, 10)} – ${data.to.toISOString().slice(0, 10)}`;
+  res.setHeader('Content-Disposition', `attachment; filename="agent-performance.${q.format}"`);
+  res.setHeader('Content-Type', q.format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  if (q.format === 'pdf') await agentPerformancePdf(data.rows, title, res);
+  else await agentPerformanceXlsx(data.rows, title, res);
+}));
+r.get('/reports/business-summary', can(P.REPORTS_READ), validate({ query: s.performanceQuery }), h(async (req, res) => sendSuccess(res, await performanceService.business(authOf(req), req.query as never))));
+r.get('/reports/branches', can(P.REPORTS_READ), validate({ query: s.performanceQuery }), h(async (req, res) => sendSuccess(res, await performanceService.branches(authOf(req), req.query as never))));
+r.get('/reports/income-statement', can(P.FINANCE_READ, P.REPORTS_READ), validate({ query: s.periodQuery }), h(financeReportController.incomeStatement));
+r.get('/vouchers/:kind/:id', validate({ params: s.voucherParams }), h(financeReportController.voucher));
+r.get('/vouchers/:kind/:id/:subId', validate({ params: s.voucherParams }), h(financeReportController.voucher));
+r.post('/transactions/:id/refund', can(P.FINANCE_CREATE), validate({ params: idParams, body: s.refundSchema }), h(refundController.refund));
 r.get('/reports/cash-flow', can(P.FINANCE_READ, P.REPORTS_READ), validate({ query: s.periodQuery }), h(financeReportController.cashFlow));
 r.get('/reports/aging', can(P.FINANCE_READ, P.REPORTS_READ), h(financeReportController.aging));
 r.get('/reports/agent-statement', can(P.DEALS_READ), validate({ query: s.agentStatementQuery }), h(financeReportController.agentStatement));
@@ -156,6 +180,9 @@ r.post('/leases', can(P.RENTALS_MANAGE), validate({ body: s.leaseCreateSchema })
 r.get('/leases/:id', can(P.RENTALS_READ), id, h(leaseController.get));
 r.post('/leases/:id/payments', can(P.RENTALS_MANAGE), validate({ params: idParams, body: s.rentPaymentSchema }), h(leaseController.pay));
 r.post('/leases/:id/waive', can(P.RENTALS_MANAGE), validate({ params: idParams, body: s.rentWaiveSchema }), h(leaseController.waive));
+r.post('/leases/:id/notices', can(P.RENTALS_MANAGE), validate({ params: idParams, body: s.tenantNoticeSchema }), h(leaseExtraController.addNotice));
+r.get('/leases/:id/notices/:subId/pdf', can(P.RENTALS_READ), validate({ params: s.subIdParams }), h(leaseExtraController.noticePdf));
+r.get('/leases/:id/expenses', can(P.RENTALS_READ), id, h(leaseExtraController.expenses));
 r.post('/leases/:id/inspections', can(P.RENTALS_MANAGE), validate({ params: idParams, body: s.inspectionSchema }), h(leaseController.inspect));
 r.post('/leases/:id/renew', can(P.RENTALS_MANAGE), validate({ params: idParams, body: s.leaseRenewSchema }), h(leaseController.renew));
 r.post('/leases/:id/end', can(P.RENTALS_MANAGE), validate({ params: idParams, body: s.leaseEndSchema }), h(leaseController.end));

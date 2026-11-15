@@ -21,6 +21,12 @@ export interface TransactionDoc extends SyncDoc {
   clientId?: Types.ObjectId | null;
   /** Marketing expense booked against a campaign (counts toward its spend / ROI). */
   campaignId?: Types.ObjectId | null;
+  /** Maintenance or other cost on a managed rental (shows on the lease and the landlord statement). */
+  leaseId?: Types.ObjectId | null;
+  /** A refund (EXPENSE) points at the income it returns money from. */
+  refundOf?: Types.ObjectId | null;
+  /** On an income entry: how much has been refunded so far (the entry itself is never edited down). */
+  refundedAmount?: number;
   description?: string;
   reference?: string;
   source: TransactionSource;
@@ -46,6 +52,9 @@ const schema = new Schema<TransactionDoc>(
     propertyId: { type: Schema.Types.ObjectId, ref: 'Property', default: null },
     clientId: { type: Schema.Types.ObjectId, ref: 'Client', default: null },
     campaignId: { type: Schema.Types.ObjectId, ref: 'Campaign', default: null },
+    leaseId: { type: Schema.Types.ObjectId, ref: 'Lease', default: null },
+    refundOf: { type: Schema.Types.ObjectId, ref: 'Transaction', default: null },
+    refundedAmount: { type: Number, default: 0, min: 0 },
     description: { type: String, maxlength: 500 },
     reference: { type: String, maxlength: 100 },
     source: { type: String, enum: TRANSACTION_SOURCES, default: 'MANUAL' },
@@ -61,6 +70,8 @@ schema.index({ businessId: 1, deletedAt: 1, date: -1 });
 schema.index({ businessId: 1, type: 1, date: -1 });
 schema.index({ businessId: 1, categoryId: 1, date: -1 });
 schema.index({ businessId: 1, dealId: 1 });
+schema.index({ businessId: 1, leaseId: 1 }, { partialFilterExpression: { leaseId: { $type: 'objectId' } } });
+schema.index({ businessId: 1, refundOf: 1 }, { partialFilterExpression: { refundOf: { $type: 'objectId' } } });
 schema.index({ businessId: 1, campaignId: 1 }, { partialFilterExpression: { campaignId: { $type: 'objectId' } } });
 // One income entry per commission payment, even if the hook runs twice.
 schema.index({ businessId: 1, sourceKey: 1 }, { unique: true, partialFilterExpression: { sourceKey: { $type: 'string' } } });

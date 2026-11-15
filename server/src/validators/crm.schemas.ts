@@ -69,6 +69,7 @@ const branchFields = {
   code: optionalText(12),
   address: optionalText(300),
   phone: phone.optional(),
+  targets: z.object({ leads: z.number().int().min(0).max(1e6).nullable().optional(), dealsWon: z.number().int().min(0).max(1e5).nullable().optional(), commission: money.nullable().optional() }).strict().optional(),
 };
 export const branchCreateSchema = z.object({ uuid: uuid.optional(), ...branchFields }).strict();
 export const branchUpdateSchema = z
@@ -104,6 +105,10 @@ export const requirementSchema = z
     minBudget: money.optional(),
     maxBudget: money.optional(),
     bedroomsMin: z.number().int().min(0).max(50).optional(),
+    bathroomsMin: z.number().int().min(0).max(50).optional(),
+    constructionStatuses: z.array(z.enum(CONSTRUCTION_STATUSES)).max(10).optional(),
+    possessionStatuses: z.array(z.enum(POSSESSION_STATUSES)).max(10).optional(),
+    amenities: z.array(shortText(60)).max(20).optional(),
     notes: optionalText(1000),
   })
   .strict();
@@ -404,6 +409,7 @@ const transactionFields = {
   propertyId: objectId.nullable().optional(),
   clientId: objectId.nullable().optional(),
   campaignId: objectId.nullable().optional(),
+  leaseId: objectId.nullable().optional(),
   description: optionalText(500),
   reference: optionalText(100),
 };
@@ -508,7 +514,7 @@ export const documentListQuery = pagination.extend({
   entityId: objectId.optional(),
   category: z.enum(DOCUMENT_CATEGORIES).optional(),
 });
-export const documentUpdateSchema = z.object({ fileName: shortText(200).min(1).optional(), category: z.enum(DOCUMENT_CATEGORIES).optional(), expiresAt: z.coerce.date().nullable().optional() }).strict();
+export const documentUpdateSchema = z.object({ fileName: shortText(200).min(1).optional(), category: z.enum(DOCUMENT_CATEGORIES).optional(), expiresAt: z.coerce.date().nullable().optional(), sharedWithPortal: z.boolean().optional() }).strict();
 
 // ── Verification, saved views, property import ──
 export const verificationSubmitSchema = z.object({ note: optionalText(500) }).strict();
@@ -593,6 +599,29 @@ export const periodQuery = z.object({ from: z.coerce.date().optional(), to: z.co
 export const agentStatementQuery = periodQuery.extend({ userId: objectId, format: z.enum(['json', 'pdf']).optional() });
 export const receiptParams = z.object({ kind: z.enum(['lease', 'installment', 'deal']), id: objectId, paymentId: z.string().min(8).max(64) });
 
+export const refundSchema = z.object({ amount: money.pipe(z.number().min(1)), date: z.coerce.date(), method: z.enum(PAYMENT_METHODS).optional(), reason: shortText(500).min(3), reference: optionalText(100) }).strict();
+export const voucherParams = z.object({ kind: z.enum(['transaction', 'payout']), id: objectId, subId: z.string().max(64).optional() });
+export const tenantNoticeSchema = z
+  .object({
+    type: z.enum(['RENT_REMINDER', 'RENT_INCREASE', 'RENEWAL', 'VACATE', 'MAINTENANCE', 'GENERAL']),
+    subject: shortText(200).min(3),
+    message: shortText(4000).min(5),
+    deliveredVia: z.enum(['WHATSAPP', 'PRINTED', 'EMAIL', 'IN_PERSON']),
+    date: z.coerce.date().optional(),
+  })
+  .strict();
+export const performanceQuery = z.object({
+  from: z.coerce.date().optional(),
+  to: z.coerce.date().optional(),
+  branchId: objectId.optional(),
+  agentId: objectId.optional(),
+  propertyType: z.enum(PROPERTY_TYPES).optional(),
+  format: z.enum(['json', 'xlsx', 'pdf']).optional(),
+});
+export const noteBodySchema = z.object({ note: optionalText(500) }).strict();
+export const dealAdjustmentSchema = z.object({ amount: z.coerce.number().int().min(-1e12).max(1e12).refine((v) => v !== 0, 'Enter a non-zero amount'), reason: shortText(500).min(3) }).strict();
+export const dealDisputeSchema = z.object({ action: z.enum(['OPEN', 'RESOLVE']), text: shortText(1000).min(3) }).strict();
+
 export const propertyImportFields = z.object({ ownerId: objectId.optional(), agentId: objectId.optional() });
 
 // ── Notes & activities ──
@@ -618,7 +647,7 @@ export const settingsUpdateSchema = z
   .object({
     matching: z
       .object({
-        weights: z.object({ type: weight, location: weight, budget: weight, size: weight, purpose: weight }).partial().strict().optional(),
+        weights: z.object({ type: weight, location: weight, budget: weight, size: weight, purpose: weight, features: weight }).partial().strict().optional(),
         storeThreshold: z.number().int().min(0).max(100).optional(),
         notifyThreshold: z.number().int().min(0).max(100).optional(),
         crossBranch: z.boolean().optional(),
@@ -626,6 +655,15 @@ export const settingsUpdateSchema = z
       .strict()
       .optional(),
     sqftPerUnit: z.object({ MARLA: z.number().positive(), KANAL: z.number().positive(), ACRE: z.number().positive() }).partial().strict().optional(),
+    leadAssignment: z
+      .object({
+        mode: z.enum(['NONE', 'ROUND_ROBIN', 'BY_SOURCE']).optional(),
+        preferListingAgent: z.boolean().optional(),
+        agentIds: z.array(objectId).max(50).optional(),
+        bySource: z.array(z.object({ source: z.enum(CLIENT_SOURCES), userId: objectId }).strict()).max(20).optional(),
+      })
+      .strict()
+      .optional(),
     leadScoring: z
       .object({
         weights: z.object(Object.fromEntries(LEAD_SCORE_FACTORS.map((f) => [f, z.number().min(0).max(100)]))).partial().strict().optional(),
@@ -641,7 +679,7 @@ export const settingsUpdateSchema = z
       .optional(),
     reminders: z.object({ defaultMinutesBefore: z.number().int().min(0).max(10080) }).strict().optional(),
     commission: z
-      .object({ defaultBuyerPct: z.number().min(0).max(20).optional(), defaultSellerPct: z.number().min(0).max(20).optional(), autoCreateIncome: z.boolean().optional(), closeApprovalRequired: z.boolean().optional() })
+      .object({ defaultBuyerPct: z.number().min(0).max(20).optional(), defaultSellerPct: z.number().min(0).max(20).optional(), autoCreateIncome: z.boolean().optional(), closeApprovalRequired: z.boolean().optional(), payoutApprovalRequired: z.boolean().optional() })
       .strict()
       .optional(),
   })

@@ -12,6 +12,8 @@ export const MODULE_PREFIXES: [string, Module][] = [
   ['/deals', 'deals'],
   ['/leases', 'rentals'],
   ['/campaigns', 'marketing'],
+  ['/vouchers', 'finance'],
+  ['/reports/income-statement', 'finance'],
   ['/ai', 'ai'],
   ['/reports/campaigns', 'marketing'],
   ['/installments', 'finance'],

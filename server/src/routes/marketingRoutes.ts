@@ -46,6 +46,8 @@ r.delete('/campaigns/:id', can(P.MARKETING_MANAGE), id, h(async (req, res) => {
 }));
 r.get('/reports/campaigns', can(P.REPORTS_READ), h(async (req, res) => sendSuccess(res, await campaignService.report(authOf(req)))));
 
+r.get('/portal-settings', can(P.CLIENTS_READ), h(async (req, res) => sendSuccess(res, await portalService.getSettings(authOf(req)))));
+r.put('/portal-settings', can(P.MARKETING_MANAGE), validate({ body: s.portalSettingsSchema }), h(async (req, res) => sendSuccess(res, await portalService.updateSettings(authOf(req), req.body), { message: 'Portal settings saved' })));
 r.post('/portal-links', validate({ body: s.portalLinkSchema }), h(async (req, res) => sendSuccess(res, await portalService.createLink(authOf(req), req.body), { status: 201 })));
 r.get('/portal-links', validate({ query: s.portalLinkListQuery }), h(async (req, res) => {
   const a = authOf(req);
@@ -90,6 +92,14 @@ pr.get('/portal/:token/receipts/:kind/:id/:paymentId', validate({ params: s.port
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('Content-Disposition', `inline; filename="receipt-${paymentId.slice(0, 8)}.pdf"`);
   res.end(Buffer.concat(chunks));
+}));
+pr.patch('/portal/:token/preferences', inquiryLimiter, validate({ params: s.tokenParams, body: s.portalPreferencesSchema }), h(async (req, res) => sendSuccess(res, await portalService.updatePreferences(req.params.token, req.body), { message: 'Preferences updated' })));
+pr.post('/portal/:token/matches/:matchId', validate({ params: s.portalMatchParams, body: s.portalReactionSchema }), h(async (req, res) => sendSuccess(res, await portalService.reactToMatch(req.params.token, req.params.matchId, req.body.reaction))));
+pr.post('/portal/:token/visits', inquiryLimiter, validate({ params: s.tokenParams, body: s.portalVisitSchema }), h(async (req, res) => sendSuccess(res, await portalService.requestVisit(req.params.token, req.body), { status: 201, message: 'Visit requested' })));
+pr.post('/portal/:token/properties/:propertyId/availability', inquiryLimiter, validate({ params: s.portalPropertyParams, body: s.portalAvailabilitySchema }), h(async (req, res) => sendSuccess(res, await portalService.ownerAvailability(req.params.token, req.params.propertyId, req.body), { message: 'Thank you — your agent has been told' })));
+pr.get('/portal/:token/documents/:docId', validate({ params: s.portalDocParams }), h(async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  sendSuccess(res, await portalService.document(req.params.token, req.params.docId));
 }));
 pr.post('/portal/:token/requests', inquiryLimiter, validate({ params: s.tokenParams, body: s.portalRequestSchema }), h(async (req, res) => sendSuccess(res, await portalService.request(req.params.token, req.body.message), { status: 201, message: 'Message sent' })));
 

@@ -27,6 +27,7 @@ export const aiRoutes = Router();
 aiRoutes.get('/ai/status', h(async (req, res) => sendSuccess(res, { ...(await aiService.status(authOf(req))), tools: assistantService.toolNames(authOf(req)) })));
 aiRoutes.post('/ai/assistant', aiLimiter, validate({ body: assistantSchema }), h(async (req, res) => sendSuccess(res, await assistantService.ask(authOf(req), req.body.messages))));
 aiRoutes.post('/ai/properties/:id/description', aiLimiter, can(P.PROPERTIES_READ), validate({ params: idParams, body: z.object({ language, useAi: z.boolean().optional() }).strict() }), h(async (req, res) => sendSuccess(res, await aiService.describeProperty(authOf(req), req.params.id, req.body))));
+aiRoutes.get('/ai/properties/:id/quality', can(P.PROPERTIES_READ), validate({ params: idParams }), h(async (req, res) => sendSuccess(res, await aiService.listingQuality(authOf(req), req.params.id))));
 aiRoutes.get('/ai/properties/:id/price-estimate', can(P.PROPERTIES_READ), validate({ params: idParams }), h(async (req, res) => sendSuccess(res, await aiService.priceEstimate(authOf(req), req.params.id))));
 aiRoutes.post('/ai/clients/:id/brief', aiLimiter, can(P.CLIENTS_READ), validate({ params: idParams, body: z.object({ language }).strict() }), h(async (req, res) => sendSuccess(res, await aiService.clientBrief(authOf(req), req.params.id, req.body.language))));
 aiRoutes.get('/ai/forecast', h(async (req, res) => sendSuccess(res, await aiService.forecast(authOf(req)))));

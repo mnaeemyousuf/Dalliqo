@@ -3,7 +3,7 @@ import { CalendarPlus, FileUp, LayoutGrid, Mail, MessageCircle, MessageSquare, P
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { BUYING_TIMELINES, CLIENT_PURPOSES, CLIENT_SOURCES, CLIENT_STATUSES, LEAD_TEMPERATURES, LOST_REASONS, PERMISSIONS, PRIORITIES, PROPERTY_TYPES, SIZE_UNITS } from '@recrm/shared';
+import { BUYING_TIMELINES, CLIENT_PURPOSES, CLIENT_SOURCES, CLIENT_STATUSES, LEAD_TEMPERATURES, LOST_REASONS, PERMISSIONS, PRIORITIES, PROPERTY_TYPES, SIZE_UNITS, POSSESSION_STATUSES, CONSTRUCTION_STATUSES } from '@recrm/shared';
 import { LeadImportModal, LeadPanel, TemperatureBadge } from '@/pages/Phase3Pages';
 import { SavedViews } from '@/pages/Phase4Pages';
 import { PortalLinkButton, WhatsAppSendButton } from '@/pages/MarketingPages';
@@ -35,6 +35,11 @@ interface ReqDraft {
   sizeUnit: string;
   minBudget: string;
   maxBudget: string;
+  bedroomsMin: string;
+  bathroomsMin: string;
+  possessionStatuses: string[];
+  constructionStatuses: string[];
+  amenities: string;
   isPrimary: boolean;
 }
 
@@ -51,6 +56,11 @@ const toDraft = (r?: Requirement): ReqDraft => ({
   sizeUnit: r?.sizeUnit ?? 'SQ_YARD',
   minBudget: r?.minBudget?.toString() ?? '',
   maxBudget: r?.maxBudget?.toString() ?? '',
+  bedroomsMin: r?.bedroomsMin?.toString() ?? '',
+  bathroomsMin: r?.bathroomsMin?.toString() ?? '',
+  possessionStatuses: r?.possessionStatuses ?? [],
+  constructionStatuses: r?.constructionStatuses ?? [],
+  amenities: (r?.amenities ?? []).join(', '),
   isPrimary: r?.isPrimary ?? true,
 });
 
@@ -103,6 +113,28 @@ function RequirementEditor({ value, onChange, onRemove, index }: { value: ReqDra
         <Input label={t('client.minBudget')} type="number" min={0} step={1000} value={value.minBudget} onChange={set('minBudget')} />
         <Input label={t('client.maxBudget')} type="number" min={0} step={1000} value={value.maxBudget} onChange={set('maxBudget')} />
       </div>
+      <details className="rounded-lg bg-surface-2 px-3 py-2" open={!!(value.bedroomsMin || value.bathroomsMin || value.amenities || value.possessionStatuses.length || value.constructionStatuses.length)}>
+        <summary className="cursor-pointer text-sm font-medium">{t('client.morePreferences')}</summary>
+        <div className="mt-3 space-y-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Input label={t('client.bedroomsMin')} type="number" min={0} max={50} value={value.bedroomsMin} onChange={set('bedroomsMin')} />
+            <Input label={t('client.bathroomsMin')} type="number" min={0} max={50} value={value.bathroomsMin} onChange={set('bathroomsMin')} />
+          </div>
+          {([['possessionStatuses', 'possessionStatus', POSSESSION_STATUSES], ['constructionStatuses', 'constructionStatus', CONSTRUCTION_STATUSES]] as const).map(([key, group, list]) => (
+            <div key={key}>
+              <p className="label">{t(`client.${key}`)}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {list.map((s) => (
+                  <button type="button" key={s} onClick={() => onChange({ ...value, [key]: value[key].includes(s) ? value[key].filter((x) => x !== s) : [...value[key], s] })} className={`chip border ${value[key].includes(s) ? 'border-brand-600 bg-brand-50 text-brand-600' : 'border-line text-muted'}`}>
+                    {t(`enums.${group}.${s}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+          <Input label={t('client.amenities')} value={value.amenities} onChange={set('amenities')} hint={t('client.commaHint')} placeholder="Gas, Park nearby, Corner" />
+        </div>
+      </details>
     </div>
   );
 }
@@ -165,6 +197,11 @@ export function ClientFormDrawer({ open, onClose, client }: { open: boolean; onC
           sizeUnit: r.minSize || r.maxSize ? r.sizeUnit : undefined,
           minBudget: num(r.minBudget),
           maxBudget: num(r.maxBudget),
+          bedroomsMin: num(r.bedroomsMin),
+          bathroomsMin: num(r.bathroomsMin),
+          possessionStatuses: r.possessionStatuses,
+          constructionStatuses: r.constructionStatuses,
+          amenities: splitList(r.amenities),
         })),
       };
       return client ? clientApi.update(client._id, { ...body, baseVersion: client.version }) : clientApi.create(body);

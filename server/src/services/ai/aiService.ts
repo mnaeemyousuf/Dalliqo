@@ -10,6 +10,7 @@ import { InstallmentPlan } from '../../models/InstallmentPlan';
 import { Lease } from '../../models/Lease';
 import { Match } from '../../models/Match';
 import { Property, type PropertyDoc } from '../../models/Property';
+import { PropertyMedia } from '../../models/FileAsset';
 import { clientRepository, propertyRepository } from '../../repositories/entityRepositories';
 import type { AuthContext } from '../../types/context';
 import { forbidden } from '../../utils/AppError';
@@ -274,6 +275,32 @@ export const aiService = {
       expectedLeadsNextMonth: avgLeads,
       method: 'Open deals weighted by stage probability; scheduled installments and rent not yet paid; lead trend is the 3-month average.',
     };
+  },
+
+  /**
+   * Listing quality: what buyers see and what keeps a listing trustworthy. Each check has a weight;
+   * the score is the share of weight earned, with a fix-it hint for every failed check.
+   */
+  async listingQuality(auth: AuthContext, id: string) {
+    const p = await propertyRepository.getById(auth, id, 'Property not found');
+    const photos = await PropertyMedia.countDocuments({ businessId: auth.businessId, entityId: p._id, deletedAt: null, kind: 'image' });
+    const built = ['HOUSE', 'FLAT', 'APARTMENT', 'PORTION', 'FARMHOUSE'].includes(p.propertyType);
+    const fresh = p.lastVerifiedAt ? Date.now() - +new Date(p.lastVerifiedAt) < 30 * DAY : false;
+    const checks: { key: string; ok: boolean; weight: number }[] = [
+      { key: 'PHOTOS', ok: photos >= 3, weight: 20 },
+      { key: 'DESCRIPTION', ok: (p.description ?? '').trim().length >= 80, weight: 15 },
+      { key: 'LOCATION_PIN', ok: p.latitude != null && p.longitude != null, weight: 10 },
+      { key: 'ADDRESS', ok: !!p.society && !!(p.block || p.phase || p.sector), weight: 10 },
+      { key: 'PRICE', ok: p.askingPrice > 0, weight: 10 },
+      { key: 'FRESH', ok: fresh, weight: 10 },
+      { key: 'VERIFIED', ok: p.verification?.status === 'APPROVED', weight: 10 },
+      { key: 'OWNER', ok: !!p.ownerId, weight: 5 },
+      { key: 'ROOMS', ok: !built || !!(p.bedrooms && p.bathrooms), weight: built ? 5 : 0 },
+      { key: 'FEATURES', ok: !!(p.amenities?.length || p.corner || p.parkFacing || p.mainRoad), weight: 5 },
+    ].filter((c) => c.weight > 0);
+    const total = checks.reduce((s, c) => s + c.weight, 0);
+    const score = Math.round((checks.filter((c) => c.ok).reduce((s, c) => s + c.weight, 0) / total) * 100);
+    return { score, grade: score >= 85 ? 'GOOD' : score >= 60 ? 'FAIR' : 'POOR', photos, checks: checks.map(({ key, ok }) => ({ key, ok })) };
   },
 
   /** Indicative price from comparable listings and recorded sales — an estimate, not a valuation. */

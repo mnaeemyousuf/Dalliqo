@@ -65,3 +65,37 @@ Legend: ✅ implemented · 🟡 partial · ❌ missing · **P3** = delivered in 
 - **WhatsApp Business API** (Meta Cloud API): template approval + phone number id + token.
 - **AI provider** (Claude or other): API key, data-processing approval.
 - **Maps** (OSM is free; Google Maps needs a key) and **email provider** (SMTP is configured; transactional templates pending).
+
+
+## Re-audit against the full brief (15 Nov 2026)
+
+Each section of the master brief was checked against the code (server, web, Android, tests). Status: ✅ done · 🟡 done with a stated limit.
+
+| § | Area | Status | Where / notes |
+|---|---|---|---|
+| 3 | Lead sources (FB, IG, WhatsApp, Zameen, OLX, website, walk-in, phone, referral, other) | ✅ | `CLIENT_SOURCES` |
+| 3 | Assignment and history, hot / warm / cold, scoring with reasons, response time, duplicates, lost reasons, aging, unassigned inbox, Excel import / export, saved views | ✅ | Phases 3–4 |
+| 3 | Configurable assignment rules (listing agent, round-robin, by source) | ✅ | **New in this batch:** Marketing → Website → "Who gets new leads" |
+| 4 | Pakistan property attributes, units, lifecycle, price history, floor price (restricted), expiry, verification reminders, aging, duplicates, co-owners, multiple agents, documents, bulk import, QR, brochure, timeline | ✅ | **New:** co-owner and agent pickers in the web form |
+| 4 | Viewing history and inquiry history per property | ✅ | **New:** "Inquiries & viewings" tab |
+| 5 | Verification workflow, CNIC restriction, sensitive documents, expiry reminders, disclaimer | ✅ | Phase 4 |
+| 6 | Weighted, configurable matching with explanations, auto re-match, notifications, rejected tracking, favourites, map | ✅ | **New:** bedrooms, bathrooms, possession, construction and amenities as a "features" factor; favourites from the client portal |
+| 7 | Pipeline, offers / counter-offers, checklist, close approval | ✅ | Phase 3–4 (stages are fixed but the checklist is configurable) |
+| 8 | Percentage / fixed, buyer / seller, rental fee, agent split, external dealer / referral / branch shares, lifecycle, statements, instalment receipts | ✅ | Phase 5B |
+| 8 | Adjustments, disputes, payout approval history | ✅ | **New** |
+| 9 | Income / expense, cash / bank (method), receipts, vouchers, receivables / payables, refunds, instalments, cash flow, income statement, profitability, branch-wise, aging | ✅ | **New:** refunds, payment vouchers, income statement by category and branch |
+| 10 | Leases, schedules, partial payments, late fees, deposits, renewal / expiry, inspections, reminders | ✅ | Phase 5A |
+| 10 | Maintenance expenses, tenant notices | ✅ | **New** |
+| 11 | Public listings, inquiry → lead, campaigns / ROI, agent pages, WhatsApp Business, social sharing | ✅ | Phase 6 and follow-ups. **New:** Facebook / X / LinkedIn / WhatsApp / copy-link sharing |
+| 12 | Permission-aware assistant, descriptions, briefs and follow-up suggestions, forecast, price estimate | 🟡 | Phase 7. The AI-written parts need `ANTHROPIC_API_KEY`. Provider abstraction lives in `aiClient`. |
+| 12 | Listing quality check | ✅ | **New** (deterministic; works without a key) |
+| 13 | Owner / branch / sales / agent / finance dashboards; agent performance with filters, Excel / PDF / print | ✅ | **New:** business overview with filters, full agent performance report (Excel / PDF), branch targets, printable income statement |
+| 14 | Client portal: requirements, update preferences, matched properties, favourites, visit requests, documents, agent messaging | ✅ | **New** |
+| 14 | Owner portal: properties, availability / price-change request, inquiries (first name), offers, agreements, statements, documents | ✅ | **New.** Agency switches control each item. |
+| 15 | In-app, push, email, WhatsApp, reminders, configurable automation rules | ✅ | Phases 3, 5, 6 |
+| 16 | Branches, branch scope, cross-branch matching, branch reports, branch targets, role templates, record-level permissions, tenant isolation | ✅ | **New:** branch targets and branch report |
+| 17 | Offline-first Android with conflict-aware sync | ✅ | Earlier phases (version / baseVersion conflicts, sync status). Installments and assistant are online-only by design. |
+| 18 | Responsive web, Urdu RTL, themes, PKR / CNIC / phone / DD/MM formatting | ✅ | |
+| 19 | Auth, sessions, devices, rate limits, secure uploads, audit log with old / new values, sensitive-data protection | ✅ | Backups and monitoring are documented in `docs/deployment` (hosting-level). |
+| 20 | Trial, plans, module entitlements, limits, billing history, usage | ✅ | Phase 3 |
+| 21 | Indexes, pagination, background jobs, efficient reports | ✅ | Aggregations only. Every new collection and field is indexed. |

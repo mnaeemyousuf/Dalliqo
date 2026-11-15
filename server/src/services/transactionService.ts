@@ -19,6 +19,8 @@ import { escapeRegex, searchBlob } from '../utils/text';
 import { activityService, type ActivityRef } from './activityService';
 import { auditService } from './auditService';
 import { Campaign } from '../models/Campaign';
+import { Lease } from '../models/Lease';
+import { withTransaction } from '../utils/transaction';
 import { dealHooks, dealRepository } from './dealService';
 import { publishChange } from './publish';
 import { settingsService } from './settingsService';
@@ -38,6 +40,7 @@ export interface TransactionInput {
   propertyId?: string | null;
   clientId?: string | null;
   campaignId?: string | null;
+  leaseId?: string | null;
   description?: string;
   reference?: string;
 }
@@ -55,7 +58,7 @@ export interface TransactionQuery {
   limit: number;
 }
 
-const EDITABLE = ['branchId', 'type', 'categoryId', 'amount', 'date', 'method', 'dealId', 'propertyId', 'clientId', 'campaignId', 'description', 'reference'] as const;
+const EDITABLE = ['branchId', 'type', 'categoryId', 'amount', 'date', 'method', 'dealId', 'propertyId', 'clientId', 'campaignId', 'leaseId', 'description', 'reference'] as const;
 const money = (n: number) => `Rs ${n.toLocaleString('en-PK')}`;
 const kind = (t: TransactionDoc) => (t.type === 'INCOME' ? 'Income' : 'Expense');
 const refsOf = (t: TransactionDoc): ActivityRef[] => [
@@ -73,6 +76,7 @@ async function assertCategory(ctx: TenantContext, categoryId: string, type: Tran
 
 async function assertLinks(ctx: TenantContext, input: Partial<TransactionInput>) {
   if (input.dealId && !(await dealRepository.findById(ctx, input.dealId))) throw badRequest(ERROR_CODES.DEAL_NOT_FOUND, 'Deal not found');
+  if (input.leaseId && !(await Lease.exists({ businessId: ctx.businessId, _id: input.leaseId, deletedAt: null }))) throw badRequest(ERROR_CODES.NOT_FOUND, 'Lease not found');
   if (input.campaignId) {
     if (input.type !== 'EXPENSE') throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'Only expenses can be booked against a campaign');
     if (!(await Campaign.exists({ businessId: ctx.businessId, _id: input.campaignId, deletedAt: null }))) throw badRequest(ERROR_CODES.NOT_FOUND, 'Campaign not found');
@@ -150,6 +154,48 @@ export const transactionService = {
     await activityService.record(auth, 'TRANSACTION_RECORDED', `${kind(t)} of ${money(t.amount)} recorded (${cat.name})`, refsOf(t), { amount: t.amount, source: t.source });
     publishChange(auth, SOCKET_EVENTS.TRANSACTION_CREATED, 'transaction', t);
     return t;
+  },
+
+  /**
+   * Returns money from an income entry: records a separate REFUND expense linked to it and tracks the
+   * refunded total on the income. The original entry is never edited down, so history stays intact.
+   */
+  async refund(auth: AuthContext, id: string, input: { amount: number; date: Date; method?: PaymentMethod; reason: string; reference?: string }, meta: RequestMeta = {}) {
+    const income = await transactionRepository.getById(auth, id, 'Entry not found');
+    if (income.type !== 'INCOME') throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'Only income can be refunded');
+    const left = income.amount - (income.refundedAmount ?? 0);
+    if (input.amount > left) throw badRequest(ERROR_CODES.VALIDATION_ERROR, `At most ${money(left)} can still be refunded on this entry`);
+    await this.seedCategories(auth);
+    const cat = await TransactionCategory.findOne({ businessId: auth.businessId, key: 'REFUNDS', deletedAt: null }).lean();
+    if (!cat) throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'The Refunds category is archived — restore it first');
+    const refund = await withTransaction(async (session) => {
+      const r = await transactionRepository.create(
+        auth,
+        {
+          branchId: income.branchId,
+          type: 'EXPENSE',
+          categoryId: cat._id,
+          amount: Math.round(input.amount),
+          date: new Date(input.date),
+          method: input.method ?? income.method ?? 'CASH',
+          dealId: income.dealId ?? null,
+          clientId: income.clientId ?? null,
+          propertyId: income.propertyId ?? null,
+          refundOf: income._id,
+          description: `Refund: ${input.reason}`.slice(0, 500),
+          reference: input.reference,
+          source: 'MANUAL',
+          searchText: searchBlob(cat.name, input.reason, input.reference),
+        },
+        session,
+      );
+      await Transaction.updateOne({ businessId: auth.businessId, _id: income._id }, { $inc: { refundedAmount: Math.round(input.amount) } }, { session });
+      return r;
+    });
+    await auditService.record(auth, { action: 'transaction.refunded', entityType: 'transaction', entityId: income._id, entityLabel: `INCOME ${income.amount}`, changes: [{ field: 'refundedAmount', oldValue: income.refundedAmount ?? 0, newValue: (income.refundedAmount ?? 0) + Math.round(input.amount) }], meta: { refundId: String(refund._id), reason: input.reason }, ip: meta.ip });
+    await activityService.record(auth, 'TRANSACTION_RECORDED', `Refund of ${money(refund.amount)} recorded (${input.reason})`, refsOf(refund), { amount: refund.amount, refundOf: String(income._id) });
+    publishChange(auth, SOCKET_EVENTS.TRANSACTION_CREATED, 'transaction', refund);
+    return refund;
   },
 
   list(auth: AuthContext, q: TransactionQuery) {

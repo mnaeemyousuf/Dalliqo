@@ -16,6 +16,7 @@ import { clientService } from './clientService';
 import { followUpService } from './followUpService';
 import { mailService } from './mailService';
 import { notificationService } from './notificationService';
+import { settingsService } from './settingsService';
 
 /**
  * Acting identity for work done on behalf of a business with no signed-in user (website
@@ -69,7 +70,9 @@ export async function intakeLead(business: BusinessDoc, input: IntakeInput): Pro
   const property: PropertyDoc | null = input.propertyId && Types.ObjectId.isValid(input.propertyId)
     ? await Property.findOne({ businessId: business._id, _id: input.propertyId, deletedAt: null }).lean<PropertyDoc>()
     : null;
-  const listingAgent = await activeMember(ctx.businessId, property?.agentIds?.[0]);
+  const rules = (await settingsService.get(ctx)).leadAssignment;
+  const listingAgent = rules.preferListingAgent ? await activeMember(ctx.businessId, property?.agentIds?.[0]) : null;
+  const ruleAgent = async () => listingAgent ?? (await settingsService.pickAssignee(ctx, input.channel === 'WHATSAPP' ? 'WHATSAPP' : 'WEBSITE', async (u) => !!(await activeMember(ctx.businessId, u))));
 
   const [existing] = await clientService.findDuplicates(ctx, [phone]);
   let clientId: string;
@@ -79,15 +82,17 @@ export async function intakeLead(business: BusinessDoc, input: IntakeInput): Pro
   if (existing) {
     clientId = String(existing._id);
     const full = await Client.findOne({ businessId: business._id, _id: existing._id }).select('assignedTo campaignId').lean();
-    assignee = (await activeMember(ctx.businessId, full?.assignedTo as never)) ?? listingAgent;
+    assignee = (await activeMember(ctx.businessId, full?.assignedTo as never)) ?? (await ruleAgent());
+    if (assignee && !full?.assignedTo) await Client.updateOne({ businessId: business._id, _id: existing._id }, { $set: { assignedTo: assignee } });
     if (input.campaignId && !full?.campaignId) await Client.updateOne({ businessId: business._id, _id: existing._id }, { $set: { campaignId: input.campaignId, campaign: input.campaignName ?? undefined } });
   } else {
+    const firstAssignee = await ruleAgent();
     const client = await clientService.create(ctx, {
       fullName: input.name.trim().slice(0, 120),
       mobileNumber: phone,
       email: input.email ?? undefined,
       source: input.channel === 'WHATSAPP' ? 'WHATSAPP' : 'WEBSITE',
-      assignedTo: listingAgent ?? undefined,
+      assignedTo: firstAssignee ?? undefined,
       notes: input.message ?? undefined,
       campaign: input.campaignName ?? undefined,
       allowDuplicate: true,
@@ -101,7 +106,7 @@ export async function intakeLead(business: BusinessDoc, input: IntakeInput): Pro
         : {}),
     });
     clientId = String(client._id);
-    assignee = listingAgent;
+    assignee = firstAssignee;
     createdLead = true;
     if (input.campaignId) await Client.updateOne({ businessId: business._id, _id: client._id }, { $set: { campaignId: input.campaignId } });
   }

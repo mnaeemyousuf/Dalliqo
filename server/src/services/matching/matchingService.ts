@@ -58,6 +58,11 @@ function toScoringRequirement(r: RequirementDoc): ScoringRequirement {
     maxSizeSqft: r.maxSizeSqft ?? undefined,
     minBudget: r.minBudget ?? undefined,
     maxBudget: r.maxBudget ?? undefined,
+    bedroomsMin: r.bedroomsMin ?? undefined,
+    bathroomsMin: r.bathroomsMin ?? undefined,
+    constructionStatuses: r.constructionStatuses ?? [],
+    possessionStatuses: r.possessionStatuses ?? [],
+    amenities: r.amenities ?? [],
   };
 }
 

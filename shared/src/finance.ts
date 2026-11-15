@@ -27,4 +27,6 @@ export const DEFAULT_TRANSACTION_CATEGORIES: readonly DefaultTransactionCategory
   { key: 'FUEL_TRAVEL', name: 'Fuel & travel', nameUr: 'پیٹرول اور سفر', type: 'EXPENSE' },
   { key: 'AGENT_PAYOUT', name: 'Agent payouts', nameUr: 'ایجنٹ ادائیگیاں', type: 'EXPENSE' },
   { key: 'OTHER_EXPENSE', name: 'Other expense', nameUr: 'دیگر اخراجات', type: 'EXPENSE' },
+  { key: 'REFUNDS', name: 'Refunds', nameUr: 'رقم کی واپسی', type: 'EXPENSE' },
+  { key: 'MAINTENANCE', name: 'Property maintenance', nameUr: 'پراپرٹی کی مرمت', type: 'EXPENSE' },
 ];

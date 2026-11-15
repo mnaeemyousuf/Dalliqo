@@ -255,7 +255,8 @@ export const RELATED_PROPERTY_TYPES: Partial<Record<PropertyType, PropertyType[]
 };
 
 export interface MatchingSettings {
-  weights: { type: number; location: number; budget: number; size: number; purpose: number };
+  /** `features` (bedrooms, bathrooms, construction / possession status, amenities) only counts when the client states such preferences. */
+  weights: { type: number; location: number; budget: number; size: number; purpose: number; features?: number };
   storeThreshold: number;
   notifyThreshold: number;
   /** Multi-branch: also match clients with properties of other branches. */
@@ -263,7 +264,7 @@ export interface MatchingSettings {
 }
 
 export const DEFAULT_MATCHING_SETTINGS: MatchingSettings = {
-  weights: { type: 25, location: 25, budget: 25, size: 15, purpose: 10 },
+  weights: { type: 25, location: 25, budget: 25, size: 15, purpose: 10, features: 15 },
   storeThreshold: 60,
   notifyThreshold: 80,
   crossBranch: false,
@@ -271,6 +272,9 @@ export const DEFAULT_MATCHING_SETTINGS: MatchingSettings = {
 
 /** Codes the clients translate; params fill placeholders such as {society}. */
 export const MATCH_REASON_CODES = [
+  'FEATURES_MATCH',
+  'FEATURES_PARTIAL',
+  'BEDROOMS_SHORT',
   'TYPE_MATCH',
   'TYPE_ANY',
   'TYPE_RELATED',

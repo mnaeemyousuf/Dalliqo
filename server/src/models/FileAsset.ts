@@ -39,6 +39,8 @@ export interface FileAssetDoc {
   deletedAt?: Date | null;
   /** Documents that lapse (NOC, tax receipts …) get a reminder before this date. */
   expiresAt?: Date | null;
+  /** Visible to the client / owner in their portal (never allowed for sensitive categories). */
+  sharedWithPortal?: boolean;
   createdBy: Types.ObjectId;
   updatedBy: Types.ObjectId;
   createdAt: Date;
@@ -55,6 +57,7 @@ function buildSchema() {
       kind: { type: String, enum: MEDIA_KINDS, required: true },
       category: { type: String, enum: DOCUMENT_CATEGORIES },
       fileName: { type: String, required: true, maxlength: 200 },
+      sharedWithPortal: { type: Boolean, default: false },
       storageKey: { type: String, required: true },
       storageProvider: { type: String, enum: ['cloudinary', 'local'], required: true },
       fileUrl: String,

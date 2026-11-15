@@ -17,6 +17,8 @@ export interface BranchDoc extends SyncDoc {
   address?: string;
   phone?: string;
   isDefault: boolean;
+  /** Monthly targets compared against actuals in the branch report. */
+  targets?: { leads?: number | null; dealsWon?: number | null; commission?: number | null };
   archivedAt?: Date | null;
   createdBy: Types.ObjectId;
   updatedBy: Types.ObjectId;
@@ -34,6 +36,7 @@ const schema = new Schema<BranchDoc>(
     address: { type: String, trim: true, maxlength: 300 },
     phone: { type: String, trim: true },
     isDefault: { type: Boolean, default: false },
+    targets: { leads: { type: Number, default: null }, dealsWon: { type: Number, default: null }, commission: { type: Number, default: null } },
     archivedAt: { type: Date, default: null },
   },
   { timestamps: true, versionKey: false },

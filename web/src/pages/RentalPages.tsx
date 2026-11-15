@@ -7,6 +7,8 @@ import { INSPECTION_TYPES, LATE_FEE_TYPES, LEASE_STATUSES, PAYMENT_METHODS, PERM
 import { clientApi, leaseApi, propertyApi } from '@/api/endpoints';
 import type { Lease } from '@/api/types';
 import { ReceiptButton } from '@/pages/InstallmentPages';
+import { LeaseExpensesPanel, LeaseNoticesPanel } from '@/pages/OpsPages';
+import { TransactionFormDrawer } from '@/pages/FinancePages';
 import { Badge, Button, Card, DataTable, Drawer, EmptyState, ErrorState, Input, MetricTile, Modal, PageHeader, PageLoader, Select, Tabs, Textarea, type BadgeColor, type Column } from '@/components/ui';
 import { formatDate, formatPkr, toLocalInput } from '@/lib/format';
 import { useDebounce, useEnumOptions, useOnError, useOpenOnNew, useUrlState } from '@/lib/hooks';
@@ -139,7 +141,9 @@ export function LeaseDetailPage() {
   const onError = useOnError();
   const canManage = useCan(PERMISSIONS.RENTALS_MANAGE);
   const q = useQuery({ queryKey: ['lease', id], queryFn: () => leaseApi.get(id) });
-  const [tab, setTab] = useState<'schedule' | 'payments' | 'inspections'>('schedule');
+  const [tab, setTab] = useState<'schedule' | 'payments' | 'inspections' | 'notices' | 'expenses'>('schedule');
+  const [expenseOpen, setExpenseOpen] = useState(false);
+  const canFinance = useCan(PERMISSIONS.FINANCE_CREATE);
   const [paying, setPaying] = useState(false);
   const [renewing, setRenewing] = useState(false);
   const [ending, setEnding] = useState(false);
@@ -200,7 +204,7 @@ export function LeaseDetailPage() {
         </dl>
         {l.endReason && <p className="mt-3 text-sm text-muted">{t('rental.endReason')}: {l.endReason}</p>}
       </Card>
-      <Tabs value={tab} onChange={setTab} tabs={[{ value: 'schedule', label: t('rental.schedule'), count: s.overdueItems || undefined }, { value: 'payments', label: t('rental.payments'), count: l.payments.length || undefined }, { value: 'inspections', label: t('rental.inspections') }]} />
+      <Tabs value={tab} onChange={setTab} tabs={[{ value: 'schedule', label: t('rental.schedule'), count: s.overdueItems || undefined }, { value: 'payments', label: t('rental.payments'), count: l.payments.length || undefined }, { value: 'inspections', label: t('rental.inspections') }, { value: 'notices', label: t('ops.notices'), count: l.notices?.length || undefined }, { value: 'expenses', label: t('ops.maintenance') }]} />
       <div className="mt-4">
         {tab === 'schedule' && (
           <Card bodyClassName="!p-0">
@@ -247,6 +251,8 @@ export function LeaseDetailPage() {
             )}
           </Card>
         )}
+        {tab === 'notices' && <LeaseNoticesPanel leaseId={id} notices={l.notices ?? []} canManage={canManage && active} tenantPhone={typeof l.tenantId === 'object' ? l.tenantId.mobileNumber : null} />}
+        {tab === 'expenses' && <LeaseExpensesPanel leaseId={id} onAdd={canFinance ? () => setExpenseOpen(true) : undefined} />}
         {tab === 'inspections' && (
           <Card bodyClassName="!p-0">
             {!l.inspections.length ? (
@@ -264,6 +270,7 @@ export function LeaseDetailPage() {
           </Card>
         )}
       </div>
+      {expenseOpen && <TransactionFormDrawer onClose={() => setExpenseOpen(false)} defaults={{ type: 'EXPENSE', leaseId: id, categoryKey: 'MAINTENANCE', onSaved: () => void qc.invalidateQueries({ queryKey: ['lease', id, 'expenses'] }) }} />}
       <PaymentModal open={paying} leaseId={id} suggested={s.overdue || s.nextDue?.balance || l.monthlyRent} onClose={() => setPaying(false)} onDone={refresh} />
       <RenewModal open={renewing} lease={l} onClose={() => setRenewing(false)} onDone={refresh} />
       <EndModal open={ending} lease={l} onClose={() => setEnding(false)} onDone={refresh} />

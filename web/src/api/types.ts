@@ -162,6 +162,10 @@ export interface Requirement {
   minBudget?: number;
   maxBudget?: number;
   bedroomsMin?: number;
+  bathroomsMin?: number;
+  possessionStatuses?: string[];
+  constructionStatuses?: string[];
+  amenities?: string[];
   notes?: string;
 }
 
@@ -376,6 +380,7 @@ export interface Lease {
   schedule: RentItem[];
   payments: { _id: string; date: string; amount: number; method: PaymentMethod; reference?: string | null; allocations: { itemId: string; amount: number }[] }[];
   inspections: { _id: string; date: string; type: string; condition: string; notes?: string | null }[];
+  notices?: { _id: string; type: string; date: string; subject: string; message: string; deliveredVia: string }[];
   outstanding: number;
   overdueAmount: number;
   nextDueDate?: string | null;
@@ -576,6 +581,7 @@ export interface Activity {
 
 export interface FileAsset {
   _id: string;
+  sharedWithPortal?: boolean;
   entityType: string;
   entityId: string;
   kind: 'image' | 'video' | 'pdf' | 'other';
@@ -636,7 +642,9 @@ export interface Deal {
   notes?: string;
   commission: { buyer: { mode: CommissionMode; value: number }; seller: { mode: CommissionMode; value: number } };
   payments: { _id: string; side: DealSide; amount: number; date: string; method: PaymentMethod; reference?: string; notes?: string }[];
-  payouts: { _id: string; userId: string; amount: number; date?: string | null; status: 'PENDING' | 'PAID'; notes?: string }[];
+  payouts: { _id: string; userId: string; amount: number; date?: string | null; status: 'PENDING' | 'APPROVED' | 'PAID'; notes?: string; approvedBy?: string | null; approvedAt?: string | null }[];
+  adjustments?: { _id: string; amount: number; reason: string; by: string; at: string }[];
+  dispute?: { status: 'OPEN' | 'RESOLVED'; reason: string; openedAt: string; resolution?: string | null; resolvedAt?: string | null } | null;
   externalShares?: { _id: string; kind: 'EXTERNAL_DEALER' | 'REFERRAL' | 'BRANCH'; name: string; mode: CommissionMode; value: number; paid: number }[];
   commissionApprovedAt?: string | null;
   expectedTotal: number;
@@ -667,6 +675,9 @@ export interface Transaction {
   branchId?: string;
   type: TransactionType;
   categoryId: string | Pick<TransactionCategory, '_id' | 'name' | 'nameUr' | 'type' | 'key'>;
+  refundedAmount?: number;
+  refundOf?: string | null;
+  leaseId?: string | null;
   amount: number;
   date: string;
   method: PaymentMethod;
@@ -773,12 +784,13 @@ export interface MyDay {
 }
 
 export interface Settings {
-  matching: { weights: Record<'type' | 'location' | 'budget' | 'size' | 'purpose', number>; storeThreshold: number; notifyThreshold: number; crossBranch: boolean };
-  commission: { defaultBuyerPct: number; defaultSellerPct: number; autoCreateIncome: boolean; closeApprovalRequired?: boolean };
+  matching: { weights: Record<'type' | 'location' | 'budget' | 'size' | 'purpose' | 'features', number>; storeThreshold: number; notifyThreshold: number; crossBranch: boolean };
+  commission: { defaultBuyerPct: number; defaultSellerPct: number; autoCreateIncome: boolean; closeApprovalRequired?: boolean; payoutApprovalRequired?: boolean };
   sqftPerUnit: Record<SizeUnit, number>;
   reminders: { defaultMinutesBefore: number };
   leadScoring: LeadScoringSettings;
   automation: AutomationSettings;
+  leadAssignment?: { mode: 'NONE' | 'ROUND_ROBIN' | 'BY_SOURCE'; preferListingAgent: boolean; agentIds: string[]; bySource: { source: string; userId: string }[] };
 }
 
 export interface DeviceSession {

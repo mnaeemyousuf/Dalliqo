@@ -45,6 +45,10 @@ export interface RequirementDoc {
   minBudget?: number;
   maxBudget?: number;
   bedroomsMin?: number;
+  bathroomsMin?: number;
+  constructionStatuses?: string[];
+  possessionStatuses?: string[];
+  amenities?: string[];
   notes?: string;
 }
 
@@ -123,6 +127,10 @@ const requirementSchema = new Schema<RequirementDoc>(
     minBudget: { type: Number, min: 0 },
     maxBudget: { type: Number, min: 0 },
     bedroomsMin: { type: Number, min: 0 },
+    bathroomsMin: { type: Number, min: 0 },
+    constructionStatuses: { type: [String], default: [] },
+    possessionStatuses: { type: [String], default: [] },
+    amenities: { type: [String], default: [] },
     notes: { type: String, maxlength: 1000 },
   },
   { _id: true },

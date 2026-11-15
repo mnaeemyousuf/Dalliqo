@@ -39,7 +39,8 @@ export type DealSide = (typeof DEAL_SIDES)[number];
 export const COMMISSION_STATUSES = ['PENDING', 'PARTIALLY_RECEIVED', 'RECEIVED'] as const;
 export type CommissionStatus = (typeof COMMISSION_STATUSES)[number];
 
-export const PAYOUT_STATUSES = ['PENDING', 'PAID'] as const;
+/** PENDING → APPROVED (by someone allowed to approve) → PAID. Approval is enforced when the business requires it. */
+export const PAYOUT_STATUSES = ['PENDING', 'APPROVED', 'PAID'] as const;
 export type PayoutStatus = (typeof PAYOUT_STATUSES)[number];
 
 /** How money changed hands (commission payments and income/expense transactions). */
@@ -62,6 +63,8 @@ export interface DealMoney {
   /** Outside parties paid from the commission before the agency's agents (dealer, referrer, other branch). */
   externalShares?: ExternalShareInput[] | null;
   commissionApprovedAt?: Date | string | null;
+  /** Corrections to the expected commission (+ / −), e.g. a discount agreed with the buyer. */
+  adjustments?: { amount: number }[] | null;
 }
 
 export const EXTERNAL_SHARE_KINDS = ['EXTERNAL_DEALER', 'REFERRAL', 'BRANCH'] as const;
@@ -84,7 +87,7 @@ export type CommissionLifecycle = (typeof COMMISSION_LIFECYCLE)[number];
 export interface CommissionSummary {
   /** Price commission percentages are applied to: final price, else agreed price. */
   basePrice: number;
-  expected: { buyer: number; seller: number; total: number };
+  expected: { buyer: number; seller: number; adjustments: number; total: number };
   received: { buyer: number; seller: number; total: number };
   outstanding: number;
   status: CommissionStatus;
@@ -116,7 +119,8 @@ export function summarizeCommission(deal: DealMoney): CommissionSummary {
   const basePrice = deal.finalPrice ?? deal.agreedPrice ?? 0;
   const buyer = sideExpected(deal.commission?.buyer, basePrice);
   const seller = sideExpected(deal.commission?.seller, basePrice);
-  const total = buyer + seller;
+  const adjustments = (deal.adjustments ?? []).reduce((s, a) => s + Math.round(a.amount || 0), 0);
+  const total = Math.max(0, buyer + seller + adjustments);
   const paid = (side: DealSide) => (deal.payments ?? []).filter((p) => p.side === side).reduce((s, p) => s + (p.amount || 0), 0);
   const rBuyer = paid('BUYER');
   const rSeller = paid('SELLER');
@@ -155,7 +159,7 @@ export function summarizeCommission(deal: DealMoney): CommissionSummary {
             : 'RECEIVED';
   return {
     basePrice,
-    expected: { buyer, seller, total },
+    expected: { buyer, seller, adjustments, total },
     received: { buyer: rBuyer, seller: rSeller, total: received },
     outstanding: Math.max(0, total - received),
     status,
@@ -181,9 +185,11 @@ export interface CommissionDefaults {
   autoCreateIncome: boolean;
   /** Closing a deal as won needs approval from a member with deals:approve. */
   closeApprovalRequired: boolean;
+  /** Agent payouts must be approved (deals:approve) before they can be marked paid. */
+  payoutApprovalRequired: boolean;
 }
 
-export const DEFAULT_COMMISSION_SETTINGS: CommissionDefaults = { defaultBuyerPct: 1, defaultSellerPct: 1, autoCreateIncome: true, closeApprovalRequired: false };
+export const DEFAULT_COMMISSION_SETTINGS: CommissionDefaults = { defaultBuyerPct: 1, defaultSellerPct: 1, autoCreateIncome: true, closeApprovalRequired: false, payoutApprovalRequired: false };
 
 export const APPROVAL_STATUSES = ['PENDING', 'APPROVED', 'REJECTED'] as const;
 export type ApprovalStatus = (typeof APPROVAL_STATUSES)[number];

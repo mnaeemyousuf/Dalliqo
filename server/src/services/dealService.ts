@@ -19,7 +19,7 @@ import {
   type PayoutStatus,
 } from '@recrm/shared';
 import { nextSequence } from '../models/Counter';
-import { Deal, type DealChecklistEntry, type DealDoc, type DealOffer, type DealPayment, type DealPayout } from '../models/Deal';
+import { Deal, type DealAdjustment, type DealChecklistEntry, type DealDispute, type DealDoc, type DealOffer, type DealPayment, type DealPayout } from '../models/Deal';
 import { clientRepository, propertyRepository } from '../repositories/entityRepositories';
 import { memberRepository } from '../repositories/memberRepository';
 import { createTenantRepository, type Filter } from '../repositories/tenantRepository';
@@ -172,7 +172,7 @@ export function ownDealsFilter(auth: { permissions?: readonly string[]; userId: 
 }
 
 /** The denormalised commission figures stored on the deal (lists, filters, reports). */
-function moneyFields(d: Pick<DealDoc, 'agreedPrice' | 'finalPrice' | 'commission' | 'agents' | 'payments' | 'payouts'> & Partial<Pick<DealDoc, 'externalShares' | 'commissionApprovedAt'>>) {
+function moneyFields(d: Pick<DealDoc, 'agreedPrice' | 'finalPrice' | 'commission' | 'agents' | 'payments' | 'payouts'> & Partial<Pick<DealDoc, 'externalShares' | 'commissionApprovedAt' | 'adjustments'>>) {
   const s = summarizeCommission(d);
   return { expectedTotal: s.expected.total, receivedTotal: s.received.total, outstanding: s.outstanding, commissionStatus: s.status };
 }
@@ -594,6 +594,10 @@ export const dealService = {
     if (!before.agents.some((a) => String(a.userId) === p.userId)) throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'Payouts go to an agent on this deal');
     const payout = normalizePayouts([p])[0];
     if (before.payouts.some((x) => x._id === payout._id)) return before;
+    if (payout.status === 'APPROVED') throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'Use Approve to approve a payout');
+    if (payout.status === 'PAID' && (await settingsService.get(auth)).commission.payoutApprovalRequired) {
+      throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'Payouts must be approved before they are paid — record it as pending first');
+    }
     const payouts = [...before.payouts, payout];
     const updated = await dealRepository.update(auth, id, { payouts });
     await activityService.record(auth, 'COMMISSION_PAYOUT', `Payout of Rs ${payout.amount.toLocaleString('en-PK')} to an agent on ${updated.dealNo} (${payout.status.toLowerCase()})`, refs(updated), { amount: payout.amount, status: payout.status });
@@ -607,6 +611,11 @@ export const dealService = {
     const old = before.payouts.find((x) => x._id === payoutId);
     if (!old) throw notFound(ERROR_CODES.PAYMENT_NOT_FOUND, 'Payout not found');
     const next = { ...old, ...(p.amount !== undefined ? { amount: p.amount } : {}), ...(p.status ? { status: p.status } : {}), ...(p.notes !== undefined ? { notes: p.notes } : {}), ...(p.date !== undefined ? { date: p.date ? new Date(p.date) : null } : {}) };
+    if (p.status === 'PAID' && old.status !== 'PAID' && old.status !== 'APPROVED' && (await settingsService.get(auth)).commission.payoutApprovalRequired) {
+      throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'This payout must be approved before it is marked paid');
+    }
+    if (p.status === 'APPROVED' && old.status !== 'APPROVED') throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'Use Approve to approve a payout');
+    if (p.status && p.status !== old.status) (next as DealPayout).history = [...(old.history ?? []), { status: p.status, by: new Types.ObjectId(auth.userId), at: new Date(), note: p.notes ?? null }];
     if (p.status === 'PAID' && !next.date) next.date = new Date();
     const payouts = before.payouts.map((x) => (x._id === payoutId ? next : x));
     const updated = await dealRepository.update(auth, id, { payouts });
@@ -614,6 +623,54 @@ export const dealService = {
     if (p.status === 'PAID' && old.status !== 'PAID') {
       await activityService.record(auth, 'COMMISSION_PAYOUT', `Agent paid Rs ${next.amount.toLocaleString('en-PK')} on ${updated.dealNo}`, refs(updated), { amount: next.amount, status: 'PAID' });
     }
+    publishChange(auth, SOCKET_EVENTS.DEAL_UPDATED, 'deal', updated);
+    return updated;
+  },
+
+  /** Approve an agent payout (deals:approve). The approver is recorded on the payout and in the audit log. */
+  async approvePayout(auth: AuthContext, id: string, payoutId: string, note?: string, meta: RequestMeta = {}) {
+    if (!auth.permissions.includes(PERMISSIONS.DEALS_APPROVE)) throw forbidden(ERROR_CODES.FORBIDDEN, 'Only managers allowed to approve can approve payouts');
+    const before = await this.load(auth, id);
+    const old = before.payouts.find((x) => x._id === payoutId);
+    if (!old) throw notFound(ERROR_CODES.PAYMENT_NOT_FOUND, 'Payout not found');
+    if (old.status !== 'PENDING') throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'Only a pending payout can be approved');
+    const now = new Date();
+    const next: DealPayout = { ...old, status: 'APPROVED', approvedBy: new Types.ObjectId(auth.userId), approvedAt: now, history: [...(old.history ?? []), { status: 'APPROVED', by: new Types.ObjectId(auth.userId), at: now, note: note ?? null }] };
+    const updated = await dealRepository.update(auth, id, { payouts: before.payouts.map((x) => (x._id === payoutId ? next : x)) });
+    await auditService.record(auth, { action: 'deal.payout_approved', entityType: 'deal', entityId: updated._id, entityLabel: updated.dealNo, meta: { payoutId, amount: old.amount, userId: String(old.userId), note }, ip: meta.ip });
+    await activityService.record(auth, 'COMMISSION_PAYOUT', `Payout of Rs ${old.amount.toLocaleString('en-PK')} approved on ${updated.dealNo}`, refs(updated), { amount: old.amount, status: 'APPROVED' });
+    publishChange(auth, SOCKET_EVENTS.DEAL_UPDATED, 'deal', updated);
+    return updated;
+  },
+
+  /** A correction to the expected commission (positive or negative) with a reason; never edits past payments. */
+  async addAdjustment(auth: AuthContext, id: string, input: { amount: number; reason: string }, meta: RequestMeta = {}) {
+    const before = await this.load(auth, id);
+    if (!input.amount) throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'The adjustment amount cannot be zero');
+    const adj: DealAdjustment = { _id: randomUUID(), amount: Math.round(input.amount), reason: input.reason.trim(), by: new Types.ObjectId(auth.userId), at: new Date() };
+    const adjustments = [...(before.adjustments ?? []), adj];
+    const updated = await dealRepository.update(auth, id, { adjustments, ...moneyFields({ ...before, adjustments }) });
+    await auditService.record(auth, { action: 'deal.commission_adjusted', entityType: 'deal', entityId: updated._id, entityLabel: updated.dealNo, changes: [{ field: 'expectedTotal', oldValue: before.expectedTotal, newValue: updated.expectedTotal }], meta: { amount: adj.amount, reason: adj.reason }, ip: meta.ip });
+    await activityService.record(auth, 'DEAL_UPDATED', `Commission adjusted by Rs ${adj.amount.toLocaleString('en-PK')} on ${updated.dealNo}: ${adj.reason}`, refs(updated), { amount: adj.amount });
+    publishChange(auth, SOCKET_EVENTS.DEAL_UPDATED, 'deal', updated);
+    return updated;
+  },
+
+  /** Open or resolve a commission dispute (e.g. a party contests the amount). */
+  async setDispute(auth: AuthContext, id: string, input: { action: 'OPEN' | 'RESOLVE'; text: string }, meta: RequestMeta = {}) {
+    const before = await this.load(auth, id);
+    const now = new Date();
+    let dispute: DealDispute;
+    if (input.action === 'OPEN') {
+      if (before.dispute?.status === 'OPEN') throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'A dispute is already open on this deal');
+      dispute = { status: 'OPEN', reason: input.text.trim(), openedBy: new Types.ObjectId(auth.userId), openedAt: now, resolution: null, resolvedBy: null, resolvedAt: null };
+    } else {
+      if (before.dispute?.status !== 'OPEN') throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'There is no open dispute to resolve');
+      dispute = { ...before.dispute, status: 'RESOLVED', resolution: input.text.trim(), resolvedBy: new Types.ObjectId(auth.userId), resolvedAt: now };
+    }
+    const updated = await dealRepository.update(auth, id, { dispute });
+    await auditService.record(auth, { action: input.action === 'OPEN' ? 'deal.dispute_opened' : 'deal.dispute_resolved', entityType: 'deal', entityId: updated._id, entityLabel: updated.dealNo, meta: { text: input.text }, ip: meta.ip });
+    await activityService.record(auth, 'DEAL_UPDATED', `Commission dispute ${input.action === 'OPEN' ? 'opened' : 'resolved'} on ${updated.dealNo}: ${input.text.slice(0, 200)}`, refs(updated));
     publishChange(auth, SOCKET_EVENTS.DEAL_UPDATED, 'deal', updated);
     return updated;
   },

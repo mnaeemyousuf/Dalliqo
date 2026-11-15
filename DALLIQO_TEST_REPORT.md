@@ -117,6 +117,26 @@ Run date: 14 Nov 2026 (latest: Phase 5B — see per-phase sections for current t
 - **Full results:** server 271 passed (1 skipped), web 38, Flutter 81, `flutter analyze` clean, web build OK.
 - **Visual check:** the dashboard team and collections panels, the property form pickers, and the public agent page, all on demo data.
 
+## Gap-closing batch tests (`server/tests/phase9.test.ts`, `server/tests/matching.scoring.test.ts`)
+- **Payout approval:** with approval required, paying an unapproved payout returns 400 and an agent can't approve (403). The owner approves (status and approver recorded) and pays, and the voucher PDF is generated.
+- **Adjustments and disputes:** a −50,000 adjustment reduces the expected commission to 150,000. Resolving with nothing open returns 400; a dispute is opened and resolved.
+- **Refunds:** 30,000 refunded on 100,000 income; refunding beyond what is left returns 400. The income statement shows 100,000 / 30,000 / 70,000 / 70 %, with REFUNDS as the expense line and a branch row; the expense voucher PDF is generated.
+- **Leases:** a tenant notice is recorded and its PDF generated; a maintenance expense booked to the lease totals 12,000.
+- **Lead assignment:** three website leads go to agent 1, agent 2, agent 1 (round-robin).
+- **Client portal:**
+  - A matched property is visible with no owner fields; favourite → SHORTLISTED.
+  - A preferences update changes the requirement.
+  - A visit request creates a PROPERTY_VISIT follow-up; a property the client was never matched with returns 404.
+  - With preference updates switched off, the update returns 403.
+- **Owner portal:** availability confirmation stamps the listing but leaves the price unchanged; another owner's property returns 404.
+- **Documents:** sharing a CNIC document in the portal returns 400.
+- **Agent performance:** the manager sees the agent's lead; the agent sees only their own row and gets 403 for another agent; the Excel export is a valid file.
+- **Business summary, branch targets** (progress 25 % / 0 % / 0 %) and **listing quality** (POOR, photos missing) are checked.
+- **Matching:** clients without feature preferences score unchanged (100); a full feature match scores 100; a house two bedrooms short scores lower with BEDROOMS_SHORT; a partial amenities match gives FEATURES_PARTIAL 2/3.
+- **Full results:** server 280 passed (1 skipped), web 38, Flutter 81, `flutter analyze` clean, web build OK.
+- **Visual check:** the client portal (requirement, picked properties with Save / Request a visit / Not interested), Reports (business overview, agent performance with Excel / PDF), the deal's adjustments and disputes, and the lease's maintenance tab.
+  - The check found and fixed a bug: report ranges ending today excluded today's records.
+
 ## Manual / visual verification
 Demo API (`npm run demo`) + web, headless Chrome screenshots at 1440 px: client list with lead scores and temperature filter, client lead panel, Reports (leads + inventory aging), Settings → Subscription. All rendered correctly with real demo data.
 

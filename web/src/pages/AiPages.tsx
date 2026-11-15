@@ -5,6 +5,7 @@ import { Bot, Copy, Gauge, MessageCircle, Send, Sparkles, TrendingUp, Wand2 } fr
 import { PERMISSIONS, whatsappLink } from '@recrm/shared';
 import { Link } from 'react-router-dom';
 import { aiApi, followUpApi, noteApi, propertyApi } from '@/api/endpoints';
+import { ListingQuality } from '@/pages/OpsPages';
 import type { Property } from '@/api/types';
 import { Badge, Button, Card, MetricTile, Modal, PageHeader, Segmented, Textarea, type BadgeColor } from '@/components/ui';
 import { formatDate, formatPkr } from '@/lib/format';
@@ -150,6 +151,7 @@ export function PropertyAiPanel({ property }: { property: Property }) {
           <p className="w-full text-2xs text-muted">{t('ai.basedOn', { count: e.comparables, sold: e.sold, scope: e.scope })} · {e.disclaimer}</p>
         </div>
       )}
+      <ListingQuality propertyId={property._id} />
       {writing && <DescriptionModal property={property} onClose={() => setWriting(false)} />}
     </Card>
   );
