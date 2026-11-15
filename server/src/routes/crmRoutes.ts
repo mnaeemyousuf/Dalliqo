@@ -38,6 +38,7 @@ import { teamDashboardService } from '../services/teamDashboardService';
 import { performanceService, type PeriodFilter } from '../services/performanceService';
 import { agentPerformancePdf, agentPerformanceXlsx } from '../services/performanceExport';
 import { dealService } from '../services/dealService';
+import { settingsService } from '../services/settingsService';
 import { sendSuccess } from '../utils/http';
 import { validate } from '../middleware/validate';
 import { asyncHandler as h } from '../utils/http';
@@ -87,6 +88,7 @@ r.post('/clients/:id/communications', can(P.CLIENTS_READ), validate({ params: id
 r.get('/clients/:id/matches', can(P.MATCHES_READ), validate({ params: idParams, query: s.matchListQuery }), h(clientController.matches));
 
 // Deals & commission (agents without deals:read_all only see their own deals; enforced in the service)
+r.get('/deals/pipeline', can(P.DEALS_READ), h(async (req, res) => sendSuccess(res, (await settingsService.get(authOf(req))).dealPipeline)));
 r.get('/deals', can(P.DEALS_READ), validate({ query: s.dealListQuery }), h(dealController.list));
 r.post('/deals', can(P.DEALS_CREATE), validate({ body: s.dealCreateSchema }), h(dealController.create));
 r.get('/deals/:id', can(P.DEALS_READ), id, h(dealController.get));

@@ -47,6 +47,8 @@ const schema = z
      * AI layer (Anthropic). Without a key the assistant is off and descriptions / client briefs use
      * built-in templates; forecasts and price estimates never need it.
      */
+    /** Which registered provider handles AI calls (services/ai/providers). */
+    AI_PROVIDER: z.enum(['anthropic']).default('anthropic'),
     ANTHROPIC_API_KEY: optional,
     AI_MODEL: z.string().default('claude-opus-5-5'),
     /** Provider calls per business per calendar month. */

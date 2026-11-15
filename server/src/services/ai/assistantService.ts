@@ -1,4 +1,3 @@
-import type Anthropic from '@anthropic-ai/sdk';
 import { Types } from 'mongoose';
 import { OPEN_DEAL_STAGES, PERMISSIONS } from '@recrm/shared';
 import { Business } from '../../models/Business';
@@ -13,16 +12,16 @@ import { dashboardService } from '../dashboardService';
 import { ownDealsFilter } from '../dealService';
 import { financeReportService } from '../financeReportService';
 import { propertyService } from '../propertyService';
-import { aiClient, textOf } from './aiClient';
+import { aiClient } from './aiClient';
+import type { AiToolSpec } from './providers/types';
 import { aiService, clientContext } from './aiService';
 
-type Tool = Anthropic.Beta.BetaTool;
-type Msg = Anthropic.Beta.BetaMessageParam;
+type Tool = AiToolSpec;
 
 const MAX_STEPS = 6;
 const MAX_RESULT_CHARS = 12_000;
 const nullable = (t: string, extra: Record<string, unknown> = {}) => ({ type: [t, 'null'], ...extra });
-const obj = (properties: Record<string, unknown>): Tool['input_schema'] => ({ type: 'object', properties, required: Object.keys(properties), additionalProperties: false });
+const obj = (properties: Record<string, unknown>): Tool['inputSchema'] => ({ type: 'object', properties, required: Object.keys(properties), additionalProperties: false });
 
 /** An action the assistant suggests; nothing is saved until the user confirms it in the app. */
 export type Proposal =
@@ -48,8 +47,7 @@ const TOOLS: ToolDef[] = [
     tool: {
       name: 'search_clients',
       description: 'Find clients / leads by name, phone, area or society. Returns up to 10 with status, temperature, lead score, requirement and last contact.',
-      strict: true,
-      input_schema: obj({ query: nullable('string', { description: 'Search text; null lists the most recently updated.' }), temperature: nullable('string', { enum: ['HOT', 'WARM', 'COLD', null] }) }),
+      inputSchema: obj({ query: nullable('string', { description: 'Search text; null lists the most recently updated.' }), temperature: nullable('string', { enum: ['HOT', 'WARM', 'COLD', null] }) }),
     },
     async run(auth, i) {
       const r = await clientService.list(auth, { q: (i.query as string) || undefined, temperature: (i.temperature as never) ?? undefined, page: 1, limit: 10 });
@@ -61,8 +59,7 @@ const TOOLS: ToolDef[] = [
     tool: {
       name: 'get_client',
       description: 'Full picture of one client: requirement, recent activity, pending follow-ups, best matching listings, deals. Use an id from search_clients.',
-      strict: true,
-      input_schema: obj({ client_id: { type: 'string' } }),
+      inputSchema: obj({ client_id: { type: 'string' } }),
     },
     async run(auth, i) {
       const id = String(i.client_id);
@@ -76,8 +73,7 @@ const TOOLS: ToolDef[] = [
     tool: {
       name: 'search_properties',
       description: 'Find listings by society, area, block or reference, optionally by purpose and maximum price. Returns up to 10 available listings.',
-      strict: true,
-      input_schema: obj({
+      inputSchema: obj({
         query: nullable('string'),
         purpose: nullable('string', { enum: ['SALE', 'RENT', null] }),
         max_price: nullable('integer', { description: 'PKR' }),
@@ -93,8 +89,7 @@ const TOOLS: ToolDef[] = [
     tool: {
       name: 'price_estimate',
       description: 'Indicative price range for a listing from comparable listings and recorded sales. Always present the result as an estimate, not a valuation.',
-      strict: true,
-      input_schema: obj({ property_id: { type: 'string' } }),
+      inputSchema: obj({ property_id: { type: 'string' } }),
     },
     async run(auth, i) {
       const id = String(i.property_id);
@@ -107,8 +102,7 @@ const TOOLS: ToolDef[] = [
     tool: {
       name: 'my_day',
       description: "The signed-in user's agenda for today: follow-ups due and overdue, and other items needing attention.",
-      strict: true,
-      input_schema: obj({}),
+      inputSchema: obj({}),
     },
     async run(auth) {
       return dashboardService.myDay(auth, 'mine');
@@ -119,8 +113,7 @@ const TOOLS: ToolDef[] = [
     tool: {
       name: 'deal_pipeline',
       description: 'Open deals the user can see: count by stage, commission still outstanding, and the largest open deals.',
-      strict: true,
-      input_schema: obj({}),
+      inputSchema: obj({}),
     },
     async run(auth) {
       const deals = await Deal.find({ businessId: auth.businessId, deletedAt: null, ...branchFilter(auth), ...ownDealsFilter(auth), stage: { $in: OPEN_DEAL_STAGES } })
@@ -144,8 +137,7 @@ const TOOLS: ToolDef[] = [
     tool: {
       name: 'collections',
       description: 'Money owed to the business (commission, installments, rent) and owed by it (agents, outside dealers), by how late it is, with the largest items.',
-      strict: true,
-      input_schema: obj({}),
+      inputSchema: obj({}),
     },
     async run(auth) {
       const a = await financeReportService.aging(auth);
@@ -157,8 +149,7 @@ const TOOLS: ToolDef[] = [
     tool: {
       name: 'forecast',
       description: 'Next 6 months: commission expected from open deals (weighted by stage), scheduled installments and rent, and the recent lead trend.',
-      strict: true,
-      input_schema: obj({}),
+      inputSchema: obj({}),
     },
     async run(auth) {
       return aiService.forecast(auth);
@@ -172,8 +163,7 @@ TOOLS.push(
     tool: {
       name: 'propose_follow_up',
       description: 'Suggest a follow-up (call, meeting, visit…) for a client. It is shown to the user with a Confirm button and is NOT saved unless they confirm. Use a client id from search_clients.',
-      strict: true,
-      input_schema: obj({
+      inputSchema: obj({
         client_id: { type: 'string' },
         type: { type: 'string', enum: ['CALL', 'MEETING', 'WHATSAPP', 'SMS', 'PROPERTY_VISIT', 'GENERAL'] },
         due: { type: 'string', description: 'ISO date-time, e.g. 2026-11-16T11:00' },
@@ -194,8 +184,7 @@ TOOLS.push(
     tool: {
       name: 'propose_note',
       description: 'Suggest a note on a client record (e.g. a summary of what was discussed). Shown to the user with a Confirm button; NOT saved unless they confirm.',
-      strict: true,
-      input_schema: obj({ client_id: { type: 'string' }, content: { type: 'string' } }),
+      inputSchema: obj({ client_id: { type: 'string' }, content: { type: 'string' } }),
     },
     async run(auth, i, proposals) {
       const c = await proposalClient(auth, i.client_id);
@@ -224,42 +213,30 @@ export const assistantService = {
   async ask(auth: AuthContext, history: AssistantTurn[]) {
     const allowed = TOOLS.filter((t) => t.perms.some((p) => auth.permissions.includes(p as never)));
     const [user, business] = await Promise.all([User.findById(auth.userId).select('fullName').lean(), Business.findById(auth.businessId).select('name').lean()]);
-    const messages: Msg[] = history.slice(-20).map((m) => ({ role: m.role, content: m.content }));
     const used: string[] = [];
     const proposals: Proposal[] = [];
-    for (let step = 0; step < MAX_STEPS; step++) {
-      const res = await aiClient.create(auth, 'assistant', {
-        max_tokens: 8000,
-        output_config: { effort: 'medium' },
-        // Stable instructions first (cached), then who is asking and today's date.
-        system: [
-          { type: 'text', text: STABLE_SYSTEM, cache_control: { type: 'ephemeral' } },
-          { type: 'text', text: `Business: ${business?.name ?? ''}. User: ${user?.fullName ?? ''} (${auth.role}). Today: ${new Date().toISOString().slice(0, 10)}.` },
-        ],
-        tools: allowed.map((t) => t.tool),
-        messages,
-      });
-      messages.push({ role: 'assistant', content: res.content });
-      const calls = res.content.filter((b): b is Anthropic.Beta.BetaToolUseBlock => b.type === 'tool_use');
-      if (res.stop_reason !== 'tool_use' || !calls.length) {
-        return { answer: textOf(res) || 'I could not find an answer to that.', toolsUsed: [...new Set(used)], proposals };
-      }
-      const results: Anthropic.Beta.BetaToolResultBlockParam[] = await Promise.all(
-        calls.map(async (c) => {
-          const def = allowed.find((t) => t.tool.name === c.name);
-          used.push(c.name);
-          if (!def) return { type: 'tool_result' as const, tool_use_id: c.id, is_error: true, content: 'This tool is not available to this user.' };
-          try {
-            const out = JSON.stringify(await def.run(auth, (c.input ?? {}) as Record<string, unknown>, proposals));
-            return { type: 'tool_result' as const, tool_use_id: c.id, content: out.length > MAX_RESULT_CHARS ? `${out.slice(0, MAX_RESULT_CHARS)}…(truncated)` : out };
-          } catch (err) {
-            return { type: 'tool_result' as const, tool_use_id: c.id, is_error: true, content: (err as Error).message || 'The lookup failed.' };
-          }
-        }),
-      );
-      messages.push({ role: 'user', content: results });
-    }
-    return { answer: 'That needed more lookups than I can do in one go. Please ask a narrower question.', toolsUsed: [...new Set(used)], proposals };
+    const res = await aiClient.runTools(auth, 'assistant', {
+      maxTokens: 8000,
+      effort: 'medium',
+      maxSteps: MAX_STEPS,
+      system: STABLE_SYSTEM,
+      context: `Business: ${business?.name ?? ''}. User: ${user?.fullName ?? ''} (${auth.role}). Today: ${new Date().toISOString().slice(0, 10)}.`,
+      history: history.slice(-20).map((m) => ({ role: m.role, content: m.content })),
+      tools: allowed.map((t) => t.tool),
+      async runTool(name, input) {
+        const def = allowed.find((t) => t.tool.name === name);
+        used.push(name);
+        if (!def) return { content: 'This tool is not available to this user.', isError: true };
+        try {
+          const out = JSON.stringify(await def.run(auth, input, proposals));
+          return { content: out.length > MAX_RESULT_CHARS ? `${out.slice(0, MAX_RESULT_CHARS)}…(truncated)` : out };
+        } catch (err) {
+          return { content: (err as Error).message || 'The lookup failed.', isError: true };
+        }
+      },
+    });
+    const answer = res.exhausted ? 'That needed more lookups than I can do in one go. Please ask a narrower question.' : res.text || 'I could not find an answer to that.';
+    return { answer, toolsUsed: [...new Set(used)], proposals };
   },
 
   toolNames(auth: AuthContext) {

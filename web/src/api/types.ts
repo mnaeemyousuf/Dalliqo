@@ -791,6 +791,7 @@ export interface Settings {
   leadScoring: LeadScoringSettings;
   automation: AutomationSettings;
   leadAssignment?: { mode: 'NONE' | 'ROUND_ROBIN' | 'BY_SOURCE'; preferListingAgent: boolean; agentIds: string[]; bySource: { source: string; userId: string }[] };
+  dealPipeline?: import('@recrm/shared').DealPipelineSettings;
 }
 
 export interface DeviceSession {

@@ -13,7 +13,7 @@ import {
   type SizeUnit,
 } from '@recrm/shared';
 import { tenantGuardPlugin } from './plugins/tenant';
-import type { LeadAssignmentSettings } from '@recrm/shared';
+import { DEAL_STAGES, type DealStageConfig, type LeadAssignmentSettings } from '@recrm/shared';
 
 /** One document per business. Missing values fall back to the defaults. */
 export interface SettingsDoc {
@@ -26,6 +26,7 @@ export interface SettingsDoc {
   leadScoring?: Partial<LeadScoringSettings>;
   automation?: Partial<AutomationSettings>;
   leadAssignment?: Partial<LeadAssignmentSettings> & { cursor?: number };
+  dealPipeline?: { stages?: Partial<DealStageConfig>[] };
   updatedBy?: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -71,6 +72,10 @@ const schema = new Schema<SettingsDoc>(
       bySource: { type: [{ _id: false, source: String, userId: String }], default: [] },
       /** Round-robin position (internal). */
       cursor: { type: Number, default: 0 },
+    },
+    // Missing stages fall back to DEFAULT_DEAL_PIPELINE (see normalizeDealPipeline).
+    dealPipeline: {
+      stages: { type: [{ _id: false, stage: { type: String, enum: DEAL_STAGES }, enabled: Boolean, label: String, labelUr: String, probability: Number }], default: undefined },
     },
     // Missing values fall back to DEFAULT_LEAD_SCORING / DEFAULT_AUTOMATION_SETTINGS (see settingsService).
     leadScoring: {

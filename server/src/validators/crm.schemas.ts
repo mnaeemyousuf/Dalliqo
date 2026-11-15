@@ -655,6 +655,14 @@ export const settingsUpdateSchema = z
       .strict()
       .optional(),
     sqftPerUnit: z.object({ MARLA: z.number().positive(), KANAL: z.number().positive(), ACRE: z.number().positive() }).partial().strict().optional(),
+    dealPipeline: z
+      .object({
+        stages: z
+          .array(z.object({ stage: z.enum(DEAL_STAGES), enabled: z.boolean().optional(), label: z.string().trim().max(40).optional(), labelUr: z.string().trim().max(40).optional(), probability: z.number().min(0).max(1).optional() }).strict())
+          .max(DEAL_STAGES.length),
+      })
+      .strict()
+      .optional(),
     leadAssignment: z
       .object({
         mode: z.enum(['NONE', 'ROUND_ROBIN', 'BY_SOURCE']).optional(),

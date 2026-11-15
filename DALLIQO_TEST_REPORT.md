@@ -137,6 +137,15 @@ Run date: 14 Nov 2026 (latest: Phase 5B — see per-phase sections for current t
 - **Visual check:** the client portal (requirement, picked properties with Save / Request a visit / Not interested), Reports (business overview, agent performance with Excel / PDF), the deal's adjustments and disputes, and the lease's maintenance tab.
   - The check found and fixed a bug: report ranges ending today excluded today's records.
 
+## Final batch tests (`server/tests/pipeline.test.ts`, `server/tests/ai.test.ts`, `mobile/test/deals_test.dart`)
+- **Pipeline normalisation:** stages come back in fixed order, Inquiry stays on even if stored off, Won is always 100 %, and an out-of-range chance falls back to the default. The forecast uses custom probabilities (100,000 at 50 % → 50,000).
+- **Settings:** an agent gets 403 when changing the pipeline. Switching off Lost returns 400, and so does a chance of 1.5. Renaming and switching off are saved, and a later partial update keeps the earlier changes.
+- **Deals:** creating or moving a deal into a switched-off stage returns 400. An offer on a Site-visit deal leaves it in Site visit when Negotiation is off. The forecast weights a Token deal at the configured 50 %.
+- **AI provider:** a stub provider registered as `AI_PROVIDER` handles descriptions and the assistant (with the permission-filtered tools). `/ai/status` reports it, and both calls are metered under its model. The existing Anthropic tests pass unchanged.
+- **Android:** switched-off stages are hidden except the deal's own, Urdu and English custom names are used, and the default is every stage.
+- **Full results:** server 283 passed (1 skipped), web 38, Flutter 82, `flutter analyze` clean, web build OK.
+- **Visual check:** in Settings, switching off Qualified and renaming Site visit to "Viewing" is reflected on the deals board.
+
 ## Manual / visual verification
 Demo API (`npm run demo`) + web, headless Chrome screenshots at 1440 px: client list with lead scores and temperature filter, client lead panel, Reports (leads + inventory aging), Settings → Subscription. All rendered correctly with real demo data.
 

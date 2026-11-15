@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, CircleX, Download, FileDown, Printer, ReceiptText, Target, Undo2, Users } from 'lucide-react';
-import { PAYMENT_METHODS, PERMISSIONS, PROPERTY_TYPES } from '@recrm/shared';
-import { aiApi, followUpApi, inquiryApi, leaseApi, opsApi, portalSettingsApi } from '@/api/endpoints';
+import { PAYMENT_METHODS, PERMISSIONS, PROPERTY_TYPES, REQUIRED_DEAL_STAGES, normalizeDealPipeline, type DealStageConfig } from '@recrm/shared';
+import { aiApi, dealApi, followUpApi, inquiryApi, leaseApi, opsApi, portalSettingsApi, settingsApi } from '@/api/endpoints';
 import type { Transaction } from '@/api/types';
 import { useBranches } from '@/components/branches';
 import { Badge, Button, Card, EmptyState, Input, MetricTile, Modal, Select, Switch, Textarea } from '@/components/ui';
@@ -396,6 +396,57 @@ export function PortalSettingsCard() {
         <p className="text-2xs text-muted">{t('ops.portalHint')}</p>
         {canManage && <div className="flex justify-end"><Button size="sm" loading={save.isPending} onClick={() => save.mutate()}>{t('common.save')}</Button></div>}
       </div>
+    </Card>
+  );
+}
+
+/* ═════════════ Deal pipeline (Settings → Matching & deals) ═════════════ */
+
+/** Choose which deal stages the business uses, rename them (EN / UR) and set their win chance. */
+export function DealPipelineCard() {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  const onError = useOnError();
+  const canManage = useCan(PERMISSIONS.SETTINGS_MANAGE);
+  const q = useQuery({ queryKey: ['deal-pipeline'], queryFn: dealApi.pipeline });
+  const [draft, setDraft] = useState<DealStageConfig[] | null>(null);
+  useEffect(() => {
+    if (q.data && !draft) setDraft(normalizeDealPipeline(q.data).stages);
+  }, [q.data, draft]);
+  const save = useMutation({
+    mutationFn: () => settingsApi.update({ dealPipeline: { stages: draft!.map((s) => ({ stage: s.stage, enabled: s.enabled, label: s.label, labelUr: s.labelUr, probability: s.probability })) } }),
+    onSuccess: (s) => (toast.success(t('common.saved')), qc.setQueryData(['deal-pipeline'], s.dealPipeline), void qc.invalidateQueries({ queryKey: ['settings'] }), void qc.invalidateQueries({ queryKey: ['ai', 'forecast'] })),
+    onError,
+  });
+  if (!draft) return null;
+  const set = (stage: string, patch: Partial<DealStageConfig>) => setDraft(draft.map((s) => (s.stage === stage ? { ...s, ...patch } : s)));
+  return (
+    <Card title={t('pipeline.title')}>
+      <p className="mb-3 text-xs text-muted">{t('pipeline.hint')}</p>
+      <div className="space-y-2">
+        {draft.map((s) => {
+          const required = REQUIRED_DEAL_STAGES.includes(s.stage);
+          const fixedChance = s.stage === 'CLOSED_WON' || s.stage === 'CLOSED_LOST';
+          return (
+            <div key={s.stage} className={`grid items-end gap-2 rounded-xl border border-line p-2 sm:grid-cols-[10rem_1fr_1fr_10rem] ${s.enabled ? '' : 'opacity-60'}`}>
+              <Switch checked={s.enabled} disabled={!canManage || required} onChange={(v) => set(s.stage, { enabled: v })} label={t(`enums.dealStage.${s.stage}`)} />
+              <Input label={t('pipeline.label')} placeholder={t(`enums.dealStage.${s.stage}`)} maxLength={40} value={s.label} disabled={!canManage} onChange={(e) => set(s.stage, { label: e.target.value })} />
+              <Input label={t('pipeline.labelUr')} dir="rtl" maxLength={40} value={s.labelUr} disabled={!canManage} onChange={(e) => set(s.stage, { labelUr: e.target.value })} />
+              <Input
+                label={`${t('pipeline.chance')} (%)`}
+                type="number"
+                min={0}
+                max={100}
+                value={Math.round(s.probability * 100)}
+                disabled={!canManage || fixedChance}
+                onChange={(e) => set(s.stage, { probability: Math.min(100, Math.max(0, Number(e.target.value) || 0)) / 100 })}
+              />
+            </div>
+          );
+        })}
+      </div>
+      <p className="mt-2 text-2xs text-muted">{t('pipeline.required')}</p>
+      {canManage && <div className="mt-3 flex justify-end"><Button size="sm" loading={save.isPending} onClick={() => save.mutate()}>{t('common.save')}</Button></div>}
     </Card>
   );
 }

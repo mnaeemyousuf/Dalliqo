@@ -13,6 +13,7 @@ import { AutomationSettings, SubscriptionSettings } from '@/pages/Phase3Pages';
 import { formatDate, relativeTime } from '@/lib/format';
 import { useEnumOptions, useOnError, useUrlState } from '@/lib/hooks';
 import { EmailNotificationsSetting } from '@/pages/MarketingPages';
+import { DealPipelineCard } from '@/pages/OpsPages';
 import { useAuth, useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
 import { useUi } from '@/store/ui';
@@ -524,7 +525,12 @@ export function SettingsPage() {
         {tab === 'business' && <BusinessSettings />}
         {tab === 'branches' && <BranchSettings />}
         {tab === 'categories' && <CategorySettings />}
-        {tab === 'matching' && <MatchingSettings />}
+        {tab === 'matching' && (
+          <div className="space-y-4">
+            <MatchingSettings />
+            <DealPipelineCard />
+          </div>
+        )}
         {tab === 'automation' && <AutomationTab />}
         {tab === 'subscription' && <SubscriptionSettings />}
         {tab === 'security' && <SecuritySettings />}

@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 import {
   ERROR_CODES,
   OPEN_DEAL_STAGES,
+  isDealStageEnabled,
   PERMISSIONS,
   SOCKET_EVENTS,
   sharesValid,
@@ -266,6 +267,7 @@ export const dealService = {
     const payments = input.payments?.length && canManageMoney(auth) ? normalizePayments(input.payments, auth) : [];
     const payouts = input.payouts?.length && canManageMoney(auth) ? normalizePayouts(input.payouts) : [];
     const stage = input.stage ?? 'INQUIRY';
+    if (!isDealStageEnabled(settings.dealPipeline, stage)) throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'That stage is switched off in this business’s pipeline');
     const now = new Date();
     const base = { agreedPrice: input.agreedPrice, finalPrice: input.finalPrice, commission, agents: agents as never, payments, payouts, externalShares: input.externalShares?.length && canManageMoney(auth) ? normalizeExternal(input.externalShares, []) : [] };
 
@@ -413,9 +415,14 @@ export const dealService = {
     return (await dealRepository.findById(auth, id)) ?? updated;
   },
 
-  async changeStage(auth: AuthContext, id: string, stage: DealStage, opts: { note?: string; lostReason?: string; baseVersion?: number; meta?: RequestMeta; approved?: boolean } = {}) {
+  async changeStage(auth: AuthContext, id: string, stage: DealStage, opts: { note?: string; lostReason?: string; baseVersion?: number; meta?: RequestMeta; approved?: boolean; auto?: boolean } = {}) {
     const before = await this.load(auth, id);
     if (stage === before.stage) return before;
+    if (!isDealStageEnabled((await settingsService.get(auth)).dealPipeline, stage)) {
+      // Automatic moves (offers) skip stages the business does not use; manual ones are refused.
+      if (opts.auto) return before;
+      throw badRequest(ERROR_CODES.VALIDATION_ERROR, 'That stage is switched off in this business’s pipeline');
+    }
     if (stage === 'CLOSED_WON' && !opts.approved && !auth.permissions.includes(PERMISSIONS.DEALS_APPROVE) && (await settingsService.get(auth)).commission.closeApprovalRequired) {
       return this.requestCloseApproval(auth, before, opts.note);
     }
@@ -508,7 +515,7 @@ export const dealService = {
     const offer = normalizeOffers([input], auth)[0];
     if ((before.offers ?? []).some((o) => o._id === offer._id)) return before; // replay
     if (PRE_NEGOTIATION.includes(before.stage)) {
-      before = await this.changeStage(auth, id, 'NEGOTIATION', { note: 'Offer recorded' });
+      before = await this.changeStage(auth, id, 'NEGOTIATION', { note: 'Offer recorded', auto: true });
     }
     const offers = [
       ...(before.offers ?? []).map((o) => (o.status === 'OPEN' && o.party !== offer.party ? { ...o, status: 'COUNTERED' as const } : o)),
@@ -529,7 +536,7 @@ export const dealService = {
     if (!offer) throw notFound(ERROR_CODES.OFFER_NOT_FOUND, 'Offer not found');
     if (offer.status === status) return before;
     if (status === 'ACCEPTED' && [...PRE_NEGOTIATION, 'NEGOTIATION'].includes(before.stage)) {
-      before = await this.changeStage(auth, id, 'OFFER', { note: `Offer of ${formatPkr(offer.amount)} accepted` });
+      before = await this.changeStage(auth, id, 'OFFER', { note: `Offer of ${formatPkr(offer.amount)} accepted`, auto: true });
     }
     const offers = (before.offers ?? []).map((o) =>
       o._id === offerId ? { ...o, status } : status === 'ACCEPTED' && o.status === 'OPEN' ? { ...o, status: 'REJECTED' as const } : o,

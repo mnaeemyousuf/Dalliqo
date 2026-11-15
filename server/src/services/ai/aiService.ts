@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { ERROR_CODES, PERMISSIONS, estimatePrice, forecastCommission, type Comparable, type DealStage } from '@recrm/shared';
+import { ERROR_CODES, PERMISSIONS, estimatePrice, forecastCommission, stageProbabilities, type Comparable, type DealStage } from '@recrm/shared';
 import { formatPkr as formatPkrShort } from '../../utils/text';
 import { env } from '../../config/env';
 import { Activity } from '../../models/Activity';
@@ -16,7 +16,8 @@ import type { AuthContext } from '../../types/context';
 import { forbidden } from '../../utils/AppError';
 import { branchFilter } from '../branchScope';
 import { ownDealsFilter } from '../dealService';
-import { aiClient, jsonOf } from './aiClient';
+import { settingsService } from '../settingsService';
+import { aiClient } from './aiClient';
 
 export type AiLanguage = 'en' | 'ur';
 const LANG = { en: 'English', ur: 'Urdu (in Urdu script, natural Pakistani real-estate wording; keep numbers, PKR amounts and society names in their usual form)' };
@@ -171,28 +172,22 @@ function ruleBrief(ctx: Awaited<ReturnType<typeof clientContext>>, language: AiL
 
 export const aiService = {
   async status(auth: AuthContext) {
-    return { configured: aiClient.configured(), model: aiClient.configured() ? aiClient.model() : null, usedThisMonth: await aiClient.usedThisMonth(auth.businessId), monthlyLimit: env.AI_MONTHLY_LIMIT };
+    return { configured: aiClient.configured(), provider: aiClient.provider(), model: aiClient.configured() ? aiClient.model() : null, usedThisMonth: await aiClient.usedThisMonth(auth.businessId), monthlyLimit: env.AI_MONTHLY_LIMIT };
   },
 
   async describeProperty(auth: AuthContext, id: string, opts: { language: AiLanguage; useAi?: boolean }) {
     const p = await propertyRepository.getById(auth, id, 'Property not found');
     if (!aiClient.configured() || opts.useAi === false) return { ...templateDescription(p, opts.language), source: 'template' as const };
-    const m = await aiClient.create(auth, 'description', {
-      max_tokens: 4000,
-      output_config: {
-        effort: 'low',
-        format: {
-          type: 'json_schema',
-          schema: { type: 'object', properties: { headline: { type: 'string' }, description: { type: 'string' } }, required: ['headline', 'description'], additionalProperties: false },
-        },
-      },
+    const out = await aiClient.generateJson<{ headline: string; description: string }>(auth, 'description', {
+      maxTokens: 4000,
+      effort: 'low',
+      schema: { type: 'object', properties: { headline: { type: 'string' }, description: { type: 'string' } }, required: ['headline', 'description'], additionalProperties: false },
       system:
         'You write property listings for a Pakistani real-estate agency. Use only the facts given — never invent features, distances, legal status or prices. ' +
         'Write a headline (max 70 characters) and a description of 80–140 words: clear, warm and specific, no exaggeration, no emojis, no ALL CAPS. ' +
         'Never mention owners, plot or house numbers, or a minimum price. End with an invitation to call or visit.',
-      messages: [{ role: 'user', content: `Language: ${LANG[opts.language]}\nListing facts (JSON):\n${JSON.stringify(listingFacts(p))}` }],
+      prompt: `Language: ${LANG[opts.language]}\nListing facts (JSON):\n${JSON.stringify(listingFacts(p))}`,
     });
-    const out = jsonOf<{ headline: string; description: string }>(m);
     return { headline: out.headline.slice(0, 120), description: out.description.slice(0, 4000), source: 'ai' as const };
   },
 
@@ -200,28 +195,22 @@ export const aiService = {
     const c = await clientRepository.getById(auth, id, 'Client not found');
     const ctx = await clientContext(auth, c);
     if (!aiClient.configured()) return { ...ruleBrief(ctx, language), source: 'rules' as const };
-    const m = await aiClient.create(auth, 'client_brief', {
-      max_tokens: 4000,
-      output_config: {
-        effort: 'low',
-        format: {
-          type: 'json_schema',
-          schema: {
-            type: 'object',
-            properties: { summary: { type: 'string' }, nextAction: { type: 'string' }, message: { type: 'string' }, risks: { type: 'array', items: { type: 'string' } } },
-            required: ['summary', 'nextAction', 'message', 'risks'],
-            additionalProperties: false,
-          },
-        },
+    const out = await aiClient.generateJson<ClientBrief>(auth, 'client_brief', {
+      maxTokens: 4000,
+      effort: 'low',
+      schema: {
+        type: 'object',
+        properties: { summary: { type: 'string' }, nextAction: { type: 'string' }, message: { type: 'string' }, risks: { type: 'array', items: { type: 'string' } } },
+        required: ['summary', 'nextAction', 'message', 'risks'],
+        additionalProperties: false,
       },
       system:
         'You help a Pakistani real-estate agent decide what to do next with a lead. From the record given, write: ' +
         '"summary" (2–3 sentences: who they are, what they want, where things stand), "nextAction" (one concrete step for today), ' +
         '"message" (a short, polite WhatsApp message the agent could send, starting with Assalam-o-Alaikum, no emojis, no promises about price or availability that the record does not support), ' +
         'and "risks" (0–3 short warnings, e.g. going cold, budget mismatch). Base everything strictly on the record.',
-      messages: [{ role: 'user', content: `Language: ${LANG[language]}\nToday: ${new Date().toISOString().slice(0, 10)}\nLead record (JSON):\n${JSON.stringify(ctx)}` }],
+      prompt: `Language: ${LANG[language]}\nToday: ${new Date().toISOString().slice(0, 10)}\nLead record (JSON):\n${JSON.stringify(ctx)}`,
     });
-    const out = jsonOf<ClientBrief>(m);
     return { summary: out.summary, nextAction: out.nextAction, message: out.message, risks: (out.risks ?? []).slice(0, 5), source: 'ai' as const };
   },
 
@@ -235,7 +224,7 @@ export const aiService = {
     const deals = can(auth, PERMISSIONS.DEALS_READ)
       ? await Deal.find({ ...base, ...ownDealsFilter(auth), stage: { $ne: 'CLOSED_LOST' }, outstanding: { $gt: 0 } }).select('stage outstanding expectedCloseDate updatedAt').lean()
       : [];
-    const commission = forecastCommission(deals.map((d) => ({ stage: d.stage as DealStage, outstanding: d.outstanding ?? 0, expectedCloseDate: d.expectedCloseDate, updatedAt: d.updatedAt })), now);
+    const commission = forecastCommission(deals.map((d) => ({ stage: d.stage as DealStage, outstanding: d.outstanding ?? 0, expectedCloseDate: d.expectedCloseDate, updatedAt: d.updatedAt })), now, 6, stageProbabilities((await settingsService.get(auth)).dealPipeline));
     const months = commission.months.map((m) => ({ ...m, installments: 0, rent: 0 }));
     const idx = (d: Date) => months.findIndex((m) => m.month === `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`);
     if (can(auth, PERMISSIONS.FINANCE_READ)) {

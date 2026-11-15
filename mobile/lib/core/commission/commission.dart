@@ -145,3 +145,41 @@ bool sharesValid(List<num> shares) {
   final sum = shares.fold<num>(0, (s, x) => s + x);
   return (sum - 100).abs() < 0.01 && shares.every((s) => s > 0);
 }
+
+/// The business's configurable deal pipeline (Settings → deal pipeline on the web). Stage keys
+/// are fixed; a business can switch middle stages off and rename them. Falls back to every stage
+/// with the built-in names when it has not been loaded (e.g. offline).
+class DealPipeline {
+  const DealPipeline({this.disabled = const {}, this.labels = const {}, this.labelsUr = const {}});
+
+  final Set<String> disabled;
+  final Map<String, String> labels;
+  final Map<String, String> labelsUr;
+
+  static const requiredStages = {'INQUIRY', 'CLOSED_WON', 'CLOSED_LOST'};
+
+  factory DealPipeline.fromJson(Map<String, dynamic> json) {
+    final disabled = <String>{};
+    final labels = <String, String>{};
+    final labelsUr = <String, String>{};
+    for (final raw in (json['stages'] as List? ?? const [])) {
+      final s = raw as Map<String, dynamic>;
+      final stage = s['stage'] as String?;
+      if (stage == null) continue;
+      if (s['enabled'] == false && !requiredStages.contains(stage)) disabled.add(stage);
+      final label = (s['label'] as String? ?? '').trim();
+      final labelUr = (s['labelUr'] as String? ?? '').trim();
+      if (label.isNotEmpty) labels[stage] = label;
+      if (labelUr.isNotEmpty) labelsUr[stage] = labelUr;
+    }
+    return DealPipeline(disabled: disabled, labels: labels, labelsUr: labelsUr);
+  }
+
+  bool enabled(String stage) => !disabled.contains(stage);
+
+  /// Open stages in use, plus [current] if the deal sits in a stage switched off later.
+  List<String> openStages({String? current}) => [for (final s in openDealStages) if (enabled(s) || s == current) s];
+
+  /// Custom name for [stage] in the given language, or null to use the built-in translation.
+  String? customLabel(String stage, {required bool urdu}) => urdu ? labelsUr[stage] : labels[stage];
+}

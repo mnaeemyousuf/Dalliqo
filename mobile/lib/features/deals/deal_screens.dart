@@ -25,6 +25,19 @@ final dealsProvider = FutureProvider.autoDispose<List<Deal>>((ref) {
   return ref.watch(crmRepositoryProvider).deals(search: ref.watch(_dealSearchProvider), open: ref.watch(_dealOpenOnlyProvider) ? true : null);
 });
 
+/// The business's pipeline (stage names / switched-off stages); all stages when offline.
+final dealPipelineProvider = FutureProvider<DealPipeline>((ref) async {
+  try {
+    return DealPipeline.fromJson(await ref.watch(onlineRepositoryProvider).dealPipeline());
+  } catch (_) {
+    return const DealPipeline();
+  }
+});
+
+/// Stage name: the business's own wording when set, otherwise the built-in translation.
+String stageLabel(WidgetRef ref, AppLocalizations l, String stage) =>
+    ref.watch(dealPipelineProvider).value?.customLabel(stage, urdu: l.isRtl) ?? l.enumLabel('dealStage', stage);
+
 ChipTone stageTone(String stage) => switch (stage) {
       'CLOSED_WON' => ChipTone.green,
       'CLOSED_LOST' => ChipTone.red,
@@ -95,7 +108,7 @@ class DealsScreen extends ConsumerWidget {
               return ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 96), children: [
                 for (final stage in stages)
                   if (deals.any((d) => d.stage == stage)) ...[
-                    SectionHeader('${l.enumLabel('dealStage', stage)} · ${deals.where((d) => d.stage == stage).length}'),
+                    SectionHeader('${stageLabel(ref, l, stage)} · ${deals.where((d) => d.stage == stage).length}'),
                     for (final d in deals.where((d) => d.stage == stage)) Padding(padding: const EdgeInsets.only(bottom: 8), child: DealCard(deal: d)),
                   ],
               ]);
@@ -270,15 +283,15 @@ class DealDetailScreen extends ConsumerWidget {
             ),
             body: TabBarView(children: [
               ListView(padding: const EdgeInsets.all(16), children: [
-                Row(children: [AppChip(l.enumLabel('dealStage', d.stage), tone: stageTone(d.stage)), const SizedBox(width: 6), SyncBadge(d.syncStatus)]),
+                Row(children: [AppChip(stageLabel(ref, l, d.stage), tone: stageTone(d.stage)), const SizedBox(width: 6), SyncBadge(d.syncStatus)]),
                 if (d.title != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(d.title!, style: Theme.of(context).textTheme.titleMedium)),
                 const SizedBox(height: 12),
                 // Pipeline steps: tap to move the deal (works offline).
                 Wrap(spacing: 6, runSpacing: 6, children: [
-                  for (final st in openDealStages)
-                    ChoiceChip(label: Text(l.enumLabel('dealStage', st)), selected: d.stage == st, onSelected: canEdit ? (_) => _setStage(context, ref, d, st) : null),
-                  ChoiceChip(label: Text(l.enumLabel('dealStage', 'CLOSED_WON')), selected: d.stage == 'CLOSED_WON', onSelected: canEdit ? (_) => _setStage(context, ref, d, 'CLOSED_WON') : null),
-                  ChoiceChip(label: Text(l.enumLabel('dealStage', 'CLOSED_LOST')), selected: d.stage == 'CLOSED_LOST', onSelected: canEdit ? (_) => _setStage(context, ref, d, 'CLOSED_LOST') : null),
+                  for (final st in (ref.watch(dealPipelineProvider).value ?? const DealPipeline()).openStages(current: d.stage))
+                    ChoiceChip(label: Text(stageLabel(ref, l, st)), selected: d.stage == st, onSelected: canEdit ? (_) => _setStage(context, ref, d, st) : null),
+                  ChoiceChip(label: Text(stageLabel(ref, l, 'CLOSED_WON')), selected: d.stage == 'CLOSED_WON', onSelected: canEdit ? (_) => _setStage(context, ref, d, 'CLOSED_WON') : null),
+                  ChoiceChip(label: Text(stageLabel(ref, l, 'CLOSED_LOST')), selected: d.stage == 'CLOSED_LOST', onSelected: canEdit ? (_) => _setStage(context, ref, d, 'CLOSED_LOST') : null),
                 ]),
                 if (d.lostReason != null && d.stage == 'CLOSED_LOST') Padding(padding: const EdgeInsets.only(top: 6), child: Text('${l.t('deal.lostReason')}: ${d.lostReason}', style: TextStyle(color: Theme.of(context).colorScheme.error))),
                 const SizedBox(height: 12),

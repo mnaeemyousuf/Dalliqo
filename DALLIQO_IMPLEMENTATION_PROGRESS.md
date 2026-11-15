@@ -289,7 +289,31 @@ Server 242 passed (6 new rental tests: schedule maths, allocation, summary, full
 - Server: 7 new tests in `server/tests/phase9.test.ts`, plus 2 new feature-matching tests; 280 passed + 1 skipped in total.
 - Web: 38. Flutter: 81. `flutter analyze` clean; web build OK.
 
+## Final batch ✅ (15 Nov 2026) — configurable pipeline, pluggable AI provider
+
+### Features implemented
+- **Configurable deal pipeline.** Managers choose which middle stages the business uses, rename any stage in English and Urdu, and set each stage's chance to close (Settings → Matching & deals → Deal pipeline). The stage keys stay fixed, so reports, sync and commission are unaffected.
+  - Inquiry, Won and Lost are always on.
+  - Creating or moving a deal into a switched-off stage is refused (400).
+  - Automatic moves from offers (to Negotiation / Offer) skip switched-off stages instead of failing.
+  - Deals already sitting in a stage that is switched off keep it and still show it.
+  - The commission forecast uses the business's own probabilities.
+  - Web: the deals board, list filter, stage badges and the detail stepper follow the pipeline. Android: the stage chips and labels follow it (all stages when offline).
+- **Pluggable AI provider.** Features no longer call the Anthropic SDK directly. They use a provider-neutral interface (`generateJson` for structured answers, `runTools` for the assistant's tool loop), chosen with `AI_PROVIDER`.
+  - The Anthropic adapter keeps everything it did before: server-side refusal fallbacks, structured output, the cached system prompt, error mapping.
+  - Allowance and usage metering stay central, whichever provider is used.
+  - Adding a provider means implementing two methods and registering it.
+
+### Database / APIs
+- `settings.dealPipeline.stages[] {stage, enabled, label, labelUr, probability}` (optional; missing stages use the defaults, so no migration is needed).
+- **New:** `GET /deals/pipeline` (needs `deals:read`). **Modified:** `PATCH /settings` accepts `dealPipeline.stages` (only the changed stages; the rest are kept). `GET /ai/status` also returns `provider`.
+- **Env:** `AI_PROVIDER` (default `anthropic`).
+
+### Tests
+- `server/tests/pipeline.test.ts` (2 tests), plus a provider-selection test in `server/tests/ai.test.ts` and a pipeline test in `mobile/test/deals_test.dart`.
+- Server 283 passed + 1 skipped; web 38; Flutter 82; `flutter analyze` clean; web build OK.
+
 ## What is left
-Every item of the brief and the follow-ups is implemented. Live use of WhatsApp Business and the AI assistant needs the credentials listed above; device testing of the Android screens is still to be done on real phones.
+Every item of the brief and the follow-ups is implemented, including configurable deal stages and a swappable AI provider. Live use of WhatsApp Business and the AI assistant needs the credentials listed above; device testing of the Android screens is still to be done on real phones.
 
 - **Remaining ideas (not in the brief):** assistant proposals for deal updates; per-agent public profile photos; scheduled campaign spend import from bank statements.

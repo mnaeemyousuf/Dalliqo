@@ -120,8 +120,23 @@ Data sent to Anthropic: the user's question, and the records the tools return fo
 | Listing quality | `aiService.listingQuality` |
 | Web | `web/src/pages/OpsPages.tsx` (reports, refunds, vouchers, quality, interest, notices, maintenance, portal switches); `PublicPages.tsx` portal sections |
 
+## Final batch — pipeline and AI providers
+| Concern | Where |
+|---|---|
+| Pipeline model, normalisation, required stages, stage probabilities | `shared/src/pipeline.ts`; `forecastCommission(…, probability)` in `shared/src/ai.ts` |
+| Storage / validation / partial merge | `Settings.dealPipeline`, `settingsService` (`effective`, `update`), `settingsUpdateSchema.dealPipeline` |
+| Enforcement | `dealService.create` and `changeStage` (with `auto` for offer-driven moves) |
+| Web | `web/src/lib/pipeline.ts` (`useDealPipeline`), `DealPipelineCard` in `OpsPages.tsx`, `DealPages.tsx` |
+| Android | `DealPipeline` in `mobile/lib/core/commission/commission.dart`, `dealPipelineProvider` / `stageLabel` in `deal_screens.dart` |
+| AI provider contract | `server/src/services/ai/providers/types.ts` (`AiProvider`: `generateJson`, `runTools`, usage reports) |
+| Anthropic adapter | `server/src/services/ai/providers/anthropic.ts` |
+| Registry / selection | `server/src/services/ai/providers/index.ts` (`AI_PROVIDERS`, `AI_PROVIDER` env) |
+| Allowance and metering gateway | `server/src/services/ai/aiClient.ts` |
+
+To add a provider: implement `AiProvider`, add it to `AI_PROVIDERS` and to the `AI_PROVIDER` enum in `server/src/config/env.ts`. No feature code changes.
+
 ## Configuration
-AI (optional): `ANTHROPIC_API_KEY`, `AI_MODEL` (default `claude-opus-5-5`), `AI_MONTHLY_LIMIT` (default 3000).
+AI (optional): `AI_PROVIDER` (default `anthropic`), `ANTHROPIC_API_KEY`, `AI_MODEL` (default `claude-opus-5-5`), `AI_MONTHLY_LIMIT` (default 3000).
 WhatsApp Business (optional): `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_API_VERSION` (default v21.0). Email: `SMTP_*` (inquiry acknowledgements, notification copies).
 
 | Variable | Purpose |

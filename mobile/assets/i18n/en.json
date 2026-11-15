@@ -1879,5 +1879,13 @@
     "shareInPortal": "Share in portal",
     "inPortal": "In portal ✓",
     "portalShareHint": "Clients / owners linked to this record see it in their portal. CNIC and title documents can never be shared."
+  },
+  "pipeline": {
+    "title": "Deal pipeline",
+    "hint": "Choose the stages your team uses, rename them, and set how likely a deal at each stage is to close. The chance drives the commission forecast.",
+    "label": "Name (English)",
+    "labelUr": "Name (Urdu)",
+    "chance": "Chance to close",
+    "required": "Inquiry, Won and Lost are always part of the pipeline. Deals already in a stage you switch off keep it until they move."
   }
 }

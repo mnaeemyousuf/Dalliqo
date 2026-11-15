@@ -176,3 +176,44 @@ describe('AI layer', () => {
     expect(r.body.code).toBe('MODULE_NOT_IN_PLAN');
   });
 });
+
+describe('pluggable AI provider', () => {
+  it('routes features and the assistant through the provider named by AI_PROVIDER, metering each call', async () => {
+    const { AI_PROVIDERS } = await import('../src/services/ai/providers');
+    const seen: string[] = [];
+    AI_PROVIDERS.stub = {
+      name: 'stub',
+      configured: () => true,
+      model: () => 'stub-model-1',
+      async generateJson<T>(req: { prompt: string }, report: (r: { model: string; inputTokens: number; outputTokens: number; outcome: 'OK' }) => Promise<void>) {
+        seen.push(`json:${req.prompt.slice(0, 9)}`);
+        await report({ model: 'stub-model-1', inputTokens: 5, outputTokens: 7, outcome: 'OK' });
+        return { headline: 'Stub headline', description: 'Stub description' } as T;
+      },
+      async runTools(req, report) {
+        const r = await req.runTool('search_clients', { query: 'Zara', temperature: null });
+        seen.push(`tool:${r.isError ? 'error' : 'ok'}`);
+        await report({ model: 'stub-model-1', inputTokens: 1, outputTokens: 1, outcome: 'OK' });
+        return { text: `Found via ${req.tools.length} tools`, exhausted: false };
+      },
+    };
+    const prev = env.AI_PROVIDER;
+    (env as { AI_PROVIDER: string }).AI_PROVIDER = 'stub';
+    try {
+      const owner = await registerOwner(app);
+      const status = (await request(app).get('/api/ai/status').set(bearer(owner.accessToken)).expect(200)).body.data;
+      expect(status).toMatchObject({ configured: true, provider: 'stub', model: 'stub-model-1' });
+      const p = await createProperty(app, owner, {});
+      const d = (await request(app).post(`/api/ai/properties/${p._id}/description`).set(bearer(owner.accessToken)).send({ language: 'en' }).expect(200)).body.data;
+      expect(d).toMatchObject({ source: 'ai', headline: 'Stub headline' });
+      const a = (await request(app).post('/api/ai/assistant').set(bearer(owner.accessToken)).send({ messages: [{ role: 'user', content: 'Who is Zara?' }] }).expect(200)).body.data;
+      expect(a.answer).toMatch(/^Found via \d+ tools$/);
+      expect(a.toolsUsed).toEqual(['search_clients']);
+      expect(seen).toEqual(['json:Language:', 'tool:ok']);
+      expect(await AiUsage.countDocuments({ businessId: owner.businessId, model: 'stub-model-1' })).toBe(2);
+    } finally {
+      (env as { AI_PROVIDER: string }).AI_PROVIDER = prev;
+      delete AI_PROVIDERS.stub;
+    }
+  });
+});

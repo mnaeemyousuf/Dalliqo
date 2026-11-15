@@ -146,4 +146,23 @@ void main() {
       expect((await repo.deals(agentId: 'u2')).single.id, won.id);
     });
   });
+
+  group('deal pipeline settings', () {
+    test('switched-off stages are hidden (except the deal’s own), required stages stay, custom names per language', () {
+      final p = DealPipeline.fromJson({
+        'stages': [
+          {'stage': 'QUALIFIED', 'enabled': false, 'label': '', 'labelUr': ''},
+          {'stage': 'INQUIRY', 'enabled': false},
+          {'stage': 'SITE_VISIT', 'enabled': true, 'label': 'Viewing', 'labelUr': 'معائنہ'},
+        ],
+      });
+      expect(p.openStages(), isNot(contains('QUALIFIED')));
+      expect(p.openStages(), contains('INQUIRY'));
+      expect(p.openStages(current: 'QUALIFIED'), contains('QUALIFIED'));
+      expect(p.customLabel('SITE_VISIT', urdu: false), 'Viewing');
+      expect(p.customLabel('SITE_VISIT', urdu: true), 'معائنہ');
+      expect(p.customLabel('TOKEN', urdu: false), isNull);
+      expect(const DealPipeline().openStages(), openDealStages);
+    });
+  });
 }

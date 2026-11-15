@@ -47,8 +47,9 @@ const monthKey = (d: Date) => `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 
 /**
  * Weighted commission forecast for the next `months` months. Overdue expected dates land in the
  * current month; deals without a date are placed by typical time-to-close for their stage.
+ * `probability` lets a business use its own stage weights (Settings → deal pipeline).
  */
-export function forecastCommission(deals: ForecastDeal[], now = new Date(), months = 6): { months: ForecastMonth[]; weightedTotal: number; bestCaseTotal: number } {
+export function forecastCommission(deals: ForecastDeal[], now = new Date(), months = 6, probability: Record<DealStage, number> = DEAL_STAGE_PROBABILITY): { months: ForecastMonth[]; weightedTotal: number; bestCaseTotal: number } {
   const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
   const keys = Array.from({ length: months }, (_, i) => monthKey(new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + i, 1))));
   const out = new Map(keys.map((k) => [k, { month: k, weighted: 0, bestCase: 0, deals: 0 }]));
@@ -58,7 +59,7 @@ export function forecastCommission(deals: ForecastDeal[], now = new Date(), mont
     if (when < start) when = start;
     const row = out.get(monthKey(when));
     if (!row) continue; // beyond the horizon
-    row.weighted += Math.round(d.outstanding * DEAL_STAGE_PROBABILITY[d.stage]);
+    row.weighted += Math.round(d.outstanding * (probability[d.stage] ?? DEAL_STAGE_PROBABILITY[d.stage]));
     row.bestCase += Math.round(d.outstanding);
     row.deals += 1;
   }

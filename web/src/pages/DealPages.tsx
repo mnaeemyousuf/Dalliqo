@@ -16,6 +16,7 @@ import { VoucherButton } from '@/pages/OpsPages';
 import { Badge, Button, Card, ConfirmDialog, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Table, Tabs, Textarea, type BadgeColor, type Column, ViewToggle, MetricTile } from '@/components/ui';
 import { formatDate, formatPkr } from '@/lib/format';
 import { useDebounce, useEnumOptions, useErrorText, useMembers, useOnError, useUrlState, useOpenOnNew } from '@/lib/hooks';
+import { useDealPipeline } from '@/lib/pipeline';
 import { useAuth, useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
 
@@ -28,8 +29,8 @@ const name = (v: unknown) => (v && typeof v === 'object' && 'fullName' in v ? St
 const refId = (v: unknown) => (v && typeof v === 'object' && '_id' in v ? String((v as { _id: string })._id) : (v as string | null | undefined) ?? '');
 
 export function StageBadge({ stage }: { stage: DealStage }) {
-  const { t } = useTranslation();
-  return <Badge color={STAGE_COLOR[stage]}>{t(`enums.dealStage.${stage}`)}</Badge>;
+  const { label } = useDealPipeline();
+  return <Badge color={STAGE_COLOR[stage]}>{label(stage)}</Badge>;
 }
 
 export function CommissionStatusBadge({ status }: { status: string }) {
@@ -192,7 +193,8 @@ export function DealsPage() {
   const query = useQuery({ queryKey: ['deals', params], queryFn: () => dealApi.list(params), placeholderData: (p) => p });
   const [formOpen, setFormOpen] = useState(false);
   useOpenOnNew(() => setFormOpen(true));
-  const stages = useEnumOptions('dealStage', DEAL_STAGES);
+  const pipe = useDealPipeline();
+  const stages = pipe.stages.map((s) => ({ value: s, label: pipe.label(s) }));
   const cstatus = useEnumOptions('commissionStatus', COMMISSION_STATUSES);
   const f = (k: keyof typeof filters) => (e: { target: { value: string } }) => setFilters({ [k]: e.target.value, page: '1' } as never);
   const columns: Column<Deal>[] = [
@@ -238,7 +240,7 @@ export function DealsPage() {
         <EmptyState title={t('deal.empty')} hint={t('deal.emptyHint')} icon={<HandCoins className="h-6 w-6" />} action={canCreate ? <Button onClick={() => setFormOpen(true)}>{t('deal.add')}</Button> : undefined} />
       ) : board ? (
         <div className="grid auto-cols-[17rem] grid-flow-col gap-3 overflow-x-auto pb-3">
-          {OPEN_DEAL_STAGES.map((stage, si) => {
+          {pipe.openStages.map((stage, si) => {
             const items = query.data!.items.filter((d) => d.stage === stage);
             const total = items.reduce((sum, d) => sum + (d.expectedTotal ?? 0), 0);
             return (
@@ -247,7 +249,7 @@ export function DealsPage() {
                   <p className="flex items-center justify-between gap-2 text-sm font-semibold">
                     <span className="flex items-center gap-2">
                       <span className={`h-2 w-2 rounded-full ${['bg-slate-400', 'bg-sky-500', 'bg-violet-500', 'bg-amber-500', 'bg-indigo-500', 'bg-emerald-500'][si] ?? 'bg-slate-400'}`} />
-                      {t(`enums.dealStage.${stage}`)}
+                      {pipe.label(stage)}
                     </span>
                     <span className="ltr-nums rounded-full bg-ink/[0.06] px-2 py-px text-2xs font-bold text-ink-2 dark:bg-white/10">{items.length}</span>
                   </p>
@@ -357,6 +359,7 @@ export function DealDetailPage() {
   const [lostOpen, setLostOpen] = useState(false);
   const [lostReason, setLostReason] = useState('');
   const refresh = () => (void qc.invalidateQueries({ queryKey: ['deal', id] }), void qc.invalidateQueries({ queryKey: ['deals'] }));
+  const pipe = useDealPipeline();
   const stage = useMutation({ mutationFn: (b: { stage: DealStage; lostReason?: string }) => dealApi.stage(id, b), onSuccess: () => (setLostOpen(false), refresh()), onError });
   const removePayment = useMutation({ mutationFn: (pid: string) => dealApi.removePayment(id, pid), onSuccess: refresh, onError });
   const markPaid = useMutation({ mutationFn: (pid: string) => dealApi.updatePayout(id, pid, { status: 'PAID' }), onSuccess: refresh, onError });
@@ -373,6 +376,8 @@ export function DealDetailPage() {
   const d = q.data!;
   const s = d.summary;
   const idx = DEAL_STAGES.indexOf(d.stage);
+  // Stages this business uses, plus the deal's own stage if it was switched off later.
+  const steps = OPEN_DEAL_STAGES.filter((st) => pipe.openStages.includes(st) || st === d.stage);
   return (
     <div>
       <PageHeader
@@ -387,22 +392,22 @@ export function DealDetailPage() {
       />
       {/* Pipeline stepper */}
       <Card className="mb-4" bodyClassName="flex flex-wrap items-center gap-1">
-        {OPEN_DEAL_STAGES.map((st, i) => (
+        {steps.map((st, i) => (
           <span key={st} className="flex items-center gap-1">
             <button
               disabled={!canEdit || stage.isPending}
               onClick={() => stage.mutate({ stage: st })}
-              className={`rounded-full px-3 py-1 text-xs font-medium ${i <= idx && d.stage !== 'CLOSED_LOST' ? 'bg-brand-600 text-on-brand' : 'bg-canvas text-muted'} ${d.stage === st ? 'ring-2 ring-brand-500' : ''}`}
+              className={`rounded-full px-3 py-1 text-xs font-medium ${DEAL_STAGES.indexOf(st) <= idx && d.stage !== 'CLOSED_LOST' ? 'bg-brand-600 text-on-brand' : 'bg-canvas text-muted'} ${d.stage === st ? 'ring-2 ring-brand-500' : ''}`}
             >
-              {t(`enums.dealStage.${st}`)}
+              {pipe.label(st)}
             </button>
-            {i < OPEN_DEAL_STAGES.length - 1 && <ChevronRight className="h-3.5 w-3.5 text-muted" />}
+            {i < steps.length - 1 && <ChevronRight className="h-3.5 w-3.5 text-muted" />}
           </span>
         ))}
         {canEdit && (
           <span className="ms-auto flex gap-2">
-            <Button size="sm" variant={d.stage === 'CLOSED_WON' ? 'primary' : 'secondary'} onClick={() => stage.mutate({ stage: 'CLOSED_WON' })}>{t('enums.dealStage.CLOSED_WON')}</Button>
-            <Button size="sm" variant="ghost" onClick={() => setLostOpen(true)}>{t('enums.dealStage.CLOSED_LOST')}</Button>
+            <Button size="sm" variant={d.stage === 'CLOSED_WON' ? 'primary' : 'secondary'} onClick={() => stage.mutate({ stage: 'CLOSED_WON' })}>{pipe.label('CLOSED_WON')}</Button>
+            <Button size="sm" variant="ghost" onClick={() => setLostOpen(true)}>{pipe.label('CLOSED_LOST')}</Button>
           </span>
         )}
         {d.stage === 'CLOSED_LOST' && d.lostReason && <p className="w-full pt-1 text-xs text-red-600">{t('deal.lostReason')}: {d.lostReason}</p>}

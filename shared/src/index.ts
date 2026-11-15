@@ -15,3 +15,4 @@ export * from './rentals';
 export * from './installments';
 export * from './marketing';
 export * from './ai';
+export * from './pipeline';

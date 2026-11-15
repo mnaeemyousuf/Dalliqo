@@ -1,3 +1,4 @@
+import type { DealPipelineSettings } from '@recrm/shared';
 import type { AxiosProgressEvent } from 'axios';
 import { api, apiPage, clean, http, toApiError } from './client';
 import type {
@@ -91,6 +92,7 @@ export const branchApi = {
 
 export const dealApi = {
   list: (params: Params) => apiPage<Deal>('/deals', params),
+  pipeline: () => api<DealPipelineSettings>({ url: '/deals/pipeline' }),
   get: (id: string) => api<Deal & { summary: NonNullable<Deal['summary']> }>({ url: `/deals/${id}` }),
   create: (body: Body) => api<Deal>({ method: 'POST', url: '/deals', data: body }),
   update: (id: string, body: Body) => api<Deal>({ method: 'PATCH', url: `/deals/${id}`, data: body }),

@@ -843,6 +843,7 @@ class OnlineRepository {
   Future<void> updateClientCategory(String id, Map<String, dynamic> body) => api.patch('/client-categories/$id', body);
 
   Future<Map<String, dynamic>> settings() => api.get<Map<String, dynamic>>('/settings');
+  Future<Map<String, dynamic>> dealPipeline() => api.get<Map<String, dynamic>>('/deals/pipeline');
   Future<void> updateSettings(Map<String, dynamic> body) => api.patch('/settings', body);
 
   // Brochures (made by the server; lang en/ur, never the minimum or expected price)

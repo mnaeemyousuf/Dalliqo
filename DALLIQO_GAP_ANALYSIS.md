@@ -80,7 +80,7 @@ Each section of the master brief was checked against the code (server, web, Andr
 | 4 | Viewing history and inquiry history per property | ✅ | **New:** "Inquiries & viewings" tab |
 | 5 | Verification workflow, CNIC restriction, sensitive documents, expiry reminders, disclaimer | ✅ | Phase 4 |
 | 6 | Weighted, configurable matching with explanations, auto re-match, notifications, rejected tracking, favourites, map | ✅ | **New:** bedrooms, bathrooms, possession, construction and amenities as a "features" factor; favourites from the client portal |
-| 7 | Pipeline, offers / counter-offers, checklist, close approval | ✅ | Phase 3–4 (stages are fixed but the checklist is configurable) |
+| 7 | Pipeline, offers / counter-offers, checklist, close approval | ✅ | Phase 3–4; **final batch:** stages can be switched off, renamed (EN/UR) and re-weighted per business |
 | 8 | Percentage / fixed, buyer / seller, rental fee, agent split, external dealer / referral / branch shares, lifecycle, statements, instalment receipts | ✅ | Phase 5B |
 | 8 | Adjustments, disputes, payout approval history | ✅ | **New** |
 | 9 | Income / expense, cash / bank (method), receipts, vouchers, receivables / payables, refunds, instalments, cash flow, income statement, profitability, branch-wise, aging | ✅ | **New:** refunds, payment vouchers, income statement by category and branch |
