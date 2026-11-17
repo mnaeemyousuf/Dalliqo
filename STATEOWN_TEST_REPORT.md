@@ -160,6 +160,12 @@ Run date: 14 Nov 2026 (latest: Phase 5B — see per-phase sections for current t
 - `flutter analyze`: no issues. The new screens are compiled and unit-tested; they have **not** been exercised on a physical phone (see "Not yet covered").
 - **Manuals:** screenshots captured from the running demo as each role; PDFs built and verified by `tools/manuals` (see `docs/user-manuals/README.md` for page and figure counts).
 
+## Parity and roles pass (`server/tests/roles.mobile.test.ts`, `mobile/test/extras_test.dart`, `tools/manuals/roles-smoke.mjs`)
+- **Phone menus per role:** for each of the 13 role templates, every screen the phone would show is called and must not answer 403 or 5xx; the owner must get 200 everywhere.
+- **Notes:** a deal's notes can be read by the owner and by a member with deals access, and are refused to a member without it; agreement, entry and lease notes are mapped too.
+- **Phone:** source / temperature / unassigned filters; saved-view parameters round-trip and use the web's names; a web view with extra parameters opens on the phone.
+- **Web, every demo role:** the smoke script opens each menu page, first record, record tabs and settings tabs and reports forbidden calls, page errors and error panels.
+
 ## Manual / visual verification
 Demo API (`npm run demo`) + web, headless Chrome screenshots at 1440 px: client list with lead scores and temperature filter, client lead panel, Reports (leads + inventory aging), Settings → Subscription. All rendered correctly with real demo data.
 

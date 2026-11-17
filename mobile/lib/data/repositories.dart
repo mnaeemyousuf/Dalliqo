@@ -63,6 +63,9 @@ class ClientFilter {
     this.maxSize,
     this.sizeUnit = 'SQ_YARD',
     this.assignedTo,
+    this.source,
+    this.temperature,
+    this.unassigned = false,
     this.sort = 'updated',
   });
   final String search;
@@ -80,6 +83,11 @@ class ClientFilter {
   final num? maxSize;
   final String sizeUnit;
   final String? assignedTo;
+
+  /// Lead filters: where the lead came from, how warm it is, and leads nobody owns yet.
+  final String? source;
+  final String? temperature;
+  final bool unassigned;
   final String sort;
 
   ClientFilter copyWith({
@@ -96,6 +104,9 @@ class ClientFilter {
     Object? maxSize = _keep,
     String? sizeUnit,
     Object? assignedTo = _keep,
+    Object? source = _keep,
+    Object? temperature = _keep,
+    bool? unassigned,
     String? sort,
   }) =>
       ClientFilter(
@@ -112,13 +123,16 @@ class ClientFilter {
         maxSize: identical(maxSize, _keep) ? this.maxSize : maxSize as num?,
         sizeUnit: sizeUnit ?? this.sizeUnit,
         assignedTo: identical(assignedTo, _keep) ? this.assignedTo : assignedTo as String?,
+        source: identical(source, _keep) ? this.source : source as String?,
+        temperature: identical(temperature, _keep) ? this.temperature : temperature as String?,
+        unassigned: unassigned ?? this.unassigned,
         sort: sort ?? this.sort,
       );
 
   /// Keeps the search text, sort order and size unit, drops every filter.
   ClientFilter cleared() => ClientFilter(search: search, sort: sort, sizeUnit: sizeUnit);
 
-  bool get active => [categoryId, status, purpose, propertyType, area, block, minBudget, maxBudget, minSize, maxSize, assignedTo].any((v) => v != null);
+  bool get active => unassigned || [categoryId, status, purpose, propertyType, area, block, minBudget, maxBudget, minSize, maxSize, assignedTo, source, temperature].any((v) => v != null);
 
   /// Same rule as the API: a requirement matches when its size range overlaps the requested one
   /// (open ends overlap) and it states at least one bound. Offline-created requirements may not
@@ -162,7 +176,10 @@ class ClientFilter {
         (maxBudget == null || cMin == null || cMin <= maxBudget!) &&
         (block == null || _contains(d['preferredBlock'], block!) || reqs.any((r) => _contains(r['blocks'], block!))) &&
         _sizeMatches(reqs) &&
-        (assignedTo == null || assigned == assignedTo);
+        (assignedTo == null || assigned == assignedTo) &&
+        (source == null || d['source'] == source) &&
+        (temperature == null || d['temperature'] == temperature) &&
+        (!unassigned || assigned == null);
   }
 
   @override
@@ -181,10 +198,13 @@ class ClientFilter {
       other.maxSize == maxSize &&
       other.sizeUnit == sizeUnit &&
       other.assignedTo == assignedTo &&
+      other.source == source &&
+      other.temperature == temperature &&
+      other.unassigned == unassigned &&
       other.sort == sort;
 
   @override
-  int get hashCode => Object.hash(search, categoryId, status, purpose, propertyType, area, block, minBudget, maxBudget, minSize, maxSize, sizeUnit, assignedTo, sort);
+  int get hashCode => Object.hash(search, categoryId, status, purpose, propertyType, area, block, minBudget, maxBudget, minSize, maxSize, sizeUnit, assignedTo, source, temperature, unassigned, sort);
 }
 
 /// Filters for the property list (local, same semantics as `GET /properties`).

@@ -35,29 +35,31 @@ class ReportsHubScreen extends ConsumerWidget {
     final auth = ref.watch(authProvider);
     final reports = auth.can('reports:read');
     final finance = auth.can('finance:read') && reports;
+    // Same rule as the API and the web dashboard: managers of people or of every deal.
+    final team = auth.can('deals:read') && (auth.can('deals:read_all') || auth.can('members:read'));
     return Scaffold(
       appBar: AppBar(title: Text(l.t('mm.reports.title'))),
       body: ListView(children: [
         if (reports) ...[
           SectionHeader(l.t('mm.reports.business')),
           MenuTile(icon: Icons.apartment_outlined, title: l.t('mm.reports.summary'), page: () => const _PeriodReport(kind: _Kind.summary)),
-          MenuTile(icon: Icons.person_search_outlined, title: l.t('mm.reports.leads'), page: () => const _PeriodReport(kind: _Kind.leads)),
-          MenuTile(icon: Icons.inventory_2_outlined, title: l.t('mm.reports.inventory'), page: () => const _SimpleReport(kind: _Kind.inventory)),
+          if (auth.can('clients:read')) MenuTile(icon: Icons.person_search_outlined, title: l.t('mm.reports.leads'), page: () => const _PeriodReport(kind: _Kind.leads)),
+          if (auth.can('properties:read')) MenuTile(icon: Icons.inventory_2_outlined, title: l.t('mm.reports.inventory'), page: () => const _SimpleReport(kind: _Kind.inventory)),
           MenuTile(icon: Icons.leaderboard_outlined, title: l.t('mm.reports.agents'), page: () => const _PeriodReport(kind: _Kind.agents)),
           MenuTile(icon: Icons.account_tree_outlined, title: l.t('mm.reports.branches'), page: () => const _PeriodReport(kind: _Kind.branches)),
-          MenuTile(icon: Icons.groups_outlined, title: l.t('mm.reports.team'), page: () => const _SimpleReport(kind: _Kind.team)),
           MenuTile(icon: Icons.trending_up, title: l.t('mm.reports.forecast'), page: () => const _SimpleReport(kind: _Kind.forecast)),
           if (auth.can('marketing:manage')) MenuTile(icon: Icons.campaign_outlined, title: l.t('mm.reports.campaigns'), page: () => const _SimpleReport(kind: _Kind.campaigns)),
         ],
+        if (team) MenuTile(icon: Icons.groups_outlined, title: l.t('mm.reports.team'), page: () => const _SimpleReport(kind: _Kind.team)),
         if (finance) ...[
           SectionHeader(l.t('mm.reports.finance')),
           MenuTile(icon: Icons.receipt_long_outlined, title: l.t('mm.reports.incomeStatement'), page: () => const _PeriodReport(kind: _Kind.incomeStatement)),
           MenuTile(icon: Icons.waterfall_chart, title: l.t('mm.reports.cashFlow'), page: () => const _PeriodReport(kind: _Kind.cashFlow)),
           MenuTile(icon: Icons.hourglass_bottom, title: l.t('mm.reports.aging'), page: () => const _SimpleReport(kind: _Kind.aging)),
-          MenuTile(icon: Icons.badge_outlined, title: l.t('mm.reports.agentStatement'), page: () => const AgentStatementScreen()),
+          if (auth.can('deals:read')) MenuTile(icon: Icons.badge_outlined, title: l.t('mm.reports.agentStatement'), page: () => const AgentStatementScreen()),
         ],
         if (auth.can('rentals:read')) MenuTile(icon: Icons.key_outlined, title: l.t('mm.reports.rentRoll'), page: () => const _SimpleReport(kind: _Kind.rentRoll)),
-        if (!reports && !auth.can('rentals:read')) Padding(padding: const EdgeInsets.all(24), child: Text(l.t('mm.noAccess'), textAlign: TextAlign.center)),
+        if (!reports && !team && !auth.can('rentals:read')) Padding(padding: const EdgeInsets.all(24), child: Text(l.t('mm.noAccess'), textAlign: TextAlign.center)),
       ]),
     );
   }
@@ -352,9 +354,18 @@ class _AgentStatementState extends ConsumerState<AgentStatementScreen> {
         actions: [if (_userId != null) IconButton(icon: const Icon(Icons.picture_as_pdf_outlined), onPressed: () => shareDownload(context, ref, '/reports/agent-statement', query: {'userId': _userId, 'format': 'pdf'}, mimeType: 'application/pdf'))],
       ),
       body: OnlineView<List<Json>>(
-        load: () async => (await apiOf(ref).page('/members', query: {'limit': 100})).items,
+        load: () async {
+          final auth = ref.read(authProvider);
+          if (!auth.can('members:read')) {
+            return [
+              {'status': 'ACTIVE', 'user': {'_id': auth.userId, 'fullName': auth.user?['fullName'] ?? ''}},
+            ];
+          }
+          return (await apiOf(ref).page('/members', query: {'limit': 100})).items;
+        },
         builder: (context, members, _) {
           final options = {for (final x in members.where((x) => x['status'] == 'ACTIVE')) str(mapOf(x['user'])['_id']): str(mapOf(x['user'])['fullName'])};
+          if (options.length == 1) _userId ??= options.keys.first;
           return ListView(padding: const EdgeInsets.all(16), children: [
             AppDropdown<String>(label: t('agent'), value: _userId, items: options, onChanged: (v) => setState(() => _userId = v)),
             const SizedBox(height: 12),

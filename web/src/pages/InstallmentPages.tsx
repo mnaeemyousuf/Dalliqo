@@ -368,7 +368,8 @@ export function AgentStatementCard() {
   const { t } = useTranslation();
   const errorText = useErrorText();
   const me = useAuth((s) => s.user?._id ?? '');
-  const canAll = useCan(PERMISSIONS.DEALS_READ_ALL);
+  // Picking another agent needs both: seeing every deal and the list of members.
+  const canAll = useCan(PERMISSIONS.DEALS_READ_ALL, PERMISSIONS.MEMBERS_READ);
   const members = useQuery({ queryKey: ['members', 'statement'], queryFn: () => memberApi.list({ limit: 100, status: 'ACTIVE' }), enabled: canAll });
   const [userId, setUserId] = useState('');
   const uid = userId || me;

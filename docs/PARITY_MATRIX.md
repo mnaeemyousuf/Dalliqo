@@ -82,11 +82,15 @@ All of these are online on the phone (they need a connection); the offline store
 | Bulk actions | Tick-boxes on client / property tables | More → Bulk actions |
 | Automation, lead scoring, commission rules, approvals, retention, API keys, subscription, business profile, platform admin | Settings | More → Administration |
 | Excel import (leads, properties) | Import buttons | Administration → Import from Excel |
-| Saved views | Clients / properties filters | — (web only; the phone has its own filter sheet) |
+| Saved views | Clients / properties filters | Bookmark button on the client and property lists (same views as the web; shared views included) |
+| Lead filters: source, temperature, unassigned | Clients filters | Clients filter sheet |
+| Portal links: list and revoke | Client / owner page → Portal | Portal dialog → Existing links |
+| Send through WhatsApp Business | Client page → WhatsApp | Marketing → WhatsApp Business → Send a message |
+| AI status and monthly usage | Assistant page | Administration → AI and assistant |
 
 ## Remaining differences
 
-Saved views are web-only. Otherwise none in features. Presentation differs where the phone screen requires it: analytics are bar lists instead of charts, and the
+None in features. Presentation differs where the phone screen requires it: analytics are bar lists instead of charts, and the
 income & expense report on the phone is computed from the phone's entries (same maths and Karachi month boundaries as the server,
 `finance_test`), so it also works offline. The web reset-password page is opened from the e-mail link on any device.
 

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../more/extras.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 
@@ -108,6 +109,10 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
           const SizedBox(height: 12),
           AppDropdown<String>(label: l.t('common.status'), value: draft.status, allowEmpty: true, items: {for (final s in const ['ACTIVE', 'ON_HOLD', 'CLOSED_WON', 'CLOSED_LOST', 'INACTIVE']) s: l.enumLabel('clientStatus', s)}, onChanged: (v) => pick(draft.copyWith(status: v))),
           const SizedBox(height: 12),
+          AppDropdown<String>(label: l.t('mm.lead.temperature'), value: draft.temperature, allowEmpty: true, items: {for (final s in const ['HOT', 'WARM', 'COLD']) s: l.enumLabel('leadTemperature', s)}, onChanged: (v) => pick(draft.copyWith(temperature: v))),
+          const SizedBox(height: 12),
+          AppDropdown<String>(label: l.t('mm.lead.source'), value: draft.source, allowEmpty: true, items: {for (final s in clientSources) s: l.enumLabel('source', s)}, onChanged: (v) => pick(draft.copyWith(source: v))),
+          SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(l.t('mm.lead.unassigned')), value: draft.unassigned, onChanged: (v) => pick(draft.copyWith(unassigned: v))),
           AppDropdown<String>(label: l.t('client.purpose'), value: draft.purpose, allowEmpty: true, items: {for (final s in const ['PURCHASE', 'RENTAL']) s: l.enumLabel('clientPurpose', s)}, onChanged: (v) => pick(draft.copyWith(purpose: v))),
           const SizedBox(height: 12),
           AppDropdown<String>(label: l.t('common.type'), value: draft.propertyType, allowEmpty: true, items: {for (final s in propertyTypes) s: l.enumLabel('propertyType', s)}, onChanged: (v) => pick(draft.copyWith(propertyType: v))),
@@ -196,7 +201,7 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l.t('client.title')),
-        actions: [const SyncIndicator(), IconButton(icon: Badge(isLabelVisible: filter.active, child: const Icon(Icons.filter_list)), onPressed: _openFilters)],
+        actions: [const SyncIndicator(), const SavedViewsButton(page: 'clients'), IconButton(icon: Badge(isLabelVisible: filter.active, child: const Icon(Icons.filter_list)), onPressed: _openFilters)],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(64),
           child: Padding(

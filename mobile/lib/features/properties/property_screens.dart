@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../more/extras.dart';
 import '../more/record_tools.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
@@ -205,7 +206,7 @@ class _PropertiesScreenState extends ConsumerState<PropertiesScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l.t('property.title')),
-        actions: [const SyncIndicator(), IconButton(icon: Badge(isLabelVisible: filter.active, child: const Icon(Icons.filter_list)), onPressed: _filters)],
+        actions: [const SyncIndicator(), const SavedViewsButton(page: 'properties'), IconButton(icon: Badge(isLabelVisible: filter.active, child: const Icon(Icons.filter_list)), onPressed: _filters)],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(64),
           child: Padding(

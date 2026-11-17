@@ -103,5 +103,5 @@ Each section of the master brief was checked against the code (server, web, Andr
 | 18 | Configurable currency and timezone | 🟡 | Stored per business and editable. Amounts are still written in the PKR lakh / crore style everywhere (screens, PDFs, messages). |
 | 19 | Data retention policies | ✅ | **Second re-audit:** per-business retention for the audit log and activity feed, purged daily |
 | 20 | API access (Enterprise) | ✅ | **Second re-audit:** scoped API keys, hashed at rest, record endpoints only |
-| 17 | Android has every web feature | ✅ | **Parity batch:** reports, marketing, verification, deal / lease / entry tools, bulk actions and administration added to the app (online screens). Saved views stay web-only. |
+| 17 | Android has every web feature | ✅ | **Parity batch:** reports, marketing, verification, deal / lease / entry tools, bulk actions and administration added to the app (online screens), then saved views, lead filters, portal link management and WhatsApp Business sending. Every role template is tested against the phone menus. |
 | 21 | Indexes, pagination, background jobs, efficient reports | ✅ | Aggregations only. Every new collection and field is indexed. |

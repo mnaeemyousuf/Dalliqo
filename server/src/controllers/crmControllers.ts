@@ -613,7 +613,8 @@ export const documentController = {
   },
 };
 
-const NOTE_READ: Record<string, string> = { client: 'clients:read', property: 'properties:read', owner: 'owners:read', followUp: 'followups:read' };
+// Reading notes needs read access to the record they belong to (every entity type that can hold notes).
+const NOTE_READ: Record<string, string> = { client: 'clients:read', property: 'properties:read', owner: 'owners:read', followUp: 'followups:read', deal: 'deals:read', transaction: 'finance:read', agreement: 'agreements:read', lease: 'rentals:read' };
 
 export const noteController = {
   async list(req: Request, res: Response) {

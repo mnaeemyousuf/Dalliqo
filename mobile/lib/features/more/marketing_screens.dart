@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/widgets/app_widgets.dart';
 import '../auth/auth_controller.dart';
+import 'extras.dart';
 import 'online_kit.dart';
 import 'reports_screens.dart';
 
@@ -337,6 +338,8 @@ class _WhatsAppState extends ConsumerState<WhatsAppScreen> {
                 if (await runAction(context, () => apiOf(ref).dio.put<Object?>('/whatsapp', data: {for (final k in const ['phoneNumberId', 'businessAccountId', 'displayNumber']) k: v[k]}))) setState(() => _version++);
               },
             ),
+            const SizedBox(height: 8),
+            AppButton(label: l.t('mm.ws.send'), icon: Icons.send_outlined, onPressed: () => showWhatsAppSend(context, ref, templates: listOf(w['templates']))),
             SectionHeader(
               t('templates'),
               trailing: TextButton(onPressed: () async => await runAction(context, () => apiOf(ref).post<Object?>('/whatsapp/templates/sync')) ? setState(() => _version++) : null, child: Text(t('sync'))),

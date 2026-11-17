@@ -188,7 +188,7 @@ class MoreScreen extends ConsumerWidget {
           if (auth.can('finance:read')) tile(Icons.account_balance_wallet_rounded, const Color(0xFF059669), context.t('nav.finance'), '/finance'),
           if (auth.can('finance:read')) tile(Icons.date_range_rounded, const Color(0xFF0891B2), context.t('nav.installments'), '/installments'),
           tile(Icons.auto_awesome_rounded, const Color(0xFF2563EB), context.t('nav.assistant'), '/assistant'),
-          if (auth.can('reports:read') || auth.can('rentals:read')) tile(Icons.bar_chart_rounded, const Color(0xFF4F46E5), context.t('mm.reports.title'), '/reports'),
+          if (auth.can('reports:read') || auth.can('rentals:read') || (auth.can('deals:read') && (auth.can('deals:read_all') || auth.can('members:read')))) tile(Icons.bar_chart_rounded, const Color(0xFF4F46E5), context.t('mm.reports.title'), '/reports'),
           if (auth.can('clients:read')) tile(Icons.campaign_rounded, const Color(0xFFE11D48), context.t('mm.mk.title'), '/marketing'),
           if (auth.can('verification:submit') || auth.can('verification:decide')) tile(Icons.verified_rounded, const Color(0xFF059669), context.t('mm.pt.queue'), '/verifications'),
           if (auth.can('clients:update') || auth.can('properties:update')) tile(Icons.checklist_rounded, const Color(0xFFD97706), context.t('mm.bulk.title'), '/bulk'),

@@ -2604,6 +2604,48 @@
       "QUARTERLY": "Quarterly",
       "HALF_YEARLY": "Half-yearly",
       "YEARLY": "Yearly"
+    },
+    "lead": {
+      "temperature": "Lead temperature",
+      "source": "Lead source",
+      "unassigned": "Only leads nobody is assigned to"
+    },
+    "sv": {
+      "title": "Saved views",
+      "save": "Save current filters",
+      "shared": "Share with the whole team",
+      "none": "No saved views yet. Set some filters, then save them here.",
+      "nothing": "Set at least one filter first"
+    },
+    "pl": {
+      "title": "Portal links",
+      "existing": "Existing links",
+      "none": "No portal links yet",
+      "expires": "Valid until",
+      "opened": "Opened",
+      "revoked": "Revoked",
+      "revoke": "Revoke",
+      "revokeHint": "The link stops working immediately."
+    },
+    "ws": {
+      "send": "Send a WhatsApp message",
+      "hint": "Sent from the business number when WhatsApp Business is connected. Otherwise WhatsApp opens with the message ready.",
+      "to": "Phone number",
+      "text": "Message",
+      "template": "Approved template (optional)",
+      "sent": "Message sent"
+    },
+    "ai": {
+      "title": "AI and assistant",
+      "hint": "Status and this month’s usage",
+      "state": "Assistant",
+      "on": "On",
+      "off": "Not set up",
+      "model": "Model",
+      "used": "Requests this month",
+      "onHint": "The allowance resets on the 1st of each month.",
+      "offHint": "Descriptions and client summaries use built-in templates until an AI key is added on the server.",
+      "tools": "What it can look up for you"
     }
   },
   "subscription": {

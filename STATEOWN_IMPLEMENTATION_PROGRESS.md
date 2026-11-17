@@ -375,10 +375,23 @@ Every web feature that the app did not have is now in the app, as screens that w
 - New `mobile/test/more_test.dart` (4 tests): form sheet values and validation, report cards and bars, JSON helpers, and a check that every text key of the new screens exists in English and Urdu.
 - Server 288 passed + 1 skipped; web 38; Flutter 86; `flutter analyze` clean.
 
+## Parity and roles pass ✅ (16 Nov 2026)
+
+### What was checked and fixed
+- **Every role, on the phone.** A new test signs in as each of the 13 role templates and calls what the phone's menus would call for that role. It found the Team report offered to two roles that may not open it; the menus now follow the API's rule. Leads and Inventory reports, the agent statement and bulk "assign" also follow the exact permissions.
+- **Every role, on the web.** A new script (`tools/manuals/roles-smoke.mjs`) signs in as each demo role, opens every page in the menu, the first record of each list with all its tabs, and every Settings tab. It found three real problems, now fixed:
+  - the **Notes tab on deals and agreements was forbidden for everyone**, the owner included (the permission map only knew clients, properties, owners and follow-ups);
+  - the accountant's Reports page asked for the member list without the right to;
+  - the read-only user's dashboard asked for the receivables report without the right to.
+- **Last web-only features, now on the phone:** saved views (shared with the web), lead filters (source, temperature, unassigned), portal link list / revoke, sending through WhatsApp Business, AI status and usage.
+- **Prototype:** 18 more screens (78 in total): lead score, filters and saved views, verification queue, portal, automation, pipeline, commission rules, API keys and retention, subscription, import, WhatsApp Business, team, and a row showing what the owner, manager, agent, accountant, read-only user and portal visitor each see.
+
+### Tests
+- `server/tests/roles.mobile.test.ts` (15 tests), `mobile/test/extras_test.dart` (5 tests). Server 303 passed + 1 skipped; web 38; Flutter 91.
+
 ## What is left
 - **Old hosted service:** delete the old Render service in the dashboard once every phone has the new APK. Phones with an older APK still talk to the old address.
 - **GitHub repository name** still contains the old name; renaming it is done in GitHub settings (Render follows the redirect).
-- **Saved views on the phone:** saved filter sets are a web feature (they store the web page's filters). The phone keeps its own filter sheet.
 Every item of the brief and the follow-ups is implemented, including configurable deal stages and a swappable AI provider. Live use of WhatsApp Business and the AI assistant needs the credentials listed above; device testing of the Android screens is still to be done on real phones.
 
 - **Remaining ideas (not in the brief):** assistant proposals for deal updates; per-agent public profile photos; scheduled campaign spend import from bank statements.

@@ -15,10 +15,12 @@ export function RoleDashboards() {
   const canDeals = useCan(PERMISSIONS.DEALS_READ);
   const dealsModule = useModule('deals');
   const canFinance = useCan(PERMISSIONS.FINANCE_READ);
+  const canReports = useCan(PERMISSIONS.REPORTS_READ);
   const financeModule = useModule('finance');
   const canMembers = useCan(PERMISSIONS.MEMBERS_READ);
   const deals = canDeals && dealsModule;
-  const finance = canFinance && financeModule;
+  // The collections panel reads the receivables report, which needs reports access as well.
+  const finance = canFinance && financeModule && canReports;
   const team = readAll || canMembers;
   const financeFirst = role === 'ACCOUNTANT' || role === 'FINANCE_MANAGER';
   const panels = [

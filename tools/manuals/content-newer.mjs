@@ -283,6 +283,7 @@ export function mobileExtras(m) {
     (can('reports:read') || can('rentals:read')) && '<b>Reports.</b> Business overview, leads, inventory, agent performance, branches and targets, team, forecast, income statement, cash flow, receivables and payables, agent statements and the rent roll.',
     can('clients:read') && '<b>Marketing.</b> Inquiries, campaigns and — for those who manage marketing — the website, portal switches, WhatsApp Business and who gets new leads.',
     (can('verification:submit') || can('verification:decide')) && '<b>Verification queue.</b> Listings waiting for a decision.',
+    '<b>Saved views and lead filters.</b> The bookmark button on the client and property lists opens the same saved views as the web and saves the current filters; the client filter sheet adds lead temperature, source and “unassigned only”.',
     can('clients:update') && '<b>Bulk actions.</b> Tick several clients or properties, then assign, change status or delete them together.',
     '<b>More actions (⋯) on a record.</b> On a property: verification, listing quality, write a description, QR code. On a deal: checklist, approvals, adjustments, dispute, receipts and vouchers. On a lease: renew, end, waive, inspection, notice. On an income entry: refund.',
     can('rentals:manage') && '<b>New lease</b> and, with finance access, <b>new installment plan</b> from the + button on those lists.',

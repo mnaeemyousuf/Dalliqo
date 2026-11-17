@@ -8,6 +8,7 @@ import '../../core/commission/commission.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/widgets/app_widgets.dart';
 import '../auth/auth_controller.dart';
+import 'extras.dart';
 import 'online_kit.dart';
 
 /// Administration on the phone: the settings the web has under Settings → Business, Automation,
@@ -36,6 +37,7 @@ class AdminHubScreen extends ConsumerWidget {
       body: ListView(children: [
         if (auth.can('business:manage')) MenuTile(icon: Icons.business_outlined, title: t('business'), page: () => const BusinessProfileScreen()),
         MenuTile(icon: Icons.workspace_premium_outlined, title: t('subscription'), page: () => const SubscriptionScreen()),
+        MenuTile(icon: Icons.auto_awesome_outlined, title: l.t('mm.ai.title'), subtitle: l.t('mm.ai.hint'), page: () => const AiStatusScreen()),
         if (settings) ...[
           MenuTile(icon: Icons.auto_mode, title: t('automation'), subtitle: t('automationHint'), page: () => const AutomationScreen()),
           MenuTile(icon: Icons.speed, title: t('scoring'), subtitle: t('scoringHint'), page: () => const LeadScoringScreen()),

@@ -75,7 +75,7 @@ class _BulkState extends ConsumerState<BulkActionsScreen> {
                 padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
                 child: Row(children: [
                   Expanded(child: Text(l.t('bulk.selected', {'count': _picked.length}), style: const TextStyle(fontWeight: FontWeight.w700))),
-                  if (canUpdate) IconButton(tooltip: l.t('bulk.assign'), icon: const Icon(Icons.person_add_alt), onPressed: _assign),
+                  if (canUpdate && auth.can('members:read')) IconButton(tooltip: l.t('bulk.assign'), icon: const Icon(Icons.person_add_alt), onPressed: _assign),
                   if (canUpdate) IconButton(tooltip: l.t('bulk.status'), icon: const Icon(Icons.swap_horiz), onPressed: _status),
                   if (canDelete)
                     IconButton(

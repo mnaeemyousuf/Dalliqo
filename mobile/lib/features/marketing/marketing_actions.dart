@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../more/extras.dart';
+import '../more/online_kit.dart';
 
 import '../../core/l10n/app_localizations.dart';
 import '../../core/widgets/app_widgets.dart';
@@ -84,6 +86,13 @@ class PortalLinkButton extends ConsumerWidget {
                 AppDropdown<int>(label: l.t('marketing.validFor'), value: days, items: {for (final d in const [7, 30, 90, 365]) d: l.t('marketing.days', {'count': d})}, onChanged: (v) => set(() => days = v ?? days)),
               ]),
               actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx, false);
+                    openPage<void>(context, PortalLinksScreen(kind: kind, partyId: partyServerId!, name: name));
+                  },
+                  child: Text(l.t('mm.pl.existing')),
+                ),
                 TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(l.t('common.cancel'))),
                 FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(l.t('marketing.createLink'))),
               ],
