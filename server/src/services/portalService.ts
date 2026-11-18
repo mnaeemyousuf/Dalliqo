@@ -13,6 +13,7 @@ import { PortalLink, type PortalLinkDoc } from '../models/PortalLink';
 import { Property, type PropertyDoc } from '../models/Property';
 import { PropertyOwner } from '../models/PropertyOwner';
 import type { AuthContext, TenantContext } from '../types/context';
+import { normalizeCurrency, withCurrency } from '../utils/text';
 import { AppError, badRequest, forbidden, notFound } from '../utils/AppError';
 import { activityService } from './activityService';
 import { auditService } from './auditService';
@@ -231,7 +232,7 @@ export const portalService = {
       kind: link.kind,
       expiresAt: link.expiresAt,
       party: { fullName: party.fullName },
-      business: { name: business.name, phone: business.website?.phone ?? business.phone ?? null, whatsapp: business.website?.whatsapp ?? business.phone ?? null, email: business.website?.email ?? business.email ?? null, address: business.address ?? null },
+      business: { name: business.name, phone: business.website?.phone ?? business.phone ?? null, whatsapp: business.website?.whatsapp ?? business.phone ?? null, email: business.website?.email ?? business.email ?? null, address: business.address ?? null, currency: normalizeCurrency(business.currency) },
     };
     const ps = portalSettings(business);
     const documents = ps.showDocuments
@@ -310,7 +311,7 @@ export const portalService = {
           ? await InstallmentPlan.exists({ businessId: business._id, _id: id, clientId: party._id })
           : await Deal.exists({ businessId: business._id, _id: id, clientId: party._id }));
     if (!own) throw notFound(ERROR_CODES.NOT_FOUND, 'Receipt not found');
-    await financeReportService.receiptPdf(systemAuth(business), kind, id, paymentId, out);
+    await withCurrency(business.currency, () => financeReportService.receiptPdf(systemAuth(business), kind, id, paymentId, out));
   },
 
   /** "Contact my agent" from the portal: notifies the people looking after this client / owner. */

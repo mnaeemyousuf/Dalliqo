@@ -11,7 +11,7 @@ import { BusinessMember } from '../models/BusinessMember';
 import { propertyRepository } from '../repositories/entityRepositories';
 import type { AuthContext, TenantContext } from '../types/context';
 import { badRequest, conflict, notFound } from '../utils/AppError';
-import { escapeRegex } from '../utils/text';
+import { escapeRegex, normalizeCurrency } from '../utils/text';
 import { activityService } from './activityService';
 import { auditService } from './auditService';
 import { intakeLead } from './leadIntakeService';
@@ -70,6 +70,7 @@ function publicSite(b: BusinessDoc) {
     email: w.email ?? b.email ?? null,
     address: b.address ?? null,
     city: b.city ?? null,
+    currency: normalizeCurrency(b.currency),
   };
 }
 

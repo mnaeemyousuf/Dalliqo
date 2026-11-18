@@ -166,6 +166,11 @@ Run date: 14 Nov 2026 (latest: Phase 5B — see per-phase sections for current t
 - **Phone:** source / temperature / unassigned filters; saved-view parameters round-trip and use the web's names; a web view with extra parameters opens on the phone.
 - **Web, every demo role:** the smoke script opens each menu page, first record, record tabs and settings tabs and reports forbidden calls, page errors and error panels.
 
+## Cross-check pass (18 Nov 2026)
+- **Currency:** outside a request amounts are PKR with lakh / crore; inside a request for an AED business they read "AED 1,550,000" (also after awaits); INR keeps lakh; an invalid code falls back to PKR. The same cases are written for the web and Flutter.
+- **Full results:** server 305 passed (1 skipped), web 39 (11 files). Flutter tests not run here (no Flutter SDK on this machine); the APK build on GitHub Actions compiles the Android code.
+- **Prototype screens:** the five changed phone screens were rendered in headless Chrome and measured: all fit the 844 px frame.
+
 ## Manual / visual verification
 Demo API (`npm run demo`) + web, headless Chrome screenshots at 1440 px: client list with lead scores and temperature filter, client lead panel, Reports (leads + inventory aging), Settings → Subscription. All rendered correctly with real demo data.
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import en from '@/i18n/en.json';
 import ur from '@/i18n/ur.json';
-import { formatPkr, formatRange, splitList, waHref } from '@/lib/format';
+import { formatPkr, formatRange, setRegion, splitList, waHref } from '@/lib/format';
 import { parseCoordinates } from '@/pages/PropertyPages';
 
 function keys(o: Record<string, unknown>, prefix = ''): string[] {
@@ -32,6 +32,20 @@ describe('PKR formatting', () => {
     expect(formatRange(5_000_000, 16_000_000)).toBe('PKR 50 Lakh – PKR 1.6 Crore');
     expect(formatRange(undefined, 16_000_000)).toBe('≤ PKR 1.6 Crore');
     expect(formatRange()).toBe('—');
+  });
+
+  it('follows the business currency (lakh / crore only where it is used)', () => {
+    try {
+      setRegion({ currency: 'aed' });
+      expect(formatPkr(1_550_000)).toBe('AED 1,550,000');
+      expect(formatRange(1_200_000, 1_600_000)).toBe('AED 1,200,000 – AED 1,600,000');
+      setRegion({ currency: 'INR' });
+      expect(formatPkr(550_000)).toBe('INR 5.5 Lakh');
+      setRegion({ currency: 'not a code' });
+      expect(formatPkr(550_000)).toBe('PKR 5.5 Lakh');
+    } finally {
+      setRegion({});
+    }
   });
 });
 

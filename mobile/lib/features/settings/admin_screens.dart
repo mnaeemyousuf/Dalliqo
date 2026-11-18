@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/providers.dart';
 import '../../core/widgets/app_widgets.dart';
+import '../../core/utils/units.dart';
 import '../../data/repositories.dart';
 import '../auth/auth_controller.dart';
 import 'parity_screens.dart';
@@ -329,6 +330,10 @@ class _BusinessSettingsScreenState extends ConsumerState<BusinessSettingsScreen>
   final _buyer = TextEditingController();
   final _seller = TextEditingController();
   final _reminder = TextEditingController();
+  final _marla = TextEditingController();
+
+  /// Matching criteria, in the web's order. `features` is the extra bedrooms & amenities weight.
+  static const _weightKeys = ['type', 'location', 'budget', 'size', 'purpose', 'features'];
 
   @override
   void initState() {
@@ -345,6 +350,7 @@ class _BusinessSettingsScreenState extends ConsumerState<BusinessSettingsScreen>
         _buyer.text = '${(s['commission'] as Map?)?['defaultBuyerPct'] ?? ''}';
         _seller.text = '${(s['commission'] as Map?)?['defaultSellerPct'] ?? ''}';
         _reminder.text = '${(s['reminders'] as Map?)?['defaultMinutesBefore'] ?? ''}';
+        _marla.text = '${(s['sqftPerUnit'] as Map?)?['MARLA'] ?? 225}';
       });
     } catch (e) {
       if (mounted) setState(() => _error = e);
@@ -360,8 +366,16 @@ class _BusinessSettingsScreenState extends ConsumerState<BusinessSettingsScreen>
     setState(() => _saving = true);
     try {
       final m = Map<String, dynamic>.from(_s!['matching'] as Map);
+      final w = Map<String, dynamic>.from((m['weights'] as Map?) ?? const {});
+      final marla = num.tryParse(_marla.text.trim());
       await ref.read(onlineRepositoryProvider).updateSettings({
-        'matching': {'storeThreshold': m['storeThreshold'], 'notifyThreshold': m['notifyThreshold'], 'crossBranch': m['crossBranch'] == true},
+        'matching': {
+          'storeThreshold': m['storeThreshold'],
+          'notifyThreshold': m['notifyThreshold'],
+          'crossBranch': m['crossBranch'] == true,
+          'weights': {for (final k in _weightKeys) if (w[k] is num) k: (w[k] as num).round()},
+        },
+        if (marla != null && marla > 0) 'sqftPerUnit': {'MARLA': marla},
         'reminders': {'defaultMinutesBefore': int.tryParse(_reminder.text) ?? 30},
         'commission': {
           'defaultBuyerPct': num.tryParse(_buyer.text) ?? 1,
@@ -369,12 +383,44 @@ class _BusinessSettingsScreenState extends ConsumerState<BusinessSettingsScreen>
           'autoCreateIncome': (_s!['commission'] as Map?)?['autoCreateIncome'] != false,
         },
       });
+      final fresh = await ref.read(onlineRepositoryProvider).settings();
+      await ref.read(databaseProvider).setJson('session.settings', fresh);
+      applyUnitSettings(fresh);
       if (mounted) showMessage(context, l.t('common.changesSaved'));
     } catch (e) {
       if (mounted) showError(context, e);
     } finally {
       if (mounted) setState(() => _saving = false);
     }
+  }
+
+  /// Same criteria weights as the web (Settings → Matching): the five core ones must total 100.
+  List<Widget> _weightsEditor(AppLocalizations l) {
+    final w = Map<String, dynamic>.from(((_s!['matching'] as Map?)?['weights'] as Map?) ?? const {});
+    const labels = {'type': 'enums.matchReason.TYPE_MATCH', 'location': 'enums.matchReason.SOCIETY_MATCH', 'budget': 'enums.matchReason.BUDGET_WITHIN', 'size': 'enums.matchReason.SIZE_WITHIN', 'purpose': 'enums.matchReason.PURPOSE_MATCH', 'features': 'settings.featuresWeight'};
+    final total = ['type', 'location', 'budget', 'size', 'purpose'].fold<num>(0, (a, k) => a + ((w[k] as num?) ?? 0));
+    return [
+      const SizedBox(height: 8),
+      Text(l.t('settings.weights'), style: Theme.of(context).textTheme.titleSmall),
+      for (final k in _weightKeys)
+        Row(children: [
+          SizedBox(width: 130, child: Text(l.t(labels[k]!), style: Theme.of(context).textTheme.bodySmall)),
+          Expanded(
+            child: Slider(
+              value: (((w[k] as num?) ?? 0).clamp(0, 100)).toDouble(),
+              max: 100,
+              divisions: 20,
+              label: '${(w[k] as num?)?.round() ?? 0}',
+              onChanged: (v) => _set('matching', 'weights', {...w, k: v.round()}),
+            ),
+          ),
+          SizedBox(width: 32, child: Text('${(w[k] as num?)?.round() ?? 0}', textAlign: TextAlign.end)),
+        ]),
+      Text(
+        '${l.t('settings.weightsTotal', {'total': total.round()})} ${l.t('settings.featuresHint')}',
+        style: TextStyle(fontSize: 12, color: total == 100 ? Theme.of(context).hintColor : Theme.of(context).colorScheme.error),
+      ),
+    ];
   }
 
   @override
@@ -398,6 +444,9 @@ class _BusinessSettingsScreenState extends ConsumerState<BusinessSettingsScreen>
           value: (_s!['matching'] as Map?)?['crossBranch'] == true,
           onChanged: (v) => _set('matching', 'crossBranch', v),
         ),
+        ..._weightsEditor(l),
+        const SizedBox(height: 8),
+        AppTextField(label: l.t('settings.marla'), controller: _marla, keyboardType: TextInputType.number),
         SectionHeader(l.t('mobile.admin.reminders')),
         AppTextField(label: l.t('mobile.admin.reminderMinutes'), controller: _reminder, keyboardType: TextInputType.number),
         SectionHeader(l.t('deal.commission')),

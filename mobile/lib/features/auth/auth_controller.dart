@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/legacy.dart';
 
 import '../../core/network/api_client.dart';
 import '../../core/providers.dart';
+import '../../core/utils/format.dart';
 
 enum AuthStatus { unknown, signedOut, restoring, signedIn, locked }
 
@@ -45,6 +46,13 @@ class AuthController extends StateNotifier<AuthState> {
   }
 
   final Ref ref;
+
+  /// Every session change also sets the currency amounts are written in.
+  @override
+  set state(AuthState value) {
+    setCurrency(value.business?['currency'] as String?);
+    super.state = value;
+  }
 
   ApiClient get _api => ref.read(apiClientProvider);
 

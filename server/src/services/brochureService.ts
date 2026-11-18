@@ -14,6 +14,7 @@ import { propertyRepository } from '../repositories/entityRepositories';
 import { memberRepository } from '../repositories/memberRepository';
 import type { AuthContext } from '../types/context';
 import { badRequest } from '../utils/AppError';
+import { currentCurrency, formatPkr } from '../utils/text';
 import { auditService } from './auditService';
 import { pdfParagraph, pdfText, registerUrduFonts } from './pdf/pdfText';
 import { svgFontsAvailable, svgText } from './pdf/svgText';
@@ -44,6 +45,8 @@ const L = {
 /** "PKR 2.55 Crore" / "2.55 کروڑ روپے". */
 export function brochurePrice(n: number, lang: BrochureLanguage): string {
   const fmt = (v: number) => String(+v.toFixed(2));
+  // Businesses priced in another currency get that currency, in both languages.
+  if (currentCurrency() !== 'PKR') return formatPkr(n);
   if (lang === 'ur') {
     if (n >= 10_000_000) return `${fmt(n / 10_000_000)} کروڑ روپے`;
     if (n >= 100_000) return `${fmt(n / 100_000)} لاکھ روپے`;

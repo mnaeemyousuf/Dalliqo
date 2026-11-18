@@ -407,11 +407,31 @@ class _Overview extends ConsumerWidget {
       InfoRow(l.t('property.street'), p.street),
       InfoRow(l.t('property.minimumPrice'), p.minimumPrice == null ? null : formatPkr(p.minimumPrice, urdu: l.isRtl)),
       InfoRow(l.t('property.expectedFinalPrice'), p.expectedFinalPrice == null ? null : formatPkr(p.expectedFinalPrice, urdu: l.isRtl)),
+      if (parseDate(p.json['availabilityExpiresAt']) case final DateTime exp) InfoRow(l.t('property.pk.expires'), formatDate(exp, locale: l.locale.languageCode)),
       InfoRow(l.t('property.negotiable'), p.negotiable ? l.t('common.yes') : l.t('common.no')),
       InfoRow(l.t('property.bedrooms'), p.bedrooms?.toString()),
       InfoRow(l.t('property.bathrooms'), p.bathrooms?.toString()),
       InfoRow(l.t('property.floors'), p.floors?.toString()),
       InfoRow(l.t('common.dateAdded'), formatDate(p.createdAt, locale: l.locale.languageCode)),
+      // Asking-price changes, newest first (same as the web's "Price history").
+      if (((p.json['priceHistory'] as List?) ?? const []).length > 1) ...[
+        SectionHeader(l.t('property.pk.priceHistory')),
+        for (final (i, h) in ((p.json['priceHistory'] as List).whereType<Map>().toList().reversed.toList()).indexed)
+          Builder(builder: (context) {
+            final list = (p.json['priceHistory'] as List).whereType<Map>().toList().reversed.toList();
+            final price = (h['price'] as num?) ?? 0;
+            final prev = i + 1 < list.length ? list[i + 1]['price'] as num? : null;
+            return ListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              leading: prev == null
+                  ? const Icon(Icons.flag_outlined, size: 18)
+                  : Icon(price < prev ? Icons.trending_down : Icons.trending_up, size: 18, color: price < prev ? Colors.green : Colors.amber.shade700),
+              title: Text(formatPkr(price, urdu: l.isRtl), style: const TextStyle(fontWeight: FontWeight.w600)),
+              trailing: Text(formatDate(parseDate(h['at']), locale: l.locale.languageCode)),
+            );
+          }),
+      ],
       if (ref.watch(authProvider).can('deals:read')) DealsPanel(propertyId: p.id),
       if (owner != null) ...[
         SectionHeader(l.t('property.owner')),
@@ -625,6 +645,8 @@ class _PropertyFormScreenState extends ConsumerState<PropertyFormScreen> {
   // Pakistan-specific attributes (null = not recorded).
   final Map<String, String?> _pk = {'possessionStatus': null, 'constructionStatus': null, 'furnishing': null, 'facing': null};
   final Map<String, bool> _flags = {'corner': false, 'parkFacing': false, 'mainRoad': false};
+  /// Listing expiry ("Available until"); the server marks the listing Expired after it.
+  DateTime? _expires;
   String _type = 'RESIDENTIAL_PLOT';
   String _purpose = 'SALE';
   String _unit = 'SQ_YARD';
@@ -658,6 +680,7 @@ class _PropertyFormScreenState extends ConsumerState<PropertyFormScreen> {
       for (final k in _flags.keys) {
         _flags[k] = p.json[k] == true;
       }
+      _expires = parseDate(p.json['availabilityExpiresAt'])?.toLocal();
       _ownerId = p.ownerId;
       _branchId = p.branchId;
       _lat = p.latitude;
@@ -692,10 +715,30 @@ class _PropertyFormScreenState extends ConsumerState<PropertyFormScreen> {
       for (final k in const ['bedrooms', 'bathrooms', 'floors'])
         if (_num(k) != null) k: _num(k)!.toInt(),
       if (_ownerId != null) 'ownerId': _ownerId,
+      // Cleared on an existing listing = no expiry.
+      if (_expires != null) 'availabilityExpiresAt': DateTime(_expires!.year, _expires!.month, _expires!.day, 23, 59).toUtc().toIso8601String() else if (_editing != null) 'availabilityExpiresAt': null,
       if (_lat != null && _lng != null) ...{'latitude': _lat, 'longitude': _lng},
     };
     try {
       final repo = ref.read(crmRepositoryProvider);
+      if (_editing == null) {
+        final dups = await repo.propertiesForPlot(fields);
+        if (dups.isNotEmpty && mounted) {
+          final first = dups.first;
+          final ok = await showDialog<bool>(
+            context: context,
+            builder: (c) => AlertDialog(
+              title: Text(c.t('errors.PROPERTY_DUPLICATE')),
+              content: Text(c.t('property.pk.duplicateConfirm', {'id': first.propertyId ?? first.title ?? first.plotNumber ?? ''})),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(c, false), child: Text(c.t('common.cancel'))),
+                FilledButton(onPressed: () => Navigator.pop(c, true), child: Text(c.t('client.saveAnyway'))),
+              ],
+            ),
+          );
+          if (!mounted || ok != true) return;
+        }
+      }
       final saved = _editing == null ? await repo.saveProperty(fields) : await repo.saveProperty(fields, id: _editing!.local!.uuid);
       if (!mounted) return;
       showMessage(context, context.t(_editing == null ? 'property.created' : 'property.updated'));
@@ -768,7 +811,7 @@ class _PropertyFormScreenState extends ConsumerState<PropertyFormScreen> {
           SwitchListTile(contentPadding: EdgeInsets.zero, title: Text(l.t('property.negotiable')), value: _negotiable, onChanged: (v) => setState(() => _negotiable = v)),
           ExpansionTile(
             tilePadding: EdgeInsets.zero,
-            initiallyExpanded: _pk.values.any((v) => v != null) || _flags.values.any((v) => v),
+            initiallyExpanded: _pk.values.any((v) => v != null) || _flags.values.any((v) => v) || _expires != null,
             title: Text(l.t('property.pk.title'), style: Theme.of(context).textTheme.titleSmall),
             childrenPadding: const EdgeInsets.only(bottom: 8),
             children: [
@@ -798,6 +841,18 @@ class _PropertyFormScreenState extends ConsumerState<PropertyFormScreen> {
                 for (final f in _flags.keys)
                   FilterChip(label: Text(l.t('property.pk.$f')), selected: _flags[f]!, onSelected: (v) => setState(() => _flags[f] = v)),
               ]),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.event_busy_outlined),
+                title: Text(l.t('property.pk.expires')),
+                subtitle: Text(_expires == null ? l.t('property.pk.expiresHint') : formatDate(_expires, locale: l.locale.languageCode)),
+                trailing: _expires == null ? null : IconButton(icon: const Icon(Icons.clear), tooltip: l.t('common.clear'), onPressed: () => setState(() => _expires = null)),
+                onTap: () async {
+                  final now = DateTime.now();
+                  final d = await showDatePicker(context: context, initialDate: _expires ?? now.add(const Duration(days: 90)), firstDate: now, lastDate: now.add(const Duration(days: 730)));
+                  if (d != null) setState(() => _expires = d);
+                },
+              ),
             ],
           ),
           if (residential)

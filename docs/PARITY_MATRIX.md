@@ -87,6 +87,11 @@ All of these are online on the phone (they need a connection); the offline store
 | Portal links: list and revoke | Client / owner page → Portal | Portal dialog → Existing links |
 | Send through WhatsApp Business | Client page → WhatsApp | Marketing → WhatsApp Business → Send a message |
 | AI status and monthly usage | Assistant page | Administration → AI and assistant |
+| Recalculate all matches | Matches → Recalculate all | Matches → refresh button (managers) |
+| Duplicate plot warning | Property form (server check) | Property form (checked on the phone, works offline) |
+| Price history, listing expiry ("Available until") | Property page and form | Property page and form |
+| Matching weights, square feet per marla | Settings → Matching | Administration → Business settings |
+| Business currency (and timezone on the web) | Every amount, PDF and export | Every amount |
 
 ## Remaining differences
 

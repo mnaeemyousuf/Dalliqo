@@ -8,7 +8,7 @@ import { LISTING_PURPOSES, PROPERTY_TYPES, whatsappLink } from '@recrm/shared';
 import { BrandLogo } from '@/components/BrandLogo';
 import { useSizeLabel } from '@/components/domain';
 import { Badge, Button, Card, EmptyState, Input, Pagination, Select, Textarea, type BadgeColor } from '@/components/ui';
-import { formatDate, formatPkr } from '@/lib/format';
+import { formatDate, formatPkr, setRegion } from '@/lib/format';
 import { useEnumOptions } from '@/lib/hooks';
 import { useUi } from '@/store/ui';
 
@@ -16,10 +16,20 @@ import { useUi } from '@/store/ui';
 const pub = axios.create({ baseURL: '/api/public', timeout: 30_000 });
 type Meta = { total: number; totalPages: number; page: number; limit: number };
 const getPage = async <T,>(url: string, params?: Record<string, unknown>) => (await pub.get<{ data: T; meta?: Meta }>(url, { params })).data;
-const get = async <T,>(url: string, params?: Record<string, unknown>) => (await getPage<T>(url, params)).data;
+/** Public pages show prices in the agency's own currency (sent with the site and the portal). */
+const adoptCurrency = (d: unknown) => {
+  const o = d as { currency?: string; site?: { currency?: string }; business?: { currency?: string } } | null;
+  const c = o?.currency ?? o?.site?.currency ?? o?.business?.currency;
+  if (c) setRegion({ currency: c });
+};
+const get = async <T,>(url: string, params?: Record<string, unknown>) => {
+  const data = (await getPage<T>(url, params)).data;
+  adoptCurrency(data);
+  return data;
+};
 const errorText = (e: unknown, fallback: string) => (axios.isAxiosError(e) && (e.response?.data as { message?: string })?.message) || fallback;
 
-interface Site { slug: string; name: string; tagline?: string | null; about?: string | null; phone?: string | null; whatsapp?: string | null; email?: string | null; address?: string | null; city?: string | null; listingCount: number; agents: { _id: string; fullName: string }[] }
+interface Site { slug: string; name: string; tagline?: string | null; about?: string | null; phone?: string | null; whatsapp?: string | null; email?: string | null; address?: string | null; city?: string | null; currency?: string; listingCount: number; agents: { _id: string; fullName: string }[] }
 interface PublicListing {
   _id: string; ref: string; headline?: string | null; propertyType: string; listingPurpose: string; status: string;
   location: { area?: string; society?: string; block?: string; phase?: string; city?: string };
@@ -336,7 +346,7 @@ interface PortalView {
   kind: 'CLIENT' | 'OWNER';
   expiresAt: string;
   party: { fullName: string };
-  business: { name: string; phone?: string | null; whatsapp?: string | null; email?: string | null; address?: string | null };
+  business: { name: string; phone?: string | null; whatsapp?: string | null; email?: string | null; address?: string | null; currency?: string };
   deals?: { _id?: string; dealNo: string; stage: string; price?: number | null; property: Prop; payments?: Pay[]; offers?: { party: string; amount: number; status: string; at: string }[] }[];
   installmentPlans?: { _id: string; planNo: string; title?: string; status: string; totalAmount: number; paidTotal: number; outstanding: number; overdueAmount: number; nextDueDate?: string | null; property: Prop; items: { label: string; dueDate: string; amount: number; paid: number; status: string }[]; payments: Pay[] }[];
   leases?: { _id: string; leaseNo: string; status: string; startDate: string; endDate: string; monthlyRent: number; property: Prop; overdue: number; collected?: number; maintenance?: number; nextDue?: { dueDate: string; balance: number } | null; schedule?: { period: string; dueDate: string; amount: number; paid: number; status: string }[]; payments?: Pay[] }[];

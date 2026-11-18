@@ -9,6 +9,7 @@ import '../../core/widgets/app_widgets.dart';
 import '../../core/widgets/domain_widgets.dart';
 import '../../data/repositories.dart';
 import '../auth/auth_controller.dart';
+import '../more/online_kit.dart' show runAction;
 
 final matchMinScoreProvider = StateProvider<int?>((ref) => null);
 
@@ -46,6 +47,17 @@ class _MatchesScreenState extends ConsumerState<MatchesScreen> {
               for (final (score, band) in const [(90, 'EXCELLENT'), (80, 'VERY_GOOD'), (70, 'GOOD')]) PopupMenuItem(value: score, child: Text('≥ $score% · ${l.enumLabel('matchBand', band)}')),
             ],
           ),
+          // Same as the web's "Recalculate all": re-scores every listing against every client.
+          if (canManage)
+            IconButton(
+              icon: const Icon(Icons.refresh_rounded),
+              tooltip: l.t('match.recalculate'),
+              onPressed: () async {
+                if (await runAction(context, () => ref.read(apiClientProvider).post<Object?>('/matches/recalculate', {}), done: l.t('match.recalculated'))) {
+                  ref.invalidate(allMatchesProvider);
+                }
+              },
+            ),
         ],
       ),
       body: Column(children: [

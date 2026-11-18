@@ -14,7 +14,7 @@ import { ApprovalBanner } from '@/pages/Phase4Pages';
 import { ReceiptButton } from '@/pages/InstallmentPages';
 import { VoucherButton } from '@/pages/OpsPages';
 import { Badge, Button, Card, ConfirmDialog, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Table, Tabs, Textarea, type BadgeColor, type Column, ViewToggle, MetricTile } from '@/components/ui';
-import { formatDate, formatPkr } from '@/lib/format';
+import { currentCurrency, formatDate, formatPkr } from '@/lib/format';
 import { useDebounce, useEnumOptions, useErrorText, useMembers, useOnError, useUrlState, useOpenOnNew } from '@/lib/hooks';
 import { useDealPipeline } from '@/lib/pipeline';
 import { useAuth, useCan } from '@/store/auth';
@@ -152,7 +152,7 @@ export function DealFormDrawer({ open, onClose, deal, clientId, propertyId }: { 
             <div key={side} className="mb-2 grid grid-cols-3 items-end gap-2">
               <p className="text-sm">{t(`enums.dealSide.${side.toUpperCase()}`)}</p>
               <Select aria-label={t('deal.mode')} options={modes} value={v.mode} onChange={(e) => setV({ ...v, mode: e.target.value as CommissionMode })} />
-              <Input aria-label={t('deal.value')} type="number" min={0} step="0.1" placeholder={v.mode === 'PERCENT' ? t('deal.defaultPct') : 'PKR'} value={v.value} onChange={(e) => setV({ ...v, value: e.target.value })} />
+              <Input aria-label={t('deal.value')} type="number" min={0} step="0.1" placeholder={v.mode === 'PERCENT' ? t('deal.defaultPct') : currentCurrency()} value={v.value} onChange={(e) => setV({ ...v, value: e.target.value })} />
             </div>
           ))}
           <p className="text-xs text-muted">{t('deal.expectedPreview', { amount: formatPkr(preview.expected.total) })}</p>

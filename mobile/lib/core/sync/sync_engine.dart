@@ -10,6 +10,7 @@ import 'package:uuid/uuid.dart';
 import '../config/env.dart';
 import '../database/app_database.dart';
 import '../network/api_client.dart';
+import '../utils/units.dart';
 
 /// What the UI shows in the sync indicator.
 @immutable
@@ -76,6 +77,8 @@ class SyncEngine extends ChangeNotifier {
   }
 
   Future<void> start() async {
+    // The business's marla / kanal / acre sizes, saved at the last bootstrap or settings change.
+    applyUnitSettings(await db.getJson('session.settings'));
     final last = await db.getValue(_lastSyncKey);
     _set(_state.copyWith(lastSyncedAt: last == null ? null : DateTime.tryParse(last)));
     await _refreshCounts();
@@ -118,6 +121,7 @@ class SyncEngine extends ChangeNotifier {
     await db.setValue(_cursorKey, d['cursor'] as String);
     await db.setJson('session.members', {'items': d['members']});
     await db.setJson('session.settings', d['settings'] as Map<String, dynamic>);
+    applyUnitSettings(d['settings'] as Map<String, dynamic>?);
     var more = d['hasMore'] == true;
     while (more) {
       more = await _pullOnce();

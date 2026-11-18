@@ -42,7 +42,7 @@ const label = (v?: string | null) => (v ? v.replace(/_/g, ' ').toLowerCase().rep
 const date = (d?: Date | string | null) => (d ? new Date(d).toISOString().slice(0, 10) : '');
 const dateTime = (d?: Date | string | null) => (d ? new Date(d).toISOString().slice(0, 16).replace('T', ' ') : '');
 const range = (a?: number | null, b?: number | null, money = false) => {
-  const f = (n?: number | null) => (n === undefined || n === null ? '' : money ? formatPkr(n).replace('PKR ', '') : String(n));
+  const f = (n?: number | null) => (n === undefined || n === null ? '' : money ? formatPkr(n).replace(/^[A-Z]{3} /, '') : String(n));
   return a || b ? `${f(a)} – ${f(b)}` : '';
 };
 
@@ -434,7 +434,7 @@ function writePdf(out: Writable, businessName: string, report: Awaited<ReturnTyp
       const values = cols.map((c) => {
         const v = r[c.key];
         if (v === undefined || v === null) return '';
-        return c.money && typeof v === 'number' ? formatPkr(v).replace('PKR ', '') : String(v);
+        return c.money && typeof v === 'number' ? formatPkr(v).replace(/^[A-Z]{3} /, '') : String(v);
       });
       doc.fontSize(7.5);
       const height = Math.max(14, ...values.map((v, i) => (URDU_FONT.regular && ARABIC.test(v) ? pdfFont(doc, v).currentLineHeight(true) : doc.font('Helvetica').heightOfString(v, { width: widths[i] - 6 })) + 6));

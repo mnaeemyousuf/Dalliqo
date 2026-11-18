@@ -3,6 +3,7 @@ import type { Entitlements, Module, Permission } from '@recrm/shared';
 import { authApi } from '@/api/endpoints';
 import { refreshAccessToken, tokenStore, branchSelection } from '@/api/client';
 import type { Business, Membership, Session, User } from '@/api/types';
+import { setRegion } from '@/lib/format';
 import { useUi } from './ui';
 
 type Status = 'loading' | 'authenticated' | 'anonymous';
@@ -67,6 +68,7 @@ export const useAuth = create<AuthState>((set, get) => ({
   },
 
   setSession(session) {
+    setRegion({ currency: session.business?.currency, timezone: session.business?.timezone });
     set({
       status: 'authenticated',
       user: session.user,
@@ -81,6 +83,7 @@ export const useAuth = create<AuthState>((set, get) => ({
   },
 
   patchBusiness(business) {
+    setRegion({ currency: business.currency, timezone: business.timezone });
     set({ business });
   },
 
@@ -89,6 +92,7 @@ export const useAuth = create<AuthState>((set, get) => ({
     tokenStore.set(null);
     // The next person on this browser starts with all their branches, not this user's pick.
     branchSelection.set(null);
+    setRegion({});
     set({ status: 'anonymous', user: null, business: null, membership: null, entitlements: null, platformAdmin: false });
   },
 }));

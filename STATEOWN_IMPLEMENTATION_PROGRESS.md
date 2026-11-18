@@ -389,6 +389,23 @@ Every web feature that the app did not have is now in the app, as screens that w
 ### Tests
 - `server/tests/roles.mobile.test.ts` (15 tests), `mobile/test/extras_test.dart` (5 tests). Server 303 passed + 1 skipped; web 38; Flutter 91.
 
+## Cross-check pass ✅ (18 Nov 2026)
+
+### What was checked
+- All 232 API routes against the web and Android code, then every feature of the brief against both apps and both prototypes (details in `STATEOWN_GAP_ANALYSIS.md`, "Cross-check").
+
+### Fixed
+- **Android:** duplicate-plot warning before saving a property (offline too); "Recalculate all" on Matches; price history and listing expiry on the property page and form; matching weights and square feet per marla in Business settings; local size filters follow the business's marla size.
+- **Currency:** a business priced in another currency now sees it on the web, the phone, the public site and portals, and in PDFs, exports, brochures and activity messages. Web dates follow the business timezone.
+- **Prototypes:** web — lead aging and lost reasons on Reports, favourites in the client portal, bulk bar labelled; mobile — units (marla, kanal …), minimum price, expiry and price history on the property screens, matching weights and marla size, theme, lead aging. `tools/manuals/proto-fit.mjs` checks that each phone screen fits its frame.
+
+### Database / APIs
+- No schema changes. The public site and portal responses now include the business `currency`.
+
+### Tests
+- Currency formatting inside and outside a request (server `unit.test.ts`), on the web (`format.test.ts`) and in Flutter (`format_test.dart`).
+- Server 305 passed + 1 skipped; web 39. Flutter is not installed on this machine: the Android code is compiled by the APK build on GitHub Actions, and the Flutter tests were not run in this pass.
+
 ## What is left
 - **Old hosted service:** delete the old Render service in the dashboard once every phone has the new APK. Phones with an older APK still talk to the old address.
 - **GitHub repository name** still contains the old name; renaming it is done in GitHub settings (Render follows the redirect).

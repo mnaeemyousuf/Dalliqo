@@ -4,6 +4,8 @@ import { BRANCH_HEADER } from '@recrm/shared';
 import { apiKeyService, isApiKey } from '../services/apiKeyService';
 import { resolveAuthContext } from '../services/authContextService';
 import { narrowToSelectedBranch } from '../services/branchScope';
+import { regionService } from '../services/regionService';
+import { withCurrency } from '../utils/text';
 import { tokenService } from '../services/tokenService';
 import type { AuthContext } from '../types/context';
 import { forbidden, unauthorized } from '../utils/AppError';
@@ -22,10 +24,12 @@ export const authenticate = asyncHandler(async (req, _res, next) => {
     // API access keys (Enterprise): limited permissions, record endpoints only.
     const path = req.originalUrl.split('?')[0].replace(/^\/api(?=\/)/, '');
     req.auth = await narrowToSelectedBranch(await apiKeyService.resolve(token, path), req.get(BRANCH_HEADER));
-    return next();
+  } else {
+    req.auth = await narrowToSelectedBranch(await resolveAuthContext(tokenService.verifyAccessToken(token)), req.get(BRANCH_HEADER));
   }
-  req.auth = await narrowToSelectedBranch(await resolveAuthContext(tokenService.verifyAccessToken(token)), req.get(BRANCH_HEADER));
-  next();
+  // Amounts in messages, PDFs and exports use the business's own currency for the rest of the request.
+  const { currency } = await regionService.of(req.auth.businessId);
+  withCurrency(currency, () => next());
 });
 
 /**

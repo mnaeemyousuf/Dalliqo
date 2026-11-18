@@ -530,7 +530,7 @@ class _DealFormScreenState extends ConsumerState<DealFormScreen> {
               child: Row(children: [
                 Expanded(flex: 3, child: AppDropdown<String>(label: l.enumLabel('dealSide', side), value: mode, items: modes, onChanged: (v) => setMode(v ?? mode))),
                 const SizedBox(width: 8),
-                Expanded(flex: 2, child: AppTextField(label: mode == 'PERCENT' ? '%' : 'PKR', controller: ctrl, keyboardType: const TextInputType.numberWithOptions(decimal: true), hint: mode == 'PERCENT' ? l.t('deal.defaultPct') : null)),
+                Expanded(flex: 2, child: AppTextField(label: mode == 'PERCENT' ? '%' : currentCurrency, controller: ctrl, keyboardType: const TextInputType.numberWithOptions(decimal: true), hint: mode == 'PERCENT' ? l.t('deal.defaultPct') : null)),
               ]),
             ),
           Text(l.t('deal.expectedPreview', {'amount': formatPkr(preview.expected, urdu: l.isRtl)}), style: Theme.of(context).textTheme.bodySmall),

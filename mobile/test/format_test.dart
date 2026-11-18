@@ -14,6 +14,20 @@ void main() {
       expect(formatPkr(20000000, urdu: true), 'روپے 2 کروڑ');
     });
 
+    test('follows the business currency', () {
+      try {
+        setCurrency('aed');
+        expect(formatPkr(1550000), 'AED 1,550,000');
+        expect(formatRange(1200000, 1600000), 'AED 1,200,000 – AED 1,600,000');
+        setCurrency('INR');
+        expect(formatPkr(550000), 'INR 5.5 Lakh');
+        setCurrency('not a code');
+        expect(formatPkr(550000), 'PKR 5.5 Lakh');
+      } finally {
+        setCurrency(null);
+      }
+    });
+
     test('compacts ranges that share a unit', () {
       expect(formatRange(12000000, 16000000), 'PKR 1.2 – 1.6 Crore');
       expect(formatRange(5000000, 16000000), 'PKR 50 Lakh – PKR 1.6 Crore');

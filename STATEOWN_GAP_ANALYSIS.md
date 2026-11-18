@@ -100,8 +100,23 @@ Each section of the master brief was checked against the code (server, web, Andr
 | 20 | Trial, plans, module entitlements, limits, billing history, usage | ✅ | Phase 3 |
 | 8 | Custom commission rules | ✅ | **Second re-audit:** default rates by sale / rent and property type |
 | 18 | Bulk actions on lists | ✅ | **Second re-audit:** assign, change status and delete on the client and property tables |
-| 18 | Configurable currency and timezone | 🟡 | Stored per business and editable. Amounts are still written in the PKR lakh / crore style everywhere (screens, PDFs, messages). |
+| 18 | Configurable currency and timezone | ✅ | **Cross-check (18 Nov):** amounts follow the business currency on the web, the phone and in server PDFs, exports and messages (PKR, INR, BDT, NPR and LKR keep lakh / crore; others are grouped in thousands). Web dates follow the business timezone. Report month boundaries stay on Karachi time, and amounts in words on agreements stay in rupees. |
 | 19 | Data retention policies | ✅ | **Second re-audit:** per-business retention for the audit log and activity feed, purged daily |
 | 20 | API access (Enterprise) | ✅ | **Second re-audit:** scoped API keys, hashed at rest, record endpoints only |
 | 17 | Android has every web feature | ✅ | **Parity batch:** reports, marketing, verification, deal / lease / entry tools, bulk actions and administration added to the app (online screens), then saved views, lead filters, portal link management and WhatsApp Business sending. Every role template is tested against the phone menus. |
 | 21 | Indexes, pagination, background jobs, efficient reports | ✅ | Aggregations only. Every new collection and field is indexed. |
+
+## Cross-check against the full brief (18 Nov 2026)
+
+Every API route was matched against the web and the Android code (232 routes), and every feature of the brief was matched against both apps and both prototypes. Gaps found and fixed:
+
+| Where | Gap | Fix |
+|---|---|---|
+| Android | A plot added on the phone was never checked for duplicates (the server skips the check for records that arrive through sync) | Same rule as the server, run on the phone's data before saving: "already listed as RE-…, save anyway?" |
+| Android | No "Recalculate all" for matches | Button on the Matches screen (managers only) |
+| Android | Price history and "Available until" (listing expiry) not shown or editable | Price history on the property page; expiry date on the form and the page |
+| Android | Matching weights and square feet per marla could only be changed on the web | Both in Administration → Business settings; the phone's size filters use the business's marla size |
+| All | Currency was always written as PKR | Business currency everywhere (see § 18 above) |
+| Prototypes | Web: lead aging report, favourites in the client portal. Mobile: marla / kanal units, minimum price, expiry, price history, matching weights, theme, lead aging | Added; the mobile screens are measured to fit the phone frame |
+
+Checked and not a gap: deal offers, stage changes, payments, agreement versions and follow-up completion go through the offline sync on the phone instead of their own routes; the public site and the client and owner portals are web pages opened from a link on any device; WhatsApp webhooks are server-only.

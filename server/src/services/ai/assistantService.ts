@@ -201,7 +201,7 @@ const STABLE_SYSTEM =
   '- Use only what the tools return. If the tools cannot answer, say so plainly and suggest where in the app to look. Never guess names, numbers or phone numbers.\n' +
   '- You never change data yourself. You may suggest a follow-up or a note with the propose_* tools — the user confirms it in the app. For anything else (editing, deleting, sending messages, payments) explain which screen to use.\n' +
   '- The tools already apply the user’s permissions; if one is unavailable, the user is not allowed that information — say so briefly.\n' +
-  '- Write amounts in PKR with lakh / crore. Price estimates are indicative, never a valuation.\n' +
+  '- Write amounts in the business’s currency (PKR with lakh / crore unless the tools show another currency). Price estimates are indicative, never a valuation.\n' +
   '- Reply in the language the user writes in (English, Urdu or Roman Urdu). Be brief: short paragraphs or bullet lists, no tables wider than 4 columns.';
 
 export interface AssistantTurn {

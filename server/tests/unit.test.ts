@@ -2,6 +2,7 @@ import { ALL_PERMISSIONS, ROLE_PRESETS, ROLES, matchBand, resolvePermissions } f
 import { diffFields } from '../src/utils/diff';
 import { normalizePhone } from '../src/utils/phone';
 import { dataOnlyMessage, splitDevices } from '../src/services/pushService';
+import { formatPkr, withCurrency } from '../src/utils/text';
 
 describe('reminder pushes to phones with local reminders', () => {
   const devices = [
@@ -92,5 +93,22 @@ describe('diffFields', () => {
       { field: 'c', oldValue: [1, 2], newValue: [1, 3] },
       { field: 'e', oldValue: null, newValue: 9 },
     ]);
+  });
+});
+
+describe('money in the business currency', () => {
+  it('is PKR with lakh / crore outside a request', () => {
+    expect(formatPkr(15_500_000)).toBe('PKR 1.55 Crore');
+    expect(formatPkr(75_000)).toBe('PKR 75,000');
+  });
+
+  it('uses the request currency, including after awaits', async () => {
+    const out = await withCurrency('aed', async () => {
+      await new Promise((r) => setTimeout(r, 5));
+      return [formatPkr(1_550_000), formatPkr(1_550_000.5)];
+    });
+    expect(out).toEqual(['AED 1,550,000', 'AED 1,550,000.5']);
+    expect(withCurrency('INR', () => formatPkr(550_000))).toBe('INR 5.5 Lakh');
+    expect(withCurrency('not a code', () => formatPkr(550_000))).toBe('PKR 5.5 Lakh');
   });
 });

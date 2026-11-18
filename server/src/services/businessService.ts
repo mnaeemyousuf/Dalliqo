@@ -6,6 +6,7 @@ import { notFound } from '../utils/AppError';
 import { diffFields } from '../utils/diff';
 import { eventBus } from '../utils/eventBus';
 import { auditService } from './auditService';
+import { regionService } from './regionService';
 
 const EDITABLE = ['name', 'phone', 'email', 'address', 'city', 'currency', 'timezone', 'defaultSizeUnit'] as const;
 export type BusinessUpdate = Partial<Pick<BusinessDoc, (typeof EDITABLE)[number]>>;
@@ -20,6 +21,7 @@ export const businessService = {
   async updateCurrent(auth: AuthContext, input: BusinessUpdate, meta: RequestMeta): Promise<BusinessDoc> {
     const before = await this.getCurrent(auth);
     const updated = await businessRepository.updateCurrent(auth, input);
+    regionService.forget(auth.businessId);
     if (!updated) throw notFound(ERROR_CODES.BUSINESS_NOT_FOUND, 'Business not found');
 
     const changes = diffFields(before as unknown as Record<string, unknown>, input, EDITABLE);

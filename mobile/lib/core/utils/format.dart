@@ -1,10 +1,26 @@
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// Pakistani numbering: 15,500,000 → "PKR 1.55 Crore", 550,000 → "PKR 5.5 Lakh".
+/// The signed-in business's currency (Settings → Business profile). PKR until a session loads.
+String _currency = 'PKR';
+String get currentCurrency => _currency;
+
+void setCurrency(String? code) {
+  final c = (code ?? '').trim().toUpperCase();
+  _currency = RegExp(r'^[A-Z]{3}$').hasMatch(c) ? c : 'PKR';
+}
+
+/// Currencies written with lakh / crore (South Asian numbering).
+const _lakhCurrencies = {'PKR', 'INR', 'BDT', 'NPR', 'LKR'};
+
+/// Money in the business's currency. Pakistani numbering for PKR: 15,500,000 → "PKR 1.55 Crore",
+/// 550,000 → "PKR 5.5 Lakh". Other currencies are grouped in thousands: "AED 1,550,000".
 String formatPkr(num? amount, {bool urdu = false, bool currency = true}) {
   if (amount == null) return '—';
-  final prefix = currency ? (urdu ? 'روپے ' : 'PKR ') : '';
+  if (!_lakhCurrencies.contains(_currency)) {
+    return '${currency ? '$_currency ' : ''}${NumberFormat.decimalPatternDigits(locale: 'en', decimalDigits: amount % 1 == 0 ? 0 : 2).format(amount)}';
+  }
+  final prefix = currency ? (urdu && _currency == 'PKR' ? 'روپے ' : '$_currency ') : '';
   String trim(double v) => v.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '');
   if (amount >= 10000000) return '$prefix${trim(amount / 10000000)} ${urdu ? 'کروڑ' : 'Crore'}';
   if (amount >= 100000) return '$prefix${trim(amount / 100000)} ${urdu ? 'لاکھ' : 'Lakh'}';
@@ -17,7 +33,7 @@ String formatRange(num? min, num? max, {bool urdu = false}) {
   if (min != null && max != null) {
     int unit(num n) => n >= 10000000 ? 10000000 : (n >= 100000 ? 100000 : 1);
     final u = unit(max);
-    if (u > 1 && unit(min) == u) {
+    if (u > 1 && unit(min) == u && _lakhCurrencies.contains(_currency)) {
       final head = (min / u).toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '');
       return formatPkr(max, urdu: urdu).replaceFirstMapped(RegExp(r'[\d.]+'), (m) => '$head – ${m[0]}');
     }

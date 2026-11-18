@@ -14,12 +14,12 @@ import '../core/models/models.dart';
 import '../core/network/api_client.dart';
 import '../core/providers.dart';
 import '../core/sync/local_store.dart';
+import '../core/utils/units.dart';
+export '../core/utils/units.dart' show sqftPerUnit;
 
 /// Marks "leave this field unchanged" in the filters' copyWith, so null can mean "clear".
 const _keep = Object();
 
-/// Square feet per unit (the API's defaults), used to compare sizes across units offline.
-const sqftPerUnit = {'SQ_FT': 1.0, 'SQ_YARD': 9.0, 'SQ_METER': 10.7639, 'MARLA': 225.0, 'KANAL': 4500.0, 'ACRE': 43560.0};
 
 bool _contains(Object? haystack, String needle) {
   final n = needle.toLowerCase();
@@ -429,6 +429,23 @@ class CrmRepository {
   Future<Property?> property(String id) async {
     final r = await db.get(Entities.properties, id);
     return r == null || r.deleted ? null : Property(r.data, local: r);
+  }
+
+  /// Listings of the same plot on this phone: same society + block (or phase) + plot / unit
+  /// number, ignoring case, spaces and punctuation. Mirrors the server's `findDuplicates`,
+  /// which records created offline skip (they arrive through sync).
+  Future<List<Property>> propertiesForPlot(Map<String, dynamic> p, {String? exceptId}) async {
+    String norm(Object? s) => (s?.toString() ?? '').toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '');
+    final plot = norm(p['plotNumber']);
+    if (plot.isEmpty) return const [];
+    final rows = await db.list(Entities.properties,
+        where: (d) =>
+            norm(d['plotNumber']) == plot &&
+            norm(d['society']) == norm(p['society']) &&
+            norm(d['block'] ?? d['phase']) == norm(p['block'] ?? p['phase']) &&
+            norm(d['unitNumber']) == norm(p['unitNumber']),
+        limit: 5);
+    return rows.where((r) => exceptId == null || (r.uuid != exceptId && r.serverId != exceptId)).map((r) => Property(r.data, local: r)).toList();
   }
 
   Future<Property> saveProperty(Map<String, dynamic> fields, {String? id}) async {
