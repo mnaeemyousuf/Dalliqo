@@ -31,13 +31,22 @@ function local(): LocalStorage {
   return s;
 }
 
+/**
+ * RFC 6266 / 5987: an ASCII fallback plus the exact UTF-8 name. Header values must be Latin-1,
+ * so an Urdu file name written straight into the header would make Node throw (a 500).
+ */
+export function contentDisposition(name: string): string {
+  const ascii = name.replace(/[^\x20-\x7e]/g, '_').replace(/["\\]/g, '_');
+  return `inline; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(name)}`;
+}
+
 function send(res: import('express').Response, key: string, data: Buffer, download?: string) {
   res.setHeader('Content-Type', MIME[path.extname(key).toLowerCase()] ?? 'application/octet-stream');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
   // Helmet sets same-origin by default; images must load in the web app on another origin.
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-  if (download) res.setHeader('Content-Disposition', `inline; filename="${download.replace(/["\r\n]/g, '')}"`);
+  if (download) res.setHeader('Content-Disposition', contentDisposition(download));
   res.send(data);
 }
 

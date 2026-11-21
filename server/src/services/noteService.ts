@@ -12,6 +12,7 @@ import type { AuthContext, TenantContext } from '../types/context';
 import { badRequest, forbidden } from '../utils/AppError';
 import { branchFilter } from './branchScope';
 import { activityService } from './activityService';
+import { assertCanReadRecord } from './recordAccess';
 
 const ENTITY_MODELS = { client: Client, property: Property, owner: PropertyOwner, followUp: FollowUp, deal: Deal, transaction: Transaction, agreement: Agreement, lease: Lease } as const;
 
@@ -43,6 +44,7 @@ export const noteService = {
       const existing = await noteRepository.findByUuid(auth, input.uuid);
       if (existing) return existing;
     }
+    await assertCanReadRecord(auth, input.entityType, input.entityId);
     const { label, branchId } = await entityInfo(auth, input.entityType, input.entityId);
     const note = await noteRepository.create(auth, { ...input, branchId });
     const preview = input.content.length > 80 ? `${input.content.slice(0, 77)}…` : input.content;

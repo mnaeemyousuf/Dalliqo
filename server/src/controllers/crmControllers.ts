@@ -48,6 +48,7 @@ import { inventoryToolsService } from '../services/inventoryToolsService';
 import { redactOwner } from '../services/ownerService';
 import { pageMeta, sendSuccess } from '../utils/http';
 import { requestMeta } from './authController';
+import { assertCanReadRecord } from '../services/recordAccess';
 
 type Q = Record<string, never>;
 const query = <T>(req: Request) => req.query as unknown as T & { page: number; limit: number };
@@ -613,13 +614,12 @@ export const documentController = {
   },
 };
 
-// Reading notes needs read access to the record they belong to (every entity type that can hold notes).
-const NOTE_READ: Record<string, string> = { client: 'clients:read', property: 'properties:read', owner: 'owners:read', followUp: 'followups:read', deal: 'deals:read', transaction: 'finance:read', agreement: 'agreements:read', lease: 'rentals:read' };
 
 export const noteController = {
   async list(req: Request, res: Response) {
     const q = query<{ entityType: never; entityId: string }>(req);
-    if (!authOf(req).permissions.includes(NOTE_READ[q.entityType] as never)) throw forbidden();
+    // Notes are only as visible as their record (finance entries, other agents' deals …).
+    await assertCanReadRecord(authOf(req), q.entityType, q.entityId);
     list(res, q.page, q.limit, await noteService.list(authOf(req), q));
   },
   async create(req: Request, res: Response) {

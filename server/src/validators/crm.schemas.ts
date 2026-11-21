@@ -226,7 +226,8 @@ const propertyFields = {
   description: optionalText(5000),
   latitude: lat.nullable().optional(),
   longitude: lng.nullable().optional(),
-  googleMapsUrl: z.string().url().max(500).optional(),
+  // http(s) only: a javascript: or data: link would run script when someone clicks it.
+  googleMapsUrl: z.string().trim().url().max(500).refine((v) => /^https?:\/\//i.test(v), { message: 'Use a web link (https://…)' }).optional(),
   bedrooms: z.number().int().min(0).max(50).optional(),
   bathrooms: z.number().int().min(0).max(50).optional(),
   floors: z.number().int().min(0).max(200).optional(),

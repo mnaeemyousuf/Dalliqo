@@ -8,6 +8,7 @@ import { FollowUp } from '../models/FollowUp';
 import { Property } from '../models/Property';
 import { PropertyOwner } from '../models/PropertyOwner';
 import { branchFilter } from './branchScope';
+import { readableActivityFilter } from './recordAccess';
 
 /** Models whose records carry a branch; the timeline entry inherits it from the first such ref. */
 const BRANCHED = { deal: Deal, client: Client, property: Property, owner: PropertyOwner, followUp: FollowUp } as unknown as Partial<Record<string, typeof Client>>;
@@ -23,7 +24,6 @@ async function branchOf(ctx: TenantContext, refs: ActivityRef[]): Promise<Types.
 }
 import type { TenantContext } from '../types/context';
 
-const READ_PERMISSION: Record<EntityType, string> = { client: 'clients:read', property: 'properties:read', owner: 'owners:read', followUp: 'followups:read', deal: 'deals:read', transaction: 'finance:read', agreement: 'agreements:read', lease: 'rentals:read' };
 
 export interface ActivityRef {
   entityType: EntityType;
@@ -58,10 +58,8 @@ export const activityService = {
     if (q.entityId) filter['refs.entityId'] = q.entityId;
     // Branch-restricted members see their branches' entries plus business-level ones.
     if (ctx.branchIds) filter.$or = [branchFilter(ctx), { branchId: null }];
-    if (ctx.permissions) {
-      const hidden = Object.entries(READ_PERMISSION).filter(([, p]) => !ctx.permissions!.includes(p)).map(([type]) => type);
-      if (hidden.length) filter['refs.entityType'] = { $nin: hidden };
-    }
+    // Entries are only as visible as the records they point at (and money entries need finance access).
+    Object.assign(filter, await readableActivityFilter(ctx));
     const [items, total] = await Promise.all([
       Activity.find(filter)
         .sort({ createdAt: -1 })

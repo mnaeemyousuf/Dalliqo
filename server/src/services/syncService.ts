@@ -26,6 +26,7 @@ import { noteService } from './noteService';
 import { ownerService } from './ownerService';
 import { propertyService } from './propertyService';
 import { redactOwner } from './ownerService';
+import { readableAttachmentFilter } from './recordAccess';
 import { settingsService } from './settingsService';
 import {
   clientCreateSchema,
@@ -355,7 +356,8 @@ export const syncService = {
       const perm = READ_PERMS[entity];
       if (perm && !auth.permissions.includes(perm)) continue;
       const after = cursor[entity] ? { updatedAt: new Date(cursor[entity].t), id: cursor[entity].id } : null;
-      const extra = entity === 'deals' ? ownDealsFilter(auth) : undefined;
+      // Other agents' deals stay off the phone, and so do notes on records this member cannot read.
+      const extra = entity === 'deals' ? ownDealsFilter(auth) : entity === 'notes' ? await readableAttachmentFilter(auth) : undefined;
       const rows = (await repo.changedSince(auth, after, limit + 1, extra)) as unknown as { _id: unknown; updatedAt: Date }[];
       if (rows.length > limit) {
         hasMore = true;

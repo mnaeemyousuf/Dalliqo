@@ -19,7 +19,7 @@ import { PropertyInterestPanel } from '@/pages/OpsPages';
 import { toApiError } from '@/api/client';
 import { BrochureDialog } from '@/components/domain/BrochureDialog';
 import { Badge, Button, Card, Checkbox, ConfirmDialog, DataTable, Drawer, EmptyState, ErrorState, Input, Modal, PageHeader, PageLoader, Pagination, Select, Tabs, Textarea, type Column, FilterBar, ViewToggle } from '@/components/ui';
-import { formatDate, formatPkr, waHref } from '@/lib/format';
+import { formatDate, formatPkr, safeHttpUrl, waHref } from '@/lib/format';
 import { useDebounce, useEnumOptions, useMembers, useOnError, useUrlState, useOpenOnNew } from '@/lib/hooks';
 import { BulkBar, useSelection } from '@/pages/AdminExtras';
 import { useAuth, useCan } from '@/store/auth';
@@ -759,7 +759,7 @@ export function PropertyDetailPage() {
               title={t('property.location')}
               actions={
                 p.googleMapsUrl && (
-                  <a href={p.googleMapsUrl} target="_blank" rel="noreferrer" className="btn-ghost !p-1 text-xs">
+                  <a href={safeHttpUrl(p.googleMapsUrl)} target="_blank" rel="noreferrer" className="btn-ghost !p-1 text-xs">
                     <ExternalLink className="h-4 w-4" /> {t('common.openInMaps')}
                   </a>
                 )

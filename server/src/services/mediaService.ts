@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import sharp from 'sharp';
-import { ERROR_CODES, type DocumentCategory, type DocumentEntityType, type MediaKind, PERMISSIONS, SENSITIVE_DOCUMENT_CATEGORIES, isSensitiveCategory } from '@recrm/shared';
+import { ERROR_CODES, type DocumentCategory, type DocumentEntityType, type EntityType, type MediaKind, PERMISSIONS, SENSITIVE_DOCUMENT_CATEGORIES, isSensitiveCategory } from '@recrm/shared';
 import { env } from '../config/env';
 import { Document, PropertyMedia, type FileAssetDoc } from '../models/FileAsset';
 import { propertyRepository } from '../repositories/entityRepositories';
@@ -9,15 +9,14 @@ import { AppError, badRequest, notFound, forbidden } from '../utils/AppError';
 import { activityService } from './activityService';
 import { auditService } from './auditService';
 import { assertEntity, entityInfo } from './noteService';
+import { assertCanReadRecord, readableAttachmentFilter } from './recordAccess';
 import { branchFilter } from './branchScope';
 import { propertyService } from './propertyService';
 import { storage, type ResourceType } from './storage/storage';
 import { DOCUMENT_MIMES as DOC_MIMES, IMAGE_MIMES, VIDEO_MIMES } from '../constants';
 import { subscriptionService } from './subscriptionService';
+import { sniffFileType } from '../utils/fileSniff';
 
-// file-type v16 is CommonJS.
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const FileType = require('file-type') as { fromBuffer(b: Buffer): Promise<{ ext: string; mime: string } | undefined> };
 
 export interface UploadedFile {
   originalname: string;
@@ -30,7 +29,7 @@ const MB = 1024 * 1024;
 
 /** Detects the real type from the file's bytes; the extension and client-sent MIME are ignored. */
 async function sniff(file: UploadedFile): Promise<{ ext: string; mime: string }> {
-  const t = await FileType.fromBuffer(file.buffer);
+  const t = sniffFileType(file.buffer);
   if (!t) throw badRequest(ERROR_CODES.INVALID_FILE, `Unsupported or unrecognised file: ${file.originalname}`);
   return t;
 }
@@ -235,6 +234,7 @@ export const mediaService = {
     if (!file) throw badRequest(ERROR_CODES.INVALID_FILE, 'No file received');
     if (isSensitiveCategory(input.category) && !canSeeSensitive(auth)) throw forbidden(ERROR_CODES.FORBIDDEN, 'You cannot upload identity or title documents');
     await subscriptionService.assertLimit(auth, 'storageMb', file.size / 1_048_576);
+    await assertCanReadRecord(auth, input.entityType, input.entityId);
     const { label, branchId } = await entityInfo(auth, input.entityType, input.entityId);
     const detected = await sniff(file);
     if (!DOC_MIMES.includes(detected.mime)) {
@@ -270,6 +270,8 @@ export const mediaService = {
     if (q.category) filter.category = q.category;
     // CNIC copies and title documents are listed only for members allowed to see them.
     if (!canSeeSensitive(ctx)) filter.category = q.category && !isSensitiveCategory(q.category) ? q.category : { $nin: SENSITIVE_DOCUMENT_CATEGORIES };
+    // Attachments are only as visible as their record (finance entries, other agents' deals …).
+    Object.assign(filter, await readableAttachmentFilter(ctx));
     const [items, total] = await Promise.all([
       Document.find(filter).sort({ createdAt: -1 }).skip((q.page - 1) * q.limit).limit(q.limit).populate('uploadedBy', 'fullName').lean<FileAssetDoc[]>(),
       Document.countDocuments(filter),
@@ -280,6 +282,9 @@ export const mediaService = {
   async getDocument(ctx: TenantContext, id: string) {
     const d = await Document.findOne({ businessId: ctx.businessId, _id: id, deletedAt: null, ...branchFilter(ctx) }).lean<FileAssetDoc>();
     if (!d || (isSensitiveCategory(d.category) && !canSeeSensitive(ctx))) throw notFound(ERROR_CODES.DOCUMENT_NOT_FOUND, 'Document not found');
+    await assertCanReadRecord(ctx, d.entityType as EntityType, d.entityId).catch(() => {
+      throw notFound(ERROR_CODES.DOCUMENT_NOT_FOUND, 'Document not found');
+    });
     return d;
   },
 

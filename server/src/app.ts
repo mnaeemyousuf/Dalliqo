@@ -27,7 +27,9 @@ export function createApp(): Express {
     pinoHttp({
       logger,
       genReqId: (req, res) => {
-        const id = (req.headers['x-request-id'] as string | undefined) ?? randomUUID();
+        // A caller's id is kept only if it is a short, plain token (it is echoed back and written to logs).
+        const given = req.headers['x-request-id'];
+        const id = typeof given === 'string' && /^[A-Za-z0-9._-]{1,64}$/.test(given) ? given : randomUUID();
         res.setHeader('X-Request-Id', id);
         return id;
       },

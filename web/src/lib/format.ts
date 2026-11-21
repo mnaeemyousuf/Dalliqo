@@ -25,6 +25,17 @@ function isValidTimeZone(tz: string): boolean {
   }
 }
 
+/** The link if it is a plain web (http/https) address, otherwise undefined — never a javascript: or data: link. */
+export function safeHttpUrl(url?: string | null): string | undefined {
+  if (!url) return undefined;
+  try {
+    const u = new URL(url);
+    return u.protocol === 'https:' || u.protocol === 'http:' ? u.href : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Currencies written with lakh / crore (South Asian numbering). */
 const LAKH_CURRENCIES = new Set(['PKR', 'INR', 'BDT', 'NPR', 'LKR']);
 

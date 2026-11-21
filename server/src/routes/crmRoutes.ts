@@ -46,11 +46,16 @@ import { asyncHandler as h } from '../utils/http';
 import { idParams } from '../validators/common';
 import * as s from '../validators/crm.schemas';
 
-/** Files are held in memory only long enough to be validated, processed and sent to storage. */
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: Math.max(env.MAX_VIDEO_MB, env.MAX_DOCUMENT_MB, env.MAX_IMAGE_MB) * 1024 * 1024, files: 10, fields: 20 },
-});
+/**
+ * Files are held in memory only long enough to be validated, processed and sent to storage, so each
+ * route gets a ceiling sized for what it accepts: a gallery batch, one document, or one spreadsheet
+ * (spreadsheets are unzipped in memory, so a large one could exhaust the server).
+ */
+const MB = 1024 * 1024;
+const memoryUpload = (fileSize: number, files: number) => multer({ storage: multer.memoryStorage(), limits: { fileSize, files, fields: 20 } });
+const uploadMedia = memoryUpload(Math.max(env.MAX_VIDEO_MB, env.MAX_IMAGE_MB) * MB, 10);
+const uploadDocument = memoryUpload(env.MAX_DOCUMENT_MB * MB, 1);
+const uploadSheet = memoryUpload(5 * MB, 1);
 
 const id = validate({ params: idParams });
 const r = Router();
@@ -78,7 +83,7 @@ r.get('/clients', can(P.CLIENTS_READ), validate({ query: s.clientListQuery }), h
 r.post('/clients', can(P.CLIENTS_CREATE), validate({ body: s.clientCreateSchema }), h(clientController.create));
 r.get('/clients/duplicates', can(P.CLIENTS_READ), validate({ query: s.duplicateClientQuery }), h(clientController.duplicates));
 r.get('/clients/import/template', can(P.CLIENTS_CREATE), h(leadController.template));
-r.post('/clients/import', can(P.CLIENTS_CREATE), upload.single('file'), h(leadController.importExcel));
+r.post('/clients/import', can(P.CLIENTS_CREATE), uploadSheet.single('file'), h(leadController.importExcel));
 r.post('/clients/:id/assign', can(P.CLIENTS_UPDATE), validate({ params: idParams, body: s.leadAssignSchema }), h(leadController.assign));
 r.get('/reports/leads', can(P.CLIENTS_READ, P.REPORTS_READ), validate({ query: s.leadReportQuery }), h(leadController.report));
 r.get('/reports/inventory', can(P.PROPERTIES_READ, P.REPORTS_READ), h(propertyController.inventoryReport));
@@ -149,7 +154,7 @@ r.delete('/owners/:id', can(P.OWNERS_DELETE), id, h(ownerController.remove));
 // Properties
 r.get('/properties', can(P.PROPERTIES_READ), validate({ query: s.propertyListQuery }), h(propertyController.list));
 r.get('/properties/import/template', can(P.PROPERTIES_CREATE), h(inventoryToolsController.template));
-r.post('/properties/import', can(P.PROPERTIES_CREATE), upload.single('file'), h(inventoryToolsController.importExcel));
+r.post('/properties/import', can(P.PROPERTIES_CREATE), uploadSheet.single('file'), h(inventoryToolsController.importExcel));
 r.get('/properties/:id/qr', can(P.PROPERTIES_READ), id, h(inventoryToolsController.qr));
 r.get('/properties/:id/verification', can(P.PROPERTIES_READ), id, h(verificationController.get));
 r.post('/properties/:id/verification/submit', can(P.VERIFICATION_SUBMIT), validate({ params: idParams, body: s.verificationSubmitSchema }), h(verificationController.submit));
@@ -211,14 +216,14 @@ r.post('/properties/:id/status', can(P.PROPERTIES_UPDATE), validate({ params: id
 r.delete('/properties/:id', can(P.PROPERTIES_DELETE), id, h(propertyController.remove));
 r.get('/properties/:id/matches', can(P.MATCHES_READ), validate({ params: idParams, query: s.matchListQuery }), h(propertyController.matches));
 r.get('/properties/:id/media', can(P.PROPERTIES_READ), id, h(propertyController.listMedia));
-r.post('/properties/:id/media', can(P.PROPERTIES_UPDATE), id, upload.array('files', 10), h(propertyController.uploadMedia));
+r.post('/properties/:id/media', can(P.PROPERTIES_UPDATE), id, uploadMedia.array('files', 10), h(propertyController.uploadMedia));
 r.patch('/media/:id', can(P.PROPERTIES_UPDATE), validate({ params: idParams, body: s.mediaUpdateSchema }), h(mediaController.update));
 r.delete('/media/:id', can(P.PROPERTIES_UPDATE), id, h(mediaController.remove));
 
 // Documents
 r.get('/documents', can(P.DOCUMENTS_READ), validate({ query: s.documentListQuery }), h(documentController.list));
-r.post('/documents', can(P.DOCUMENTS_UPLOAD), upload.single('file'), h(documentController.upload));
-r.post('/uploads', can(P.DOCUMENTS_UPLOAD), upload.single('file'), h(documentController.upload));
+r.post('/documents', can(P.DOCUMENTS_UPLOAD), uploadDocument.single('file'), h(documentController.upload));
+r.post('/uploads', can(P.DOCUMENTS_UPLOAD), uploadDocument.single('file'), h(documentController.upload));
 r.get('/documents/:id/download', can(P.DOCUMENTS_READ), id, h(documentController.download));
 r.patch('/documents/:id', can(P.DOCUMENTS_UPLOAD), validate({ params: idParams, body: s.documentUpdateSchema }), h(documentController.update));
 r.delete('/documents/:id', can(P.DOCUMENTS_DELETE), id, h(documentController.remove));

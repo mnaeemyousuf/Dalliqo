@@ -98,7 +98,7 @@ describe('notes on every kind of record', () => {
     const reader = await addActiveMember(app, owner, { permissions: ['deals:read', 'deals:read_all'] });
     await request(app).get(`/api/notes?entityType=deal&entityId=${deal._id}&limit=100`).set(bearer(reader.accessToken)).expect(200);
     const noDeals = await addActiveMember(app, owner, { permissions: ['clients:read'] });
-    await request(app).get(`/api/notes?entityType=deal&entityId=${deal._id}&limit=100`).set(bearer(noDeals.accessToken)).expect(403);
+    await request(app).get(`/api/notes?entityType=deal&entityId=${deal._id}&limit=100`).set(bearer(noDeals.accessToken)).expect(404);
     // The other record types that hold notes are mapped too.
     for (const [type, perm] of [['agreement', 'agreements:read'], ['transaction', 'finance:read'], ['lease', 'rentals:read']] as const) {
       const m = await addActiveMember(app, owner, { permissions: [perm] });
