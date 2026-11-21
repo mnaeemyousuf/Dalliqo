@@ -22,9 +22,9 @@ jobs:
     env:
       API_BASE_URL: ${{ github.event.inputs.api_base_url || 'https://stateown.onrender.com' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -37,8 +37,32 @@ jobs:
       - run: flutter --version
       - run: flutter pub get
 
+      # Errors are also written as annotations, which show on the run page without signing in.
+      - name: Analyze
+        run: |
+          status=0
+          flutter analyze --no-fatal-infos --no-fatal-warnings > analyze.txt 2>&1 || status=$?
+          cat analyze.txt
+          grep -E '^ *error ' analyze.txt | head -10 | while IFS= read -r l; do echo "::error title=analyze::$l"; done
+          exit $status
+
+      - name: Unit tests
+        run: |
+          status=0
+          flutter test --reporter expanded > test.txt 2>&1 || status=$?
+          cat test.txt
+          grep -E '\[E\]|Error:|Expected:|Actual:' test.txt | head -10 | while IFS= read -r l; do echo "::error title=test::$l"; done
+          exit $status
+
       - name: Build release APK
-        run: flutter build apk --release --dart-define=API_BASE_URL=$API_BASE_URL
+        run: |
+          status=0
+          flutter build apk --release --dart-define=API_BASE_URL=$API_BASE_URL > build.txt 2>&1 || status=$?
+          cat build.txt
+          if [ $status -ne 0 ]; then
+            grep -E 'Error:|error:|What went wrong|FAILURE|Could not|requires|incompatible' -A2 build.txt | grep -v '^--' | head -10 | while IFS= read -r l; do echo "::error title=build::$l"; done
+          fi
+          exit $status
 
       - name: Rename APK
         run: |
