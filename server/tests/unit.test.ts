@@ -112,3 +112,27 @@ describe('money in the business currency', () => {
     expect(withCurrency('not a code', () => formatPkr(550_000))).toBe('PKR 5.5 Lakh');
   });
 });
+
+describe('validation messages (Zod 4)', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { clientCreateSchema } = require('../src/validators/crm.schemas') as typeof import('../src/validators/crm.schemas');
+  const messages = (body: unknown) => {
+    const r = clientCreateSchema.safeParse(body);
+    return r.success ? {} : Object.fromEntries(r.error.issues.map((i) => [i.path.join('.') || '(root)', i.message]));
+  };
+
+  it('uses plain English for built-in checks', () => {
+    const m = messages({ fullName: 'A', email: 'nope', status: 'NOT_A_STATUS', mobileNumber: '03001234567', extra: 1 });
+    expect(m['email']).toBe('Invalid email address');
+    expect(m['status']).toBe('Choose one of the allowed values');
+    expect(m['(root)']).toBe('Unknown field: extra');
+    expect(messages({ fullName: 'Ali Khan' })['mobileNumber']).toBe('Required');
+  });
+
+  it('keeps messages written on a schema', () => {
+    const { objectId } = require('../src/validators/common') as typeof import('../src/validators/common');
+    const r = objectId.safeParse('xyz');
+    expect(r.success).toBe(false);
+    expect(!r.success && r.error.issues[0].message).toBe('Invalid id');
+  });
+});

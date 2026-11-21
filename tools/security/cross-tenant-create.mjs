@@ -49,7 +49,7 @@ const cases = [
   ['property agent', 'POST', '/properties', P(125, { agentIds: [me._id] }), P(126, { agentIds: [B.user._id] })],
   ['property branch', 'POST', '/properties', P(127, { branchId: aBranch._id }), P(128, { branchId: bBranch._id })],
   ['client branch', 'POST', '/clients', { fullName: 'Own Br', mobileNumber: '03009998811', branchId: aBranch._id, allowDuplicate: true }, { fullName: 'Fk Br', mobileNumber: '03009998812', branchId: bBranch._id, allowDuplicate: true }],
-  ['client reassign', 'POST', , { userId: me._id }, { userId: B.user._id }],
+  ['client reassign', 'POST', `/clients/${aClient._id}/assign`, { userId: me._id }, { userId: B.user._id }],
   ['transaction category', 'POST', '/transactions', T({}), T({ categoryId: bCat._id })],
   ['transaction client', 'POST', '/transactions', T({ clientId: aClient._id }), T({ clientId: bClient._id })],
   ['transaction property', 'POST', '/transactions', T({ propertyId: aProp._id }), T({ propertyId: bProp._id })],

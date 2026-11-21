@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 import { z } from 'zod';
+import './zodMessages';
 import { normalizePhone } from '../utils/phone';
 
 export const objectId = z

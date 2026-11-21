@@ -412,6 +412,7 @@ Every web feature that the app did not have is now in the app, as screens that w
 - Fixed: record-level access for notes, documents, activity and synced notes (`services/recordAccess.ts`); http(s)-only map links; per-route upload ceilings; request-id and download-name hardening; vulnerable dependencies replaced or upgraded; Android backup off.
 - Android APK builds work again (Android Gradle Plugin 9.1.1); CI now runs analyze and the Flutter unit tests.
 - Load: 100 simulated users with no errors; 5,000-record performance test passes; every role's web pages open without problems.
+- Validation library upgraded to Zod 4 with plain-English field messages (details in the test report).
 
 ## What is left
 - **Old hosted service:** delete the old Render service in the dashboard once every phone has the new APK. Phones with an older APK still talk to the old address.

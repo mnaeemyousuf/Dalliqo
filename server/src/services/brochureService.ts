@@ -270,7 +270,7 @@ async function renderPng(d: BrochureData): Promise<Buffer> {
   parts.push(`<rect x="${rtl ? W - pad - 300 : pad}" y="36" width="300" height="70" rx="35" fill="${primary}"/>`, ribbon.svg);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${parts.join('')}</svg>`;
 
-  const layers: sharp.OverlayOptions[] = [];
+  const layers: Parameters<ReturnType<typeof sharp>['composite']>[0] = [];
   const cover = d.cover ? await sharp(d.cover).rotate().resize(W, coverH, { fit: 'cover' }).jpeg({ quality: 85 }).toBuffer().catch(() => null) : null;
   if (cover) layers.push({ input: cover, top: 0, left: 0 });
   else layers.push({ input: Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${coverH}"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${BRAND.color.primary['600']}"/><stop offset="1" stop-color="${BRAND.color.primary['800'] ?? primary}"/></linearGradient></defs><rect width="100%" height="100%" fill="url(#g)"/></svg>`), top: 0, left: 0 });

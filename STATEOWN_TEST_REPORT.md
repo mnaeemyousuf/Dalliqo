@@ -202,11 +202,21 @@ Scripts in `tools/security` (local demo only). Every attack was paired with a co
 - Server suite 305 passed + 1 skipped (includes the end-to-end scenarios); web 39; Flutter unit tests pass in CI.
 
 **Accepted / open**
-- zod 3 → 4 (memory use on oversized constrained arrays): bodies are capped at 1 MB and arrays have limits; migration is a rewrite of every validator, left for a separate change.
 - react-router open-redirect advisory: the app never navigates to a path taken from the URL.
 - uuid / Google Cloud advisories inside exceljs and firebase-admin: the vulnerable call (with a caller-supplied buffer) is not used.
 - The phone's local database is not encrypted on its own; it relies on Android device encryption and the app's PIN lock.
 - The hosted demo runs with public demo passwords by design; a real deployment needs `NODE_ENV=production`, real accounts and a MongoDB URI.
+
+## Zod 4 upgrade (21 Nov 2026)
+- Validation library moved from zod 3.25 to 4.6.7 (closes the high-severity advisory on oversized constrained collections). Changes: boolean config defaults are booleans (Zod 4 skips parsing defaults, so `'false'` would have been truthy), record schemas name their key type, comma-separated list parameters use a preprocess step, and ids from phones use `z.guid()` (the Zod 3 format — Zod 4's `uuid()` would reject ids without RFC version bits).
+- Field messages: Zod 4's built-in wording is replaced by plain English (`validators/zodMessages.ts`: Required, Must be at least …, Invalid email address, Unknown field: …); messages written on a schema still win. Both apps show these next to the field.
+- Checks: server suite (305 + new message tests), production build, config booleans parsed both ways, all `tools/security` scripts (no findings), role walkthrough. `npm audit` lists no high-severity issue.
+
+
+Did you mean this?
+  npm audit # Run a security audit
+To see a list of supported npm commands, run:
+  npm help now lists no high-severity issue.
 
 ## Manual / visual verification
 Demo API (`npm run demo`) + web, headless Chrome screenshots at 1440 px: client list with lead scores and temperature filter, client lead panel, Reports (leads + inventory aging), Settings → Subscription. All rendered correctly with real demo data.

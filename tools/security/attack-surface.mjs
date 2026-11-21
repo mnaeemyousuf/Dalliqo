@@ -170,7 +170,11 @@ for (const [name, type, content] of [
   ['evil.jpg', 'image/jpeg', '<?php echo 1; ?>'],
 ]) {
   r = await up('/documents', fd(name, type, content, { entityType: 'client', entityId: aClient._id, category: 'OTHER' }));
-  if (r.status < 300) flag(name.includes('..') ? 'LOW' : 'MEDIUM', `Upload accepted: ${name} (${type})`, r.text.slice(0, 160));
+  if (r.status < 300 && name.includes('..')) {
+    // A valid PDF with a path in its name is fine as long as the stored name has no path.
+    const stored = JSON.parse(r.text).data?.fileName ?? '';
+    stored.includes('/') || stored.includes('..') ? flag('MEDIUM', `Upload kept a path in its name: ${stored}`) : pass(`Path stripped from upload name → "${stored}"`);
+  } else if (r.status < 300) flag('MEDIUM', `Upload accepted: ${name} (${type})`, r.text.slice(0, 160));
   else pass(`Upload refused ${name} → ${r.status}`);
 }
 r = await up(`/properties/${aProp._id}/media`, fd('x.jpg', 'image/jpeg', '<html><script>alert(1)</script></html>'));

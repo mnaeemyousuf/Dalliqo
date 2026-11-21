@@ -50,7 +50,8 @@ import {
   INSPECTION_TYPES,
 } from '@recrm/shared';
 
-const uuid = z.string().uuid();
+// Any 8-4-4-4-12 hex id (as in Zod 3): phones generate these offline, and older app versions may not set RFC version bits.
+const uuid = z.guid();
 const money = z.coerce.number().int('Amounts are whole rupees').min(0).max(1e12);
 const size = z.coerce.number().positive().max(1e7);
 const shortText = (max: number) => z.string().trim().max(max);
@@ -59,8 +60,9 @@ const nullableId = objectId.nullable();
 /** Accepts a server ObjectId or (from offline sync) a device uuid. */
 const ref = z.union([objectId, uuid]);
 const bool = z.union([z.boolean(), z.enum(['true', 'false']).transform((v) => v === 'true')]);
+/** An array, or a comma-separated string (query strings), validated item by item. */
 const list = <T extends z.ZodTypeAny>(item: T) =>
-  z.union([z.array(item), z.string().transform((s) => s.split(',').map((x) => x.trim()).filter(Boolean))]).pipe(z.array(item));
+  z.preprocess((v) => (typeof v === 'string' ? v.split(',').map((x) => x.trim()).filter(Boolean) : v), z.array(item));
 
 // ── Branches ──
 const branchFields = {
@@ -396,7 +398,7 @@ export const dealListQuery = pagination.extend({
   sort: z.enum(['-updatedAt', '-createdAt', '-expectedTotal', '-outstanding', 'dealNo']).optional(),
 });
 export const commissionReportQuery = z.object({ groupBy: z.enum(['month', 'agent']).default('month'), from: z.coerce.date().optional(), to: z.coerce.date().optional() });
-export const subIdParams = z.object({ id: objectId, subId: z.string().uuid() });
+export const subIdParams = z.object({ id: objectId, subId: z.guid() });
 
 // ── Income & expense ──
 const transactionFields = {
@@ -526,7 +528,7 @@ export const verificationDecideSchema = z
   .strict();
 export const verificationQueueQuery = pagination.extend({ status: z.enum(VERIFICATION_STATUSES).optional(), mine: bool.optional() });
 export const savedViewSchema = z
-  .object({ page: z.enum(['clients', 'properties', 'deals', 'followups']), name: shortText(60).min(1), params: z.record(z.string().max(200)).refine((r) => Object.keys(r).length <= 30), shared: z.boolean().optional() })
+  .object({ page: z.enum(['clients', 'properties', 'deals', 'followups']), name: shortText(60).min(1), params: z.record(z.string(), z.string().max(200)).refine((r) => Object.keys(r).length <= 30), shared: z.boolean().optional() })
   .strict();
 export const savedViewQuery = z.object({ page: z.enum(['clients', 'properties', 'deals', 'followups']) });
 // ── Rentals ──
@@ -749,7 +751,7 @@ const mutation = z
     op: z.enum(['create', 'update', 'delete']),
     uuid,
     baseVersion: z.number().int().positive().optional(),
-    data: z.record(z.unknown()).optional(),
+    data: z.record(z.string(), z.unknown()).optional(),
     force: z.boolean().optional(),
   })
   .strict();

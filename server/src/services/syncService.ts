@@ -203,7 +203,7 @@ async function apply(auth: AuthContext, m: Mutation): Promise<MutationResult> {
   const repo = REPOS[m.entity];
   const raw = m.data ?? {};
   const validated: Record<string, unknown> =
-    m.op === 'delete' ? {} : m.op === 'create' ? SCHEMAS[m.entity].create.parse({ ...raw, uuid: m.uuid }) : SCHEMAS[m.entity].update.parse(raw);
+    m.op === 'delete' ? {} : m.op === 'create' ? (SCHEMAS[m.entity].create.parse({ ...raw, uuid: m.uuid }) as Record<string, unknown>) : (SCHEMAS[m.entity].update.parse(raw) as Record<string, unknown>);
   delete validated.baseVersion;
   const data = await resolveRefs(auth, validated);
 

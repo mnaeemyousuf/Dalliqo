@@ -12,7 +12,7 @@ const schema = z
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     PORT: z.coerce.number().int().positive().default(4000),
     MONGO_URI: z.string().min(1, 'MONGO_URI is required'),
-    MONGO_AUTO_INDEX: bool.default('true'),
+    MONGO_AUTO_INDEX: bool.default(true),
 
     JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
     /** Used as the HMAC key for hashing opaque refresh / reset tokens at rest. */
@@ -24,9 +24,9 @@ const schema = z
     LOCKOUT_MINUTES: z.coerce.number().int().positive().default(15),
 
     CORS_ORIGINS: z.string().default('http://localhost:5173'),
-    COOKIE_SECURE: bool.default('false'),
+    COOKIE_SECURE: bool.default(false),
     TRUST_PROXY: z.coerce.number().int().min(0).default(0),
-    RATE_LIMIT_ENABLED: bool.default('true'),
+    RATE_LIMIT_ENABLED: bool.default(true),
     APP_WEB_URL: z.string().url().default('http://localhost:5173'),
     /** Comma-separated emails of Stateown staff who manage subscriptions (platform admin screen). */
     PLATFORM_ADMIN_EMAILS: optional,
@@ -77,7 +77,7 @@ const schema = z
     MAX_IMAGE_MB: z.coerce.number().positive().default(15),
     MAX_VIDEO_MB: z.coerce.number().positive().default(100),
     MAX_DOCUMENT_MB: z.coerce.number().positive().default(25),
-    JOBS_ENABLED: bool.default('true'),
+    JOBS_ENABLED: bool.default(true),
   })
   .superRefine((v, ctx) => {
     if (v.JWT_SECRET === v.JWT_REFRESH_SECRET) {
