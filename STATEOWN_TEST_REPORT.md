@@ -171,6 +171,43 @@ Run date: 14 Nov 2026 (latest: Phase 5B — see per-phase sections for current t
 - **Full results:** server 305 passed (1 skipped), web 39 (11 files). Flutter tests not run here (no Flutter SDK on this machine); the APK build on GitHub Actions compiles the Android code.
 - **Prototype screens:** the five changed phone screens were rendered in headless Chrome and measured: all fit the 844 px frame.
 
+## Security, load and workflow QA (21 Nov 2026)
+
+Scripts in `tools/security` (local demo only). Every attack was paired with a control request that must succeed with the agency's own ids, so a refusal proves the defence and not a malformed request.
+
+**Attacks that were refused (no change needed)**
+- Another agency's records: direct reads (clients, properties, owners, media, brochure, QR, members) → 404. Linking own records to another agency's client, owner, property, deal, branch, income category, client category, agreement template or user → refused on create, on edit and through offline sync (31 create + 25 edit cases).
+- Tokens: `alg: none` and tampered tokens → 401; an access token dies at logout; a reused refresh token ends the whole session.
+- Injection: operator objects in queries and login → 400; regex-like search text → 400.
+- Escalation: an agent cannot change roles or permissions, add members, create API keys, change settings or the business profile, read the audit log or another agent's statement; a viewer cannot create or delete; profile edits refuse role / email / status.
+- Uploads: HTML, SVG, PHP-as-JPEG, HTML-as-PDF → 400; path names are stripped.
+- Accounts: unknown and known emails get the same answer at sign-in and reset; weak passwords refused; 25 wrong passwords lock the account and trip the rate limit.
+- Public surface: CORS refuses unknown origins; security headers present; public listings hide plot numbers, owners, CNIC and minimum price; unsigned WhatsApp webhooks → 401; portal tokens are 43 characters, cannot reach other records, are rate limited and stop working when revoked; Socket.IO refuses connections without a token and joins rooms only server-side.
+
+**Found and fixed**
+- Notes, documents and timeline entries were more visible than their record: an agent could add / read notes on finance entries and other agents' deals, download their attachments, and see installment amounts in the activity feed; the phone's download carried every note in the agency. All now follow `services/recordAccess.ts` (404 for hidden records). Re-run: all refused.
+- Map links accepted `javascript:`, `data:` and `vbscript:` (stored XSS) → http(s) only, and the web never renders another scheme.
+- One shared upload ceiling of 100 MB × 10 files, also for spreadsheet imports (unzipped in memory) → per-route ceilings (spreadsheets 5 MB, documents 25 MB).
+- Client-supplied request ids were echoed and logged at any length → short plain ids only. Download names with Urdu letters made the file route fail → RFC 5987 header.
+- Dependencies: `file-type` (infinite loop on malformed media) replaced by a bounded built-in check that matches it on every accepted type; sharp 0.35 (libvips CVEs), nodemailer 10, firebase-admin 13, echarts 6 and patch releases of mongoose, axios, body-parser, react-router, follow-redirects and node-forge.
+- Android: app backup disabled (the local database held client data); release builds already refuse cleartext HTTP and keep tokens and the PIN in the Android Keystore.
+- **APK builds had failed since 15 Nov**: current Flutter stable needs Android Gradle Plugin 9.1.1 (the project pinned 9.1.0). Fixed; the workflow now also runs `flutter analyze` and the Flutter unit tests and posts errors as annotations. Build 20: analyze clean, unit tests pass, APK published.
+
+**Load**
+- 25 and 100 simulated users (18 sessions, 80 % reads, follow-ups and offline-sync writes) for 30–40 s: **0 server errors, 0 timeouts, 0 rate-limit hits**; the server stayed healthy. Single-user latency 20–120 ms per endpoint. The laptop was also running other projects' test suites during the run, so throughput figures (≈45 req/s) reflect a shared CPU, not the API's ceiling.
+- 5,000 of each record type (`PERF=1 npx jest tests/perf.test.ts`): passes; list and search 27–115 ms, dashboard 227 ms, sync first page 644 ms (busy machine; about 1.5–2× the Nov baseline).
+
+**Workflows**
+- `tools/manuals/roles-smoke.mjs` on the rebuilt web app: owner 21, manager 21, member 20, agent 16, accountant 18, viewer 17 menu pages with their record tabs and settings tabs — **0 problems**.
+- Server suite 305 passed + 1 skipped (includes the end-to-end scenarios); web 39; Flutter unit tests pass in CI.
+
+**Accepted / open**
+- zod 3 → 4 (memory use on oversized constrained arrays): bodies are capped at 1 MB and arrays have limits; migration is a rewrite of every validator, left for a separate change.
+- react-router open-redirect advisory: the app never navigates to a path taken from the URL.
+- uuid / Google Cloud advisories inside exceljs and firebase-admin: the vulnerable call (with a caller-supplied buffer) is not used.
+- The phone's local database is not encrypted on its own; it relies on Android device encryption and the app's PIN lock.
+- The hosted demo runs with public demo passwords by design; a real deployment needs `NODE_ENV=production`, real accounts and a MongoDB URI.
+
 ## Manual / visual verification
 Demo API (`npm run demo`) + web, headless Chrome screenshots at 1440 px: client list with lead scores and temperature filter, client lead panel, Reports (leads + inventory aging), Settings → Subscription. All rendered correctly with real demo data.
 

@@ -2,6 +2,10 @@
 
 The base architecture is documented in `docs/architecture`, `docs/api` and `docs/database`. This file covers what Phase 3 added.
 
+## Record-level access
+
+Notes, documents and timeline entries are only as visible as the record they belong to. `server/src/services/recordAccess.ts` holds the rules (the record type's read permission; deals limited to their agents without `deals:read_all`; installment and income/expense timeline entries need `finance:read`) and is used by the notes and documents endpoints, the activity feed and the offline sync download. Hidden records answer 404 so ids do not leak.
+
 ## Shared domain (`shared/src`)
 - `leads.ts` — `scoreLead(input, settings, now)` returns `{ score 0–100, temperature, reasons[] }`. Seven factors (budget fit vs. inventory, location precision, property type, intent, engagement recency, follow-up history, buying timeline), each 0..1, weighted by normalised business weights. Reasons are codes the apps translate. `temperatureFor(score, thresholds)`.
 - `plans.ts` — `PLANS` (modules + limits + list prices), `effectiveStatus()` (trial/period lapse by clock, 7-day grace), `entitlementsFor()`, `hasModule()`.

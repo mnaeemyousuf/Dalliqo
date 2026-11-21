@@ -406,6 +406,13 @@ Every web feature that the app did not have is now in the app, as screens that w
 - Currency formatting inside and outside a request (server `unit.test.ts`), on the web (`format.test.ts`) and in Flutter (`format_test.dart`).
 - Server 305 passed + 1 skipped; web 39. Flutter is not installed on this machine: the Android code is compiled by the APK build on GitHub Actions, and the Flutter tests were not run in this pass.
 
+## Security, load and QA pass ✅ (21 Nov 2026)
+
+- Hacker-style testing of the API, web and Android app (scripts in `tools/security`); details and results in `STATEOWN_TEST_REPORT.md`.
+- Fixed: record-level access for notes, documents, activity and synced notes (`services/recordAccess.ts`); http(s)-only map links; per-route upload ceilings; request-id and download-name hardening; vulnerable dependencies replaced or upgraded; Android backup off.
+- Android APK builds work again (Android Gradle Plugin 9.1.1); CI now runs analyze and the Flutter unit tests.
+- Load: 100 simulated users with no errors; 5,000-record performance test passes; every role's web pages open without problems.
+
 ## What is left
 - **Old hosted service:** delete the old Render service in the dashboard once every phone has the new APK. Phones with an older APK still talk to the old address.
 - **GitHub repository name** still contains the old name; renaming it is done in GitHub settings (Render follows the redirect).
