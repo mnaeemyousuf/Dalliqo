@@ -154,5 +154,8 @@ describe('cron-triggered jobs (hosts without always-on timers)', () => {
     const r = await request(app).post('/api/internal/jobs').set('X-Cron-Secret', 'cron-secret-0123456789-abcdefghij');
     expect(r.status).toBe(200);
     expect(Array.isArray(r.body.data)).toBe(true);
+    // Every job then waits for its own interval: a second call a moment later runs nothing.
+    const again = await request(app).post('/api/internal/jobs').set('X-Cron-Secret', 'cron-secret-0123456789-abcdefghij');
+    expect(again.body.data).toEqual([]);
   });
 });

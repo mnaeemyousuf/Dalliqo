@@ -14,11 +14,15 @@ const OWNER = `${hostname()}:${process.pid}:${randomUUID().slice(0, 8)}`;
  * Lease lock in MongoDB so that, with several API instances, each job runs on
  * exactly one of them per tick.
  */
-async function acquire(name: string, leaseMs: number): Promise<boolean> {
+/**
+ * `reentrant`: the instance holding a lock may take it again (in-process timers already space
+ * their ticks). Cron-triggered runs pass false, so a job runs only once its interval has passed.
+ */
+async function acquire(name: string, leaseMs: number, reentrant = true): Promise<boolean> {
   const now = new Date();
   try {
     const res = await JobLock.findOneAndUpdate(
-      { _id: name, $or: [{ lockedUntil: { $lt: now } }, { owner: OWNER }] },
+      { _id: name, $or: reentrant ? [{ lockedUntil: { $lt: now } }, { owner: OWNER }] : [{ lockedUntil: { $lt: now } }] },
       { $set: { lockedUntil: new Date(now.getTime() + leaseMs), owner: OWNER } },
       { upsert: true, new: true },
     ).lean();
@@ -54,7 +58,7 @@ export async function runDueJobs(): Promise<{ job: string; processed: number }[]
   const ran: { job: string; processed: number }[] = [];
   for (const job of JOBS) {
     try {
-      if (await acquire(job.name, job.everyMs - 1_000)) ran.push({ job: job.name, processed: await job.run() });
+      if (await acquire(job.name, job.everyMs - 1_000, false)) ran.push({ job: job.name, processed: await job.run() });
     } catch (err) {
       logger.error({ err, job: job.name }, 'Job failed');
     }
