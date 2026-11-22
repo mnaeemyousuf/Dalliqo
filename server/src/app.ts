@@ -53,7 +53,8 @@ export function createApp(): Express {
           imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
           mediaSrc: ["'self'", 'blob:', 'https:'],
           fontSrc: ["'self'", 'data:'],
-          connectSrc: ["'self'", 'wss:', 'ws:'],
+          // Agency subdomains: sign-up checks that the new agency's address is live before moving there.
+          connectSrc: ["'self'", 'wss:', 'ws:', ...(env.TENANT_BASE_DOMAIN ? [`https://*.${env.TENANT_BASE_DOMAIN}`] : [])],
           frameSrc: ['https://maps.google.com', 'https://www.google.com'],
           frameAncestors: ["'none'"],
           objectSrc: ["'none'"],

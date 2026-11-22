@@ -81,6 +81,16 @@ function AuthShell({ title, subtitle, children, footer }: { title: string; subti
   );
 }
 
+/** True when the agency's own address is live (DNS and certificate in place) within a few seconds. */
+async function addressAnswers(home: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${home}/api/public/tenant`, { signal: AbortSignal.timeout(4000), credentials: 'omit' });
+    return res.ok && !!((await res.json()) as { data?: { tenant?: unknown } }).data?.tenant;
+  } catch {
+    return false;
+  }
+}
+
 /** Shown on a subdomain that no agency uses. */
 function UnknownAgency({ subdomain }: { subdomain: string }) {
   const { t } = useTranslation();
@@ -181,8 +191,10 @@ export function RegisterPage() {
     try {
       const session = await authApi.register({ ...form, subdomain: base && sub ? sub : undefined, mobileNumber: form.mobileNumber || undefined });
       const home = base && session.business?.subdomain ? agencyUrl(session.business.subdomain, base) : null;
-      // The new agency works at its own address: continue there (sign in once more on that address).
-      if (home && home !== window.location.origin) window.location.assign(`${home}/login?welcome=1&email=${encodeURIComponent(form.email)}`);
+      // The new agency works at its own address: continue there (sign in once more on that address) —
+      // but only once that address answers. On hosting where each subdomain is attached by hand it may
+      // not exist yet; the shared address works meanwhile.
+      if (home && home !== window.location.origin && (await addressAnswers(home))) window.location.assign(`${home}/login?welcome=1&email=${encodeURIComponent(form.email)}`);
       else signIn(session);
     } catch (err) {
       setError(errorText(err));
