@@ -2735,5 +2735,19 @@
       "offHint": "Descriptions and client summaries use built-in templates until an AI key is added on the server.",
       "tools": "What it can look up for you"
     }
+  },
+  "tenant": {
+    "notFoundTitle": "Agency not found",
+    "notFoundText": "No agency uses the address {{address}}.",
+    "notFoundHelp": "Check the address with your office, or ask the person who gave it to you.",
+    "signInTo": "Sign in to {{name}}",
+    "welcome": "Your agency is ready. Sign in here — this is your agency’s own address.",
+    "address": "Your agency’s web address",
+    "addressHint": "Your team will sign in at {{url}}",
+    "registerElsewhere": "New agencies are created from the main Stateown address. If you work here, sign in instead.",
+    "changeHint": "Old links stop working. On shared hosting, add the new subdomain in hPanel first.",
+    "saveAddress": "Save address",
+    "addressSaved": "Address saved: {{url}}",
+    "changeByProvider": "To change your address, contact Stateown support."
   }
 }

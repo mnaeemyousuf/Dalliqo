@@ -8,6 +8,7 @@ import { tokenService } from '../services/tokenService';
 import type { AuthContext } from '../types/context';
 import { AppError } from '../utils/AppError';
 import { eventBus, type DomainEvent } from '../utils/eventBus';
+import { tenantService } from '../services/tenantService';
 
 export const businessRoom = (businessId: string) => `business:${businessId}`;
 export const userRoom = (userId: string) => `user:${userId}`;
@@ -27,7 +28,7 @@ export function createSocketServer(httpServer: HttpServer): Server {
   const io = new Server<Record<string, never>, Record<string, (p: ChangeNotice) => void>, Record<string, never>, SocketData>(
     httpServer,
     {
-      cors: { origin: corsOrigins, credentials: true },
+      cors: { origin: (origin, cb) => cb(null, !origin || corsOrigins.includes(origin) || tenantService.isTenantOrigin(origin)), credentials: true },
       serveClient: false,
       pingInterval: 25_000,
       pingTimeout: 20_000,
@@ -40,6 +41,12 @@ export function createSocketServer(httpServer: HttpServer): Server {
       if (!token) throw new Error('missing token');
       const auth = await resolveAuthContext(tokenService.verifyAccessToken(token));
       if (auth.mustChangePassword) throw new Error('password change required');
+      // On an agency's subdomain only that agency's sessions may connect.
+      const sub = tenantService.subdomainOf(String(socket.handshake.headers['x-forwarded-host'] ?? socket.handshake.headers.host ?? ''));
+      if (sub) {
+        const tenant = await tenantService.bySubdomain(sub);
+        if (!tenant || tenant.businessId !== auth.businessId) throw new AppError(401, 'WRONG_TENANT', 'Wrong agency');
+      }
       socket.data.auth = auth;
       next();
     } catch (err) {

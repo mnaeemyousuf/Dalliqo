@@ -11,6 +11,8 @@ import { corsOrigins, env } from './config/env';
 import { logger } from './config/logger';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { apiLimiter } from './middleware/rateLimiters';
+import { resolveTenant } from './middleware/tenant';
+import { tenantService } from './services/tenantService';
 import apiRoutes from './routes';
 
 // Built web app, served by this process when present (WEB_DIST overrides; default: the monorepo's web/dist).
@@ -64,7 +66,8 @@ export function createApp(): Express {
   }
   app.use(
     cors({
-      origin: (origin, cb) => cb(null, !origin || corsOrigins.includes(origin)),
+      // Agency subdomains (SaaS) are allowed alongside the configured origins.
+      origin: (origin, cb) => cb(null, !origin || corsOrigins.includes(origin) || tenantService.isTenantOrigin(origin)),
       credentials: true,
       allowedHeaders: ['Content-Type', 'Authorization', 'X-Client-Type', 'X-Request-Id', 'X-Branch-Id'],
       exposedHeaders: ['X-Request-Id', 'RateLimit', 'RateLimit-Policy'],
@@ -83,6 +86,7 @@ export function createApp(): Express {
   );
   app.use(cookieParser());
 
+  app.use(resolveTenant);
   app.use('/api', apiLimiter, apiRoutes);
 
   if (webDist) {

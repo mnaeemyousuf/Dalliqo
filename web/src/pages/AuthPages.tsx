@@ -6,6 +6,7 @@ import { authApi } from '@/api/endpoints';
 import { BrandLogo } from '@/components/BrandLogo';
 import { Button, Input } from '@/components/ui';
 import { useErrorText } from '@/lib/hooks';
+import { agencyUrl, suggestSubdomain, useTenantInfo } from '@/lib/tenant';
 import { useAuth } from '@/store/auth';
 import { toast } from '@/store/toast';
 import { useUi } from '@/store/ui';
@@ -80,6 +81,16 @@ function AuthShell({ title, subtitle, children, footer }: { title: string; subti
   );
 }
 
+/** Shown on a subdomain that no agency uses. */
+function UnknownAgency({ subdomain }: { subdomain: string }) {
+  const { t } = useTranslation();
+  return (
+    <AuthShell title={t('tenant.notFoundTitle')} subtitle={t('tenant.notFoundText', { address: subdomain })}>
+      <p className="text-sm text-muted">{t('tenant.notFoundHelp')}</p>
+    </AuthShell>
+  );
+}
+
 function ErrorBox({ message }: { message?: string }) {
   return message ? (
     <p role="alert" className="animate-scale-in rounded-[10px] border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm font-medium text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
@@ -92,10 +103,13 @@ export function LoginPage() {
   const { t } = useTranslation();
   const signIn = useAuth((s) => s.signIn);
   const errorText = useErrorText();
-  const [email, setEmail] = useState('');
+  // A new agency arrives here from sign-up with its email filled in.
+  const [email, setEmail] = useState(() => new URLSearchParams(window.location.search).get('email') ?? '');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(false);
+  const info = useTenantInfo().data;
+  const [params] = useSearchParams();
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -110,19 +124,24 @@ export function LoginPage() {
     }
   }
 
+  if (info?.subdomain && !info.tenant) return <UnknownAgency subdomain={`${info.subdomain}.${info.baseDomain}`} />;
   return (
     <AuthShell
-      title={t('auth.signInTitle')}
-      subtitle={t('auth.signInSubtitle')}
+      title={info?.tenant ? info.tenant.name : t('auth.signInTitle')}
+      subtitle={info?.tenant ? t('tenant.signInTo', { name: info.tenant.name }) : t('auth.signInSubtitle')}
       footer={
-        <>
-          {t('auth.noAccount')}{' '}
-          <Link className="font-medium text-brand-600" to="/register">
-            {t('auth.register')}
-          </Link>
-        </>
+        // New agencies sign up on the main address, not on another agency's.
+        info?.tenant ? undefined : (
+          <>
+            {t('auth.noAccount')}{' '}
+            <Link className="font-medium text-brand-600" to="/register">
+              {t('auth.register')}
+            </Link>
+          </>
+        )
       }
     >
+      {params.get('welcome') && <p className="mb-4 rounded-[10px] bg-emerald-50 px-3.5 py-2.5 text-sm font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">{t('tenant.welcome')}</p>}
       <form className="space-y-4" onSubmit={submit}>
         <ErrorBox message={error} />
         <Input label={t('auth.email')} type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -144,7 +163,11 @@ export function RegisterPage() {
   const { t } = useTranslation();
   const signIn = useAuth((s) => s.signIn);
   const errorText = useErrorText();
-  const [form, setForm] = useState({ fullName: '', email: '', mobileNumber: '', businessName: '', password: '' });
+  const [form, setForm] = useState({ fullName: '', email: '', mobileNumber: '', businessName: '', password: '', subdomain: '' });
+  const [subTouched, setSubTouched] = useState(false);
+  const info = useTenantInfo().data;
+  const base = info?.baseDomain;
+  const sub = subTouched ? form.subdomain : suggestSubdomain(form.businessName);
   const [error, setError] = useState<string>();
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -156,7 +179,11 @@ export function RegisterPage() {
     setError(undefined);
     setFieldErrors({});
     try {
-      signIn(await authApi.register({ ...form, mobileNumber: form.mobileNumber || undefined }));
+      const session = await authApi.register({ ...form, subdomain: base && sub ? sub : undefined, mobileNumber: form.mobileNumber || undefined });
+      const home = base && session.business?.subdomain ? agencyUrl(session.business.subdomain, base) : null;
+      // The new agency works at its own address: continue there (sign in once more on that address).
+      if (home && home !== window.location.origin) window.location.assign(`${home}/login?welcome=1&email=${encodeURIComponent(form.email)}`);
+      else signIn(session);
     } catch (err) {
       setError(errorText(err));
       const details = (err as { details?: { path: string; message: string }[] }).details;
@@ -166,6 +193,13 @@ export function RegisterPage() {
     }
   }
 
+  if (info?.tenant) {
+    return (
+      <AuthShell title={t('auth.registerTitle')} subtitle={t('tenant.registerElsewhere')}>
+        <Link className="btn btn-primary w-full" to="/login">{t('auth.signIn')}</Link>
+      </AuthShell>
+    );
+  }
   return (
     <AuthShell
       title={t('auth.registerTitle')}
@@ -182,6 +216,19 @@ export function RegisterPage() {
       <form className="space-y-4" onSubmit={submit}>
         <ErrorBox message={error} />
         <Input label={t('auth.businessName')} required value={form.businessName} onChange={set('businessName')} error={fieldErrors.businessName} />
+        {base && (
+          <Input
+            label={t('tenant.address')}
+            value={sub}
+            onChange={(e) => {
+              setSubTouched(true);
+              setForm((f) => ({ ...f, subdomain: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') }));
+            }}
+            hint={t('tenant.addressHint', { url: `${sub || '…'}.${base}` })}
+            error={fieldErrors.subdomain}
+            dir="ltr"
+          />
+        )}
         <Input label={t('auth.fullName')} required autoComplete="name" value={form.fullName} onChange={set('fullName')} error={fieldErrors.fullName} />
         <Input label={t('auth.email')} type="email" required autoComplete="email" value={form.email} onChange={set('email')} error={fieldErrors.email} />
         <Input label={t('auth.mobile')} type="tel" inputMode="tel" placeholder="0300 1234567" value={form.mobileNumber} onChange={set('mobileNumber')} error={fieldErrors.mobileNumber} />

@@ -8,6 +8,8 @@ export const registerSchema = z.object({
   password,
   mobileNumber: phone.optional(),
   businessName: z.string().trim().min(2, 'Business name is too short').max(150),
+  /** The agency's own address (agency.<base domain>); made from the business name when left out. */
+  subdomain: z.string().trim().toLowerCase().min(3).max(30).optional(),
   deviceName: z.string().trim().max(100).optional(),
 });
 

@@ -85,6 +85,8 @@ export interface User {
 export interface Business {
   _id: string;
   name: string;
+  /** SaaS address: <subdomain>.<base domain>. */
+  subdomain?: string | null;
   phone?: string;
   email?: string;
   address?: string;
@@ -255,6 +257,8 @@ export interface SubscriptionInfo extends Entitlements {
 export interface PlatformBusiness extends Entitlements {
   _id: string;
   name: string;
+  subdomain: string | null;
+  url: string;
   city?: string;
   createdAt: string;
   cycle: 'MONTHLY' | 'ANNUAL' | null;

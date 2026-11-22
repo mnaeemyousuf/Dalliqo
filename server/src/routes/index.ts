@@ -18,12 +18,45 @@ import { entitlementGuard, requireModule } from '../middleware/entitlements';
 import { apiKeyRoutes } from './apiKeyRoutes';
 import { marketingRoutes, publicRoutes } from './marketingRoutes';
 import { aiRoutes } from './aiRoutes';
+import { timingSafeEqual } from 'node:crypto';
+import { env } from '../config/env';
+import { runDueJobs } from '../jobs/scheduler';
+import { tenantService } from '../services/tenantService';
 
 const api = Router();
 
 api.get('/health', (_req, res) => {
   const db = isDatabaseReady();
   res.status(db ? 200 : 503).json({ success: db, data: { status: db ? 'ok' : 'degraded', database: db ? 'up' : 'down' } });
+});
+
+// Which agency this address belongs to (sign-in page branding, "agency not found").
+api.get('/public/tenant', (req, res) => {
+  const sub = tenantService.subdomainOf(req.hostname);
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({
+    success: true,
+    data: {
+      baseDomain: env.TENANT_BASE_DOMAIN ?? null,
+      subdomain: sub,
+      tenant: req.tenant ? { name: req.tenant.name, subdomain: req.tenant.subdomain, url: tenantService.urlFor(req.tenant) } : null,
+    },
+  });
+});
+
+// Hosts without always-on timers (Hostinger web hosting): a cron job calls this every minute.
+api.post('/internal/jobs', async (req, res, next) => {
+  try {
+    const given = Buffer.from(String(req.get('x-cron-secret') ?? ''));
+    const secret = Buffer.from(env.CRON_SECRET ?? '');
+    if (!env.CRON_SECRET || given.length !== secret.length || !timingSafeEqual(given, secret)) {
+      res.status(404).json({ success: false, code: 'ROUTE_NOT_FOUND', message: 'Not found' });
+      return;
+    }
+    res.json({ success: true, data: await runDueJobs() });
+  } catch (err) {
+    next(err);
+  }
 });
 
 api.use('/auth', authRoutes);

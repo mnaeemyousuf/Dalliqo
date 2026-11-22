@@ -18,6 +18,7 @@ import { ApiKeysCard, CommissionRulesCard, RetentionCard } from '@/pages/AdminEx
 import { useAuth, useCan } from '@/store/auth';
 import { toast } from '@/store/toast';
 import { useUi } from '@/store/ui';
+import { useTenantInfo } from '@/lib/tenant';
 
 /* ═════════════ Users & permissions ═════════════ */
 
@@ -326,6 +327,7 @@ function BusinessSettings() {
   const canManage = useCan(PERMISSIONS.BUSINESS_MANAGE);
   const { business, patchBusiness } = useAuth();
   const units = useEnumOptions('sizeUnit', SIZE_UNITS);
+  const tenantInfo = useTenantInfo().data;
   const [form, setForm] = useState({ name: business?.name ?? '', phone: business?.phone ?? '', email: business?.email ?? '', address: business?.address ?? '', city: business?.city ?? '', timezone: business?.timezone ?? 'Asia/Karachi', currency: business?.currency ?? 'PKR', defaultSizeUnit: business?.defaultSizeUnit ?? 'SQ_YARD' });
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const save = useMutation({ mutationFn: () => businessApi.update(Object.fromEntries(Object.entries(form).map(([k, v]) => [k, v || undefined]))), onSuccess: (b) => (patchBusiness(b), toast.success(t('settings.businessSaved'))), onError });
@@ -340,6 +342,7 @@ function BusinessSettings() {
         <Input label={t('settings.timezone')} value={form.timezone} onChange={set('timezone')} disabled={!canManage} />
         <Input label={t('settings.currency')} value={form.currency} onChange={set('currency')} disabled={!canManage} />
         <Select label={t('settings.defaultSizeUnit')} options={units} value={form.defaultSizeUnit} onChange={set('defaultSizeUnit')} disabled={!canManage} />
+        {tenantInfo?.baseDomain && business?.subdomain && <Input label={t('tenant.address')} value={`${business.subdomain}.${tenantInfo.baseDomain}`} readOnly dir="ltr" hint={t('tenant.changeByProvider')} />}
         {canManage && <div><Button loading={save.isPending} onClick={() => save.mutate()}>{t('common.save')}</Button></div>}
       </div>
     </Card>

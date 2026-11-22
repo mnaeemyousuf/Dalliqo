@@ -23,6 +23,7 @@ import type { AuthContext, TenantContext } from '../types/context';
 import { AppError, forbidden, notFound } from '../utils/AppError';
 import { auditService } from './auditService';
 import { notificationService } from './notificationService';
+import { tenantService } from './tenantService';
 
 /**
  * Subscription plans and module entitlements, enforced centrally:
@@ -154,13 +155,25 @@ export const subscriptionService = {
   async listBusinesses(q: { q?: string; page: number; limit: number }) {
     const filter: Record<string, unknown> = q.q ? { name: new RegExp(q.q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') } : {};
     const [items, total] = await Promise.all([
-      Business.find(filter).select('name city status subscription.plan subscription.status subscription.trialEndsAt subscription.currentPeriodEnd subscription.cycle createdAt').sort({ createdAt: -1 }).skip((q.page - 1) * q.limit).limit(q.limit).lean<BusinessDoc[]>(),
+      Business.find(filter).select('name subdomain city status subscription.plan subscription.status subscription.trialEndsAt subscription.currentPeriodEnd subscription.cycle createdAt').sort({ createdAt: -1 }).skip((q.page - 1) * q.limit).limit(q.limit).lean<BusinessDoc[]>(),
       Business.countDocuments(filter),
     ]);
     return {
-      items: items.map((b) => ({ _id: b._id, name: b.name, city: b.city, createdAt: b.createdAt, ...entitlementsFor(stateOf(b)), cycle: b.subscription?.cycle ?? null })),
+      items: items.map((b) => ({ _id: b._id, name: b.name, subdomain: b.subdomain ?? null, url: tenantService.urlFor(b), city: b.city, createdAt: b.createdAt, ...entitlementsFor(stateOf(b)), cycle: b.subscription?.cycle ?? null })),
       total,
     };
+  },
+
+  /** Gives a business a new address (agency.<base domain>). Old links stop working. */
+  async setSubdomain(admin: AuthContext, businessId: string, subdomain: string) {
+    const b = await Business.findById(businessId).select('name subdomain').lean<BusinessDoc>();
+    if (!b) throw notFound(ERROR_CODES.BUSINESS_NOT_FOUND, 'Business not found');
+    const next = await tenantService.claim(subdomain, b.name, b._id);
+    await Business.updateOne({ _id: b._id }, { $set: { subdomain: next } });
+    tenantService.forget(b.subdomain);
+    tenantService.forget(next);
+    await auditService.record({ businessId, userId: admin.userId }, { action: 'business.subdomain_changed', entityType: 'business', entityId: b._id, entityLabel: b.name, changes: [{ field: 'subdomain', oldValue: b.subdomain ?? null, newValue: next }] });
+    return { subdomain: next, url: tenantService.urlFor({ subdomain: next }) };
   },
 
   /** Activates / renews / changes a business's plan and records the payment. */

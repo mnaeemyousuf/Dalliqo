@@ -46,6 +46,22 @@ export const JOBS: Job[] = [
   { name: 'data-retention', everyMs: 24 * 60 * 60_000, run: () => retentionService.purgeAll() },
 ];
 
+/**
+ * Runs every job whose interval has passed (the job lock doubles as "last run"). For hosts without
+ * always-on timers a cron calls this every minute through POST /api/internal/jobs.
+ */
+export async function runDueJobs(): Promise<{ job: string; processed: number }[]> {
+  const ran: { job: string; processed: number }[] = [];
+  for (const job of JOBS) {
+    try {
+      if (await acquire(job.name, job.everyMs - 1_000)) ran.push({ job: job.name, processed: await job.run() });
+    } catch (err) {
+      logger.error({ err, job: job.name }, 'Job failed');
+    }
+  }
+  return ran;
+}
+
 export function startScheduler(): () => void {
   const timers = JOBS.map((job) => {
     let running = false;

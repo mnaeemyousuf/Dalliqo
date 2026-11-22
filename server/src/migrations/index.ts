@@ -7,6 +7,7 @@ import { migratePhase3 } from './004-phase3';
 import { migratePhase4 } from './005-phase4';
 import { migrateRentals } from './006-rentals';
 import { migrateMarketing } from './007-marketing';
+import { migrateSubdomains } from './008-subdomains';
 
 /** One row per migration run (history; every migration is also idempotent on its own). */
 const MigrationRun = model(
@@ -23,6 +24,7 @@ const MIGRATIONS: { name: string; run: () => Promise<unknown> }[] = [
   { name: '005-phase4', run: migratePhase4 },
   { name: '006-rentals', run: migrateRentals },
   { name: '007-marketing', run: migrateMarketing },
+  { name: '008-subdomains', run: migrateSubdomains },
 ];
 
 /**

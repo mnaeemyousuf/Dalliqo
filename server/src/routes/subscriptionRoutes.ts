@@ -60,6 +60,14 @@ const setSchema = z
   .strict();
 
 platformRoutes.patch(
+  '/businesses/:id/subdomain',
+  validate({ params: idParams, body: z.object({ subdomain: z.string().trim().toLowerCase().min(3).max(30) }).strict() }),
+  h(async (req: Request, res: Response) => {
+    sendSuccess(res, await subscriptionService.setSubdomain(authOf(req), req.params.id, req.body.subdomain), { message: 'Address updated' });
+  }),
+);
+
+platformRoutes.patch(
   '/businesses/:id/subscription',
   validate({ params: idParams, body: setSchema }),
   h(async (req: Request, res: Response) => {

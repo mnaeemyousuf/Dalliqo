@@ -414,6 +414,15 @@ Every web feature that the app did not have is now in the app, as screens that w
 - Load: 100 simulated users with no errors; 5,000-record performance test passes; every role's web pages open without problems.
 - Validation library upgraded to Zod 4 with plain-English field messages (details in the test report).
 
+## SaaS on Hostinger ✅ (22 Nov 2026)
+
+- **One installation, an address per agency.** With `TENANT_BASE_DOMAIN` set, each agency works at `https://<agency>.<domain>`: the sign-in page shows the agency's name, only its own staff can sign in there (others get "Incorrect email or password"), its tokens and refresh cookies work only there, and an unknown address shows "Agency not found". The bare domain stays the shared address for sign-up, platform administration and the phone app.
+- Sign-up picks the address (suggested from the business name; reserved names refused; simultaneous same-name sign-ups get distinct addresses). Platform staff can change an agency's address. Existing businesses got one (migration 008).
+- Links in e-mails, client and owner portals, QR codes and the public website use the agency's address. CORS and Socket.IO accept agency subdomains.
+- Hostinger web/cloud hosting: live updates fall back to HTTP long-polling (no incoming WebSockets there) and background jobs can be run by a cron calling `POST /api/internal/jobs` with `CRON_SECRET`.
+- Guide: `docs/deployment/HOSTINGER_SAAS.md` (VPS recommended; web hosting with its limits).
+- User manuals rebuilt as version 2.1, Rev. E with every screenshot recaptured; prototypes updated (duplicate-plot warning, Recalculate on the phone, currency and attachment notes on the web).
+
 ## What is left
 - **Old hosted service:** delete the old Render service in the dashboard once every phone has the new APK. Phones with an older APK still talk to the old address.
 - **GitHub repository name** still contains the old name; renaming it is done in GitHub settings (Render follows the redirect).

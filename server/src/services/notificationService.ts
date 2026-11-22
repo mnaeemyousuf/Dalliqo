@@ -9,6 +9,7 @@ import type { TenantContext } from '../types/context';
 import { notFound } from '../utils/AppError';
 import { eventBus } from '../utils/eventBus';
 import { pushService } from './pushService';
+import { tenantService } from './tenantService';
 
 export interface NewNotification {
   userIds: string[];
@@ -27,7 +28,8 @@ async function emailCopies(ctx: TenantContext, userIds: string[], n: NewNotifica
     const users = await User.find({ _id: { $in: userIds }, status: 'ACTIVE', 'preferences.emailNotifications': true }).select('email fullName').lean();
     if (!users.length) return;
     const business = await Business.findById(ctx.businessId).select('name').lean();
-    const link = n.deepLink ? `${env.APP_WEB_URL.replace(/\/$/, '')}${n.deepLink}` : env.APP_WEB_URL;
+    const home = await tenantService.urlForBusiness(ctx.businessId);
+    const link = n.deepLink ? `${home}${n.deepLink}` : home;
     await Promise.all(
       users.map((u) =>
         mailService.send({

@@ -6,8 +6,8 @@ level**, with synthetic Karachi demo data (no real people or properties).
 
 | File | Intended audience | Access level documented | Pages | Figures |
 |---|---|---|---|---|
-| [Business_Owner_User_Manual.pdf](Business_Owner_User_Manual.pdf) | Business owner / organisation administrator | Owner — full access | 98 | 78 |
-| [Office_Manager_User_Manual.pdf](Office_Manager_User_Manual.pdf) | Office manager / team lead | Member — Manager template | 83 | 61 |
+| [Business_Owner_User_Manual.pdf](Business_Owner_User_Manual.pdf) | Business owner / organisation administrator | Owner — full access | 99 | 78 |
+| [Office_Manager_User_Manual.pdf](Office_Manager_User_Manual.pdf) | Office manager / team lead | Member — Manager template | 84 | 61 |
 | [Real_Estate_Agent_User_Manual.pdf](Real_Estate_Agent_User_Manual.pdf) | Field agents and salespeople (includes a note on the narrower Salesperson template) | Member — Agent template | 65 | 46 |
 | [CRM_Operator_User_Manual.pdf](CRM_Operator_User_Manual.pdf) | Office staff / CRM operators, and the family member who helps run the business | Member — Standard member template | 79 | 57 |
 | [Accountant_User_Manual.pdf](Accountant_User_Manual.pdf) | Accounts / reporting staff (commission, income & expense) | Member — Accountant template | 61 | 41 |
@@ -55,7 +55,7 @@ footer with the tagline, version, revision and "Page X of Y"; Midnight `#0B1B4A`
 `#1D4ED8` rules, table headers and note boxes; and Plus Jakarta Sans embedded from
 `mobile/assets/fonts/`. The branding lives in `tools/manuals/build.mjs` (`PRODUCT` / `TAGLINE` in
 `content.mjs`), so every future manual built with this tooling inherits it automatically.
-**Version 2.0, Rev. D** (Stateown rebrand and new features) retook every screenshot from the
+**Version 2.1, Rev. E** (22 Nov 2026) adds the agency’s own web address, business currency and time zone, the duplicate-plot warning, price history and listing expiry, recalculating matches, matching weights on the phone, who can see notes and documents, upload limits and clearer field messages, with every screenshot retaken. **Version 2.0, Rev. D** (Stateown rebrand and new features) retook every screenshot from the
 rebranded application and added the chapters for lead management, verification and listing tools,
 the deal pipeline and negotiation, rental management, installments and finance reports, marketing,
 the assistant, management reports and the newer business settings. The new chapters live in

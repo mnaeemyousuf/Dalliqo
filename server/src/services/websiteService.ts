@@ -15,6 +15,7 @@ import { escapeRegex, normalizeCurrency } from '../utils/text';
 import { activityService } from './activityService';
 import { auditService } from './auditService';
 import { intakeLead } from './leadIntakeService';
+import { tenantService } from './tenantService';
 
 /** Statuses a published listing is visible in; anything else (sold, rented, withdrawn…) drops off the site. */
 const LIVE_STATUSES = ['AVAILABLE', 'RESERVED', 'UNDER_NEGOTIATION'];
@@ -98,13 +99,13 @@ export const websiteService = {
   // ── Settings (signed in) ──
 
   async getSettings(ctx: TenantContext) {
-    const b = await Business.findById(ctx.businessId).select('name website').lean<BusinessDoc>();
+    const b = await Business.findById(ctx.businessId).select('name website subdomain').lean<BusinessDoc>();
     const w: Partial<WebsiteSettings> = b?.website ?? {};
     const [published, inquiries] = await Promise.all([
       Property.countDocuments({ businessId: ctx.businessId, deletedAt: null, 'publicListing.published': true }),
       Inquiry.countDocuments({ businessId: ctx.businessId, status: 'NEW' }),
     ]);
-    return { enabled: !!w.enabled, slug: w.slug ?? null, suggestedSlug: slugify(b?.name ?? ''), tagline: w.tagline ?? null, about: w.about ?? null, phone: w.phone ?? null, whatsapp: w.whatsapp ?? null, email: w.email ?? null, showAgents: w.showAgents ?? true, publishedListings: published, newInquiries: inquiries, url: w.slug ? `${env.APP_WEB_URL.replace(/\/$/, '')}/w/${w.slug}` : null };
+    return { enabled: !!w.enabled, slug: w.slug ?? null, suggestedSlug: slugify(b?.name ?? ''), tagline: w.tagline ?? null, about: w.about ?? null, phone: w.phone ?? null, whatsapp: w.whatsapp ?? null, email: w.email ?? null, showAgents: w.showAgents ?? true, publishedListings: published, newInquiries: inquiries, url: w.slug ? `${tenantService.urlFor(b)}/w/${w.slug}` : null };
   },
 
   async updateSettings(auth: AuthContext, input: Partial<WebsiteSettings>) {

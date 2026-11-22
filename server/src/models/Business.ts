@@ -76,6 +76,8 @@ export interface SubscriptionDoc {
 export interface BusinessDoc {
   _id: Types.ObjectId;
   name: string;
+  /** The agency's own address when sold as SaaS: <subdomain>.<TENANT_BASE_DOMAIN>. */
+  subdomain?: string | null;
   ownerUserId: Types.ObjectId;
   phone?: string;
   email?: string;
@@ -99,6 +101,7 @@ export interface BusinessDoc {
 const businessSchema = new Schema<BusinessDoc>(
   {
     name: { type: String, required: true, trim: true, maxlength: 150 },
+    subdomain: { type: String, trim: true, lowercase: true, maxlength: 40, default: null },
     ownerUserId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     phone: { type: String, trim: true },
     email: { type: String, trim: true, lowercase: true },
@@ -167,6 +170,7 @@ const businessSchema = new Schema<BusinessDoc>(
 );
 
 businessSchema.index({ ownerUserId: 1 });
+businessSchema.index({ subdomain: 1 }, { unique: true, partialFilterExpression: { subdomain: { $type: 'string' } } });
 businessSchema.index({ 'website.slug': 1 }, { unique: true, partialFilterExpression: { 'website.slug': { $type: 'string' } } });
 businessSchema.index({ 'whatsapp.phoneNumberId': 1 }, { partialFilterExpression: { 'whatsapp.phoneNumberId': { $type: 'string' } } });
 

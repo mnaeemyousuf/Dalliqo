@@ -17,6 +17,7 @@ async function main(): Promise<void> {
   const io = createSocketServer(httpServer);
 
   const stopJobs = env.JOBS_ENABLED ? startScheduler() : () => undefined;
+  if (!env.JOBS_ENABLED && !env.CRON_SECRET) logger.warn('Background jobs are off: set JOBS_ENABLED=true, or CRON_SECRET and a cron calling POST /api/internal/jobs');
 
   httpServer.listen(env.PORT, () => logger.info({ port: env.PORT, env: env.NODE_ENV }, 'API listening'));
 

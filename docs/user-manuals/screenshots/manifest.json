@@ -1,6 +1,6 @@
 {
-  "capturedAt": "2026-11-15T13:11:01.664Z",
-  "baseUrl": "http://localhost:5174",
+  "capturedAt": "2026-11-21T20:13:42.826Z",
+  "baseUrl": "http://localhost:4300",
   "shots": [
     {
       "role": "common",
@@ -76,28 +76,28 @@
       "role": "owner",
       "id": "client-detail",
       "file": "screenshots/owner/client-detail.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "owner",
       "id": "client-requirements",
       "file": "screenshots/owner/client-requirements.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "owner",
       "id": "client-matches",
       "file": "screenshots/owner/client-matches.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "owner",
       "id": "client-activity",
       "file": "screenshots/owner/client-activity.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -111,21 +111,21 @@
       "role": "owner",
       "id": "property-detail",
       "file": "screenshots/owner/property-detail.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb46ae3d325bcfbdaddb",
       "ok": true
     },
     {
       "role": "owner",
       "id": "property-media",
       "file": "screenshots/owner/property-media.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb46ae3d325bcfbdaddb",
       "ok": true
     },
     {
       "role": "owner",
       "id": "property-matches",
       "file": "screenshots/owner/property-matches.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb46ae3d325bcfbdaddb",
       "ok": true
     },
     {
@@ -179,9 +179,16 @@
     },
     {
       "role": "owner",
+      "id": "client-form-requirements",
+      "file": "screenshots/owner/client-form-requirements.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "owner",
       "id": "client-saved",
       "file": "screenshots/owner/client-saved.jpg",
-      "url": "/clients/6af9f21f5a9ad3b8eab38670",
+      "url": "/clients/6b01fbb7ae3d325bcfbdbe4b",
       "ok": true
     },
     {
@@ -195,14 +202,14 @@
       "role": "owner",
       "id": "followup-form",
       "file": "screenshots/owner/followup-form.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "owner",
       "id": "followup-saved",
       "file": "screenshots/owner/followup-saved.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -230,7 +237,7 @@
       "role": "owner",
       "id": "client-notes",
       "file": "screenshots/owner/client-notes.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -244,14 +251,14 @@
       "role": "owner",
       "id": "property-verify",
       "file": "screenshots/owner/property-verify.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb46ae3d325bcfbdaddb",
       "ok": true
     },
     {
       "role": "owner",
       "id": "property-status",
       "file": "screenshots/owner/property-status.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb46ae3d325bcfbdaddb",
       "ok": true
     },
     {
@@ -265,7 +272,7 @@
       "role": "owner",
       "id": "property-documents",
       "file": "screenshots/owner/property-documents.jpg",
-      "url": "/properties/6af9ae09fed622189c1d76bf",
+      "url": "/properties/6b01fb45ae3d325bcfbdad1d",
       "ok": true
     },
     {
@@ -279,7 +286,7 @@
       "role": "owner",
       "id": "deal-detail",
       "file": "screenshots/owner/deal-detail.jpg",
-      "url": "/deals/6af9ae1bfed622189c1d8191",
+      "url": "/deals/6b01fb64ae3d325bcfbdb7f0",
       "ok": true
     },
     {
@@ -307,7 +314,7 @@
       "role": "owner",
       "id": "agreement-detail",
       "file": "screenshots/owner/agreement-detail.jpg",
-      "url": "/agreements/6af9ae1cfed622189c1d823b",
+      "url": "/agreements/6b01fb65ae3d325bcfbdb89a",
       "ok": true
     },
     {
@@ -321,7 +328,7 @@
       "role": "owner",
       "id": "brochure",
       "file": "screenshots/owner/brochure.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
@@ -335,14 +342,14 @@
       "role": "owner",
       "id": "x-deal-negotiation",
       "file": "screenshots/owner/x-deal-negotiation.jpg",
-      "url": "/deals/6af9ae1bfed622189c1d8191",
+      "url": "/deals/6b01fb64ae3d325bcfbdb7f0",
       "ok": true
     },
     {
       "role": "owner",
       "id": "x-client-lead",
       "file": "screenshots/owner/x-client-lead.jpg",
-      "url": "/clients/6af9f2055a9ad3b8eab37b6e",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -370,7 +377,7 @@
       "role": "owner",
       "id": "x-lease",
       "file": "screenshots/owner/x-lease.jpg",
-      "url": "/leases/6af9ae1dfed622189c1d8343",
+      "url": "/leases/6b01fb67ae3d325bcfbdb9a2",
       "ok": true
     },
     {
@@ -384,7 +391,7 @@
       "role": "owner",
       "id": "x-installment",
       "file": "screenshots/owner/x-installment.jpg",
-      "url": "/installments/6af9f2105a9ad3b8eab38437",
+      "url": "/installments/6b01fb67ae3d325bcfbdb9b5",
       "ok": true
     },
     {
@@ -587,28 +594,28 @@
       "role": "member",
       "id": "client-detail",
       "file": "screenshots/member/client-detail.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "member",
       "id": "client-requirements",
       "file": "screenshots/member/client-requirements.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "member",
       "id": "client-matches",
       "file": "screenshots/member/client-matches.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "member",
       "id": "client-activity",
       "file": "screenshots/member/client-activity.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -622,21 +629,21 @@
       "role": "member",
       "id": "property-detail",
       "file": "screenshots/member/property-detail.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
       "role": "member",
       "id": "property-media",
       "file": "screenshots/member/property-media.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
       "role": "member",
       "id": "property-matches",
       "file": "screenshots/member/property-matches.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
@@ -690,9 +697,16 @@
     },
     {
       "role": "member",
+      "id": "client-form-requirements",
+      "file": "screenshots/member/client-form-requirements.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "member",
       "id": "client-saved",
       "file": "screenshots/member/client-saved.jpg",
-      "url": "/clients/6af9f22f5a9ad3b8eab38798",
+      "url": "/clients/6b01fc92ae3d325bcfbdcb3c",
       "ok": true
     },
     {
@@ -706,14 +720,14 @@
       "role": "member",
       "id": "followup-form",
       "file": "screenshots/member/followup-form.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "member",
       "id": "followup-saved",
       "file": "screenshots/member/followup-saved.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -741,7 +755,7 @@
       "role": "member",
       "id": "client-notes",
       "file": "screenshots/member/client-notes.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -755,14 +769,14 @@
       "role": "member",
       "id": "property-verify",
       "file": "screenshots/member/property-verify.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb46ae3d325bcfbdaddb",
       "ok": true
     },
     {
       "role": "member",
       "id": "property-status",
       "file": "screenshots/member/property-status.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb46ae3d325bcfbdaddb",
       "ok": true
     },
     {
@@ -776,7 +790,7 @@
       "role": "member",
       "id": "property-documents",
       "file": "screenshots/member/property-documents.jpg",
-      "url": "/properties/6af9ae09fed622189c1d76bf",
+      "url": "/properties/6b01fb45ae3d325bcfbdad1d",
       "ok": true
     },
     {
@@ -790,7 +804,7 @@
       "role": "member",
       "id": "deal-detail",
       "file": "screenshots/member/deal-detail.jpg",
-      "url": "/deals/6af9ae1bfed622189c1d8191",
+      "url": "/deals/6b01fb64ae3d325bcfbdb7f0",
       "ok": true
     },
     {
@@ -818,28 +832,28 @@
       "role": "member",
       "id": "agreement-detail",
       "file": "screenshots/member/agreement-detail.jpg",
-      "url": "/agreements/6af9ae1cfed622189c1d823b",
+      "url": "/agreements/6b01fb65ae3d325bcfbdb89a",
       "ok": true
     },
     {
       "role": "member",
       "id": "brochure",
       "file": "screenshots/member/brochure.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
       "role": "member",
       "id": "x-deal-negotiation",
       "file": "screenshots/member/x-deal-negotiation.jpg",
-      "url": "/deals/6af9ae1bfed622189c1d8191",
+      "url": "/deals/6b01fb64ae3d325bcfbdb7f0",
       "ok": true
     },
     {
       "role": "member",
       "id": "x-client-lead",
       "file": "screenshots/member/x-client-lead.jpg",
-      "url": "/clients/6af9f2055a9ad3b8eab37b6e",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -867,7 +881,7 @@
       "role": "member",
       "id": "x-lease",
       "file": "screenshots/member/x-lease.jpg",
-      "url": "/leases/6af9ae1dfed622189c1d8343",
+      "url": "/leases/6b01fb67ae3d325bcfbdb9a2",
       "ok": true
     },
     {
@@ -881,7 +895,7 @@
       "role": "member",
       "id": "x-installment",
       "file": "screenshots/member/x-installment.jpg",
-      "url": "/installments/6af9f2105a9ad3b8eab38437",
+      "url": "/installments/6b01fb67ae3d325bcfbdb9b5",
       "ok": true
     },
     {
@@ -965,28 +979,28 @@
       "role": "manager",
       "id": "client-detail",
       "file": "screenshots/manager/client-detail.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "manager",
       "id": "client-requirements",
       "file": "screenshots/manager/client-requirements.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "manager",
       "id": "client-matches",
       "file": "screenshots/manager/client-matches.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "manager",
       "id": "client-activity",
       "file": "screenshots/manager/client-activity.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -1000,21 +1014,21 @@
       "role": "manager",
       "id": "property-detail",
       "file": "screenshots/manager/property-detail.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
       "role": "manager",
       "id": "property-media",
       "file": "screenshots/manager/property-media.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
       "role": "manager",
       "id": "property-matches",
       "file": "screenshots/manager/property-matches.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
@@ -1068,9 +1082,16 @@
     },
     {
       "role": "manager",
+      "id": "client-form-requirements",
+      "file": "screenshots/manager/client-form-requirements.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "manager",
       "id": "client-saved",
       "file": "screenshots/manager/client-saved.jpg",
-      "url": "/clients/6af9f23e5a9ad3b8eab388bf",
+      "url": "/clients/6b01fd20ae3d325bcfbdd4cf",
       "ok": true
     },
     {
@@ -1084,14 +1105,14 @@
       "role": "manager",
       "id": "followup-form",
       "file": "screenshots/manager/followup-form.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "manager",
       "id": "followup-saved",
       "file": "screenshots/manager/followup-saved.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -1119,7 +1140,7 @@
       "role": "manager",
       "id": "client-notes",
       "file": "screenshots/manager/client-notes.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -1133,14 +1154,14 @@
       "role": "manager",
       "id": "property-verify",
       "file": "screenshots/manager/property-verify.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb46ae3d325bcfbdaddb",
       "ok": true
     },
     {
       "role": "manager",
       "id": "property-status",
       "file": "screenshots/manager/property-status.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb46ae3d325bcfbdaddb",
       "ok": true
     },
     {
@@ -1154,7 +1175,7 @@
       "role": "manager",
       "id": "property-documents",
       "file": "screenshots/manager/property-documents.jpg",
-      "url": "/properties/6af9ae09fed622189c1d76bf",
+      "url": "/properties/6b01fb45ae3d325bcfbdad1d",
       "ok": true
     },
     {
@@ -1168,7 +1189,7 @@
       "role": "manager",
       "id": "deal-detail",
       "file": "screenshots/manager/deal-detail.jpg",
-      "url": "/deals/6af9ae1bfed622189c1d8191",
+      "url": "/deals/6b01fb64ae3d325bcfbdb7f0",
       "ok": true
     },
     {
@@ -1196,7 +1217,7 @@
       "role": "manager",
       "id": "agreement-detail",
       "file": "screenshots/manager/agreement-detail.jpg",
-      "url": "/agreements/6af9ae1cfed622189c1d823b",
+      "url": "/agreements/6b01fb65ae3d325bcfbdb89a",
       "ok": true
     },
     {
@@ -1210,21 +1231,21 @@
       "role": "manager",
       "id": "brochure",
       "file": "screenshots/manager/brochure.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
       "role": "manager",
       "id": "x-deal-negotiation",
       "file": "screenshots/manager/x-deal-negotiation.jpg",
-      "url": "/deals/6af9ae1bfed622189c1d8191",
+      "url": "/deals/6b01fb64ae3d325bcfbdb7f0",
       "ok": true
     },
     {
       "role": "manager",
       "id": "x-client-lead",
       "file": "screenshots/manager/x-client-lead.jpg",
-      "url": "/clients/6af9f2055a9ad3b8eab37b6e",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -1252,7 +1273,7 @@
       "role": "manager",
       "id": "x-lease",
       "file": "screenshots/manager/x-lease.jpg",
-      "url": "/leases/6af9ae1dfed622189c1d8343",
+      "url": "/leases/6b01fb67ae3d325bcfbdb9a2",
       "ok": true
     },
     {
@@ -1266,7 +1287,7 @@
       "role": "manager",
       "id": "x-installment",
       "file": "screenshots/manager/x-installment.jpg",
-      "url": "/installments/6af9f2105a9ad3b8eab38437",
+      "url": "/installments/6b01fb67ae3d325bcfbdb9b5",
       "ok": true
     },
     {
@@ -1350,28 +1371,28 @@
       "role": "agent",
       "id": "client-detail",
       "file": "screenshots/agent/client-detail.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "agent",
       "id": "client-requirements",
       "file": "screenshots/agent/client-requirements.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "agent",
       "id": "client-matches",
       "file": "screenshots/agent/client-matches.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "agent",
       "id": "client-activity",
       "file": "screenshots/agent/client-activity.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -1385,21 +1406,21 @@
       "role": "agent",
       "id": "property-detail",
       "file": "screenshots/agent/property-detail.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
       "role": "agent",
       "id": "property-media",
       "file": "screenshots/agent/property-media.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
       "role": "agent",
       "id": "property-matches",
       "file": "screenshots/agent/property-matches.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
@@ -1453,9 +1474,16 @@
     },
     {
       "role": "agent",
+      "id": "client-form-requirements",
+      "file": "screenshots/agent/client-form-requirements.jpg",
+      "url": "/clients",
+      "ok": true
+    },
+    {
+      "role": "agent",
       "id": "client-saved",
       "file": "screenshots/agent/client-saved.jpg",
-      "url": "/clients/6af9f24d5a9ad3b8eab389b8",
+      "url": "/clients/6b01fdb9ae3d325bcfbdde56",
       "ok": true
     },
     {
@@ -1469,14 +1497,14 @@
       "role": "agent",
       "id": "followup-form",
       "file": "screenshots/agent/followup-form.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "agent",
       "id": "followup-saved",
       "file": "screenshots/agent/followup-saved.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -1504,7 +1532,7 @@
       "role": "agent",
       "id": "client-notes",
       "file": "screenshots/agent/client-notes.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -1518,14 +1546,14 @@
       "role": "agent",
       "id": "property-verify",
       "file": "screenshots/agent/property-verify.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb46ae3d325bcfbdaddb",
       "ok": true
     },
     {
       "role": "agent",
       "id": "property-status",
       "file": "screenshots/agent/property-status.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb46ae3d325bcfbdaddb",
       "ok": true
     },
     {
@@ -1539,7 +1567,7 @@
       "role": "agent",
       "id": "property-documents",
       "file": "screenshots/agent/property-documents.jpg",
-      "url": "/properties/6af9ae09fed622189c1d76bf",
+      "url": "/properties/6b01fb45ae3d325bcfbdad1d",
       "ok": true
     },
     {
@@ -1553,7 +1581,7 @@
       "role": "agent",
       "id": "deal-detail",
       "file": "screenshots/agent/deal-detail.jpg",
-      "url": "/deals/6af9ae1bfed622189c1d815d",
+      "url": "/deals/6b01fb63ae3d325bcfbdb7bc",
       "ok": true
     },
     {
@@ -1567,21 +1595,21 @@
       "role": "agent",
       "id": "agreement-detail",
       "file": "screenshots/agent/agreement-detail.jpg",
-      "url": "/agreements/6af9ae1cfed622189c1d823b",
+      "url": "/agreements/6b01fb65ae3d325bcfbdb89a",
       "ok": true
     },
     {
       "role": "agent",
       "id": "x-deal-negotiation",
       "file": "screenshots/agent/x-deal-negotiation.jpg",
-      "url": "/deals/6af9ae1bfed622189c1d815d",
+      "url": "/deals/6b01fb63ae3d325bcfbdb7bc",
       "ok": true
     },
     {
       "role": "agent",
       "id": "x-client-lead",
       "file": "screenshots/agent/x-client-lead.jpg",
-      "url": "/clients/6af9f2055a9ad3b8eab37b6e",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -1658,28 +1686,28 @@
       "role": "accountant",
       "id": "client-detail",
       "file": "screenshots/accountant/client-detail.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "accountant",
       "id": "client-requirements",
       "file": "screenshots/accountant/client-requirements.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "accountant",
       "id": "client-matches",
       "file": "screenshots/accountant/client-matches.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "accountant",
       "id": "client-activity",
       "file": "screenshots/accountant/client-activity.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -1693,21 +1721,21 @@
       "role": "accountant",
       "id": "property-detail",
       "file": "screenshots/accountant/property-detail.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
       "role": "accountant",
       "id": "property-media",
       "file": "screenshots/accountant/property-media.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
       "role": "accountant",
       "id": "property-matches",
       "file": "screenshots/accountant/property-matches.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
@@ -1763,7 +1791,7 @@
       "role": "accountant",
       "id": "deal-detail",
       "file": "screenshots/accountant/deal-detail.jpg",
-      "url": "/deals/6af9ae1bfed622189c1d8191",
+      "url": "/deals/6b01fb64ae3d325bcfbdb7f0",
       "ok": true
     },
     {
@@ -1791,28 +1819,28 @@
       "role": "accountant",
       "id": "agreement-detail",
       "file": "screenshots/accountant/agreement-detail.jpg",
-      "url": "/agreements/6af9ae1cfed622189c1d823b",
+      "url": "/agreements/6b01fb65ae3d325bcfbdb89a",
       "ok": true
     },
     {
       "role": "accountant",
       "id": "brochure",
       "file": "screenshots/accountant/brochure.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
       "role": "accountant",
       "id": "x-deal-negotiation",
       "file": "screenshots/accountant/x-deal-negotiation.jpg",
-      "url": "/deals/6af9ae1bfed622189c1d8191",
+      "url": "/deals/6b01fb64ae3d325bcfbdb7f0",
       "ok": true
     },
     {
       "role": "accountant",
       "id": "x-client-lead",
       "file": "screenshots/accountant/x-client-lead.jpg",
-      "url": "/clients/6af9f2055a9ad3b8eab37b6e",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -1826,7 +1854,7 @@
       "role": "accountant",
       "id": "x-lease",
       "file": "screenshots/accountant/x-lease.jpg",
-      "url": "/leases/6af9ae1dfed622189c1d8343",
+      "url": "/leases/6b01fb67ae3d325bcfbdb9a2",
       "ok": true
     },
     {
@@ -1840,7 +1868,7 @@
       "role": "accountant",
       "id": "x-installment",
       "file": "screenshots/accountant/x-installment.jpg",
-      "url": "/installments/6af9f2105a9ad3b8eab38437",
+      "url": "/installments/6b01fb67ae3d325bcfbdb9b5",
       "ok": true
     },
     {
@@ -1910,28 +1938,28 @@
       "role": "viewer",
       "id": "client-detail",
       "file": "screenshots/viewer/client-detail.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "viewer",
       "id": "client-requirements",
       "file": "screenshots/viewer/client-requirements.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "viewer",
       "id": "client-matches",
       "file": "screenshots/viewer/client-matches.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
       "role": "viewer",
       "id": "client-activity",
       "file": "screenshots/viewer/client-activity.jpg",
-      "url": "/clients/6af9ae10fed622189c1d7a8d",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -1945,21 +1973,21 @@
       "role": "viewer",
       "id": "property-detail",
       "file": "screenshots/viewer/property-detail.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
       "role": "viewer",
       "id": "property-media",
       "file": "screenshots/viewer/property-media.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
       "role": "viewer",
       "id": "property-matches",
       "file": "screenshots/viewer/property-matches.jpg",
-      "url": "/properties/6af9ae0afed622189c1d777d",
+      "url": "/properties/6b01fb47ae3d325bcfbdae3a",
       "ok": true
     },
     {
@@ -2015,7 +2043,7 @@
       "role": "viewer",
       "id": "deal-detail",
       "file": "screenshots/viewer/deal-detail.jpg",
-      "url": "/deals/6af9ae1bfed622189c1d8191",
+      "url": "/deals/6b01fb64ae3d325bcfbdb7f0",
       "ok": true
     },
     {
@@ -2036,21 +2064,21 @@
       "role": "viewer",
       "id": "agreement-detail",
       "file": "screenshots/viewer/agreement-detail.jpg",
-      "url": "/agreements/6af9ae1cfed622189c1d823b",
+      "url": "/agreements/6b01fb65ae3d325bcfbdb89a",
       "ok": true
     },
     {
       "role": "viewer",
       "id": "x-deal-negotiation",
       "file": "screenshots/viewer/x-deal-negotiation.jpg",
-      "url": "/deals/6af9ae1bfed622189c1d8191",
+      "url": "/deals/6b01fb64ae3d325bcfbdb7f0",
       "ok": true
     },
     {
       "role": "viewer",
       "id": "x-client-lead",
       "file": "screenshots/viewer/x-client-lead.jpg",
-      "url": "/clients/6af9f2055a9ad3b8eab37b6e",
+      "url": "/clients/6b01fb4eae3d325bcfbdb0eb",
       "ok": true
     },
     {
@@ -2064,7 +2092,7 @@
       "role": "viewer",
       "id": "x-lease",
       "file": "screenshots/viewer/x-lease.jpg",
-      "url": "/leases/6af9ae1dfed622189c1d8343",
+      "url": "/leases/6b01fb67ae3d325bcfbdb9a2",
       "ok": true
     },
     {
@@ -2078,7 +2106,7 @@
       "role": "viewer",
       "id": "x-installment",
       "file": "screenshots/viewer/x-installment.jpg",
-      "url": "/installments/6af9f2105a9ad3b8eab38437",
+      "url": "/installments/6b01fb67ae3d325bcfbdb9b5",
       "ok": true
     },
     {
@@ -2100,34 +2128,6 @@
       "id": "x-assistant",
       "file": "screenshots/viewer/x-assistant.jpg",
       "url": "/assistant",
-      "ok": true
-    },
-    {
-      "role": "owner",
-      "id": "client-form-requirements",
-      "file": "screenshots/owner/client-form-requirements.jpg",
-      "url": "/clients",
-      "ok": true
-    },
-    {
-      "role": "member",
-      "id": "client-form-requirements",
-      "file": "screenshots/member/client-form-requirements.jpg",
-      "url": "/clients",
-      "ok": true
-    },
-    {
-      "role": "manager",
-      "id": "client-form-requirements",
-      "file": "screenshots/manager/client-form-requirements.jpg",
-      "url": "/clients",
-      "ok": true
-    },
-    {
-      "role": "agent",
-      "id": "client-form-requirements",
-      "file": "screenshots/agent/client-form-requirements.jpg",
-      "url": "/clients",
       "ok": true
     }
   ]

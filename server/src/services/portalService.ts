@@ -14,6 +14,7 @@ import { Property, type PropertyDoc } from '../models/Property';
 import { PropertyOwner } from '../models/PropertyOwner';
 import type { AuthContext, TenantContext } from '../types/context';
 import { normalizeCurrency, withCurrency } from '../utils/text';
+import { tenantService } from './tenantService';
 import { AppError, badRequest, forbidden, notFound } from '../utils/AppError';
 import { activityService } from './activityService';
 import { auditService } from './auditService';
@@ -209,7 +210,7 @@ export const portalService = {
     await activityService.record(auth, 'PORTAL_LINK_CREATED', `Portal link created for ${party.fullName} (valid ${days} days)`, [{ entityType: input.kind === 'CLIENT' ? 'client' : 'owner', entityId: party._id, label: party.fullName }]);
     await auditService.record(auth, { action: 'portal_link.created', entityType: input.kind === 'CLIENT' ? 'client' : 'owner', entityId: party._id, entityLabel: party.fullName, meta: { days } });
     const phone = (party as { whatsappNumber?: string; mobileNumber?: string }).whatsappNumber ?? (party as { mobileNumber?: string }).mobileNumber ?? null;
-    return { _id: link._id, url: portalUrl(token), expiresAt: link.expiresAt, phone };
+    return { _id: link._id, url: `${await tenantService.urlForBusiness(auth.businessId)}/portal/${token}`, expiresAt: link.expiresAt, phone };
   },
 
   async listLinks(ctx: TenantContext, kind: PortalKind, partyId: string) {

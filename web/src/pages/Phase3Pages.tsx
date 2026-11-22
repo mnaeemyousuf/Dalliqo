@@ -692,7 +692,7 @@ export function PlatformPage() {
   const [page, setPage] = useState(1);
   const [q, setQ] = useState('');
   const list = useQuery({ queryKey: ['platform', page, q], queryFn: () => subscriptionApi.businesses({ page, limit: 20, q }), enabled: platformAdmin });
-  const [editing, setEditing] = useState<{ id: string; name: string; plan: string; status: string; cycle: string; currentPeriodEnd: string; amount: string; reference: string } | null>(null);
+  const [editing, setEditing] = useState<{ id: string; name: string; subdomain: string; plan: string; status: string; cycle: string; currentPeriodEnd: string; amount: string; reference: string } | null>(null);
   const save = useMutation({
     mutationFn: () =>
       subscriptionApi.setSubscription(editing!.id, {
@@ -710,6 +710,14 @@ export function PlatformPage() {
     },
     onError,
   });
+  const saveAddress = useMutation({
+    mutationFn: () => subscriptionApi.setSubdomain(editing!.id, editing!.subdomain),
+    onSuccess: (r) => {
+      toast.success(t('tenant.addressSaved', { url: r.url }));
+      void list.refetch();
+    },
+    onError,
+  });
   if (!platformAdmin) return <EmptyState title={t('platform.only')} />;
   return (
     <div>
@@ -723,10 +731,11 @@ export function PlatformPage() {
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold">{b.name}</p>
                 <p className="text-xs text-muted">{b.city ?? '—'} · {formatDate(b.createdAt)}</p>
+                {b.subdomain && <a className="ltr-nums text-xs text-brand-600 hover:underline" href={b.url} target="_blank" rel="noreferrer">{b.url.replace(/^https?:\/\//, '')}</a>}
               </div>
               <Badge color="purple">{t(`subscription.plans.${b.plan}`)}</Badge>
               <Badge color={b.writable ? 'green' : 'red'}>{t(`subscription.status.${b.status}`)}</Badge>
-              <Button size="sm" variant="secondary" onClick={() => setEditing({ id: b._id, name: b.name, plan: b.plan, status: b.status === 'EXPIRED' ? 'ACTIVE' : b.status, cycle: b.cycle ?? 'MONTHLY', currentPeriodEnd: (b.currentPeriodEnd ?? '').slice(0, 10), amount: '', reference: '' })}>
+              <Button size="sm" variant="secondary" onClick={() => setEditing({ id: b._id, name: b.name, subdomain: b.subdomain ?? '', plan: b.plan, status: b.status === 'EXPIRED' ? 'ACTIVE' : b.status, cycle: b.cycle ?? 'MONTHLY', currentPeriodEnd: (b.currentPeriodEnd ?? '').slice(0, 10), amount: '', reference: '' })}>
                 {t('platform.manage')}
               </Button>
             </li>
@@ -743,6 +752,10 @@ export function PlatformPage() {
             <Input label={t('platform.paidUntil')} type="date" value={editing.currentPeriodEnd} onChange={(e) => setEditing({ ...editing, currentPeriodEnd: e.target.value })} />
             <Input label={t('platform.amount')} type="number" min={0} value={editing.amount} onChange={(e) => setEditing({ ...editing, amount: e.target.value })} />
             <Input label={t('platform.reference')} value={editing.reference} onChange={(e) => setEditing({ ...editing, reference: e.target.value })} />
+            <div className="flex items-end gap-2 sm:col-span-2">
+              <Input wrapperClassName="flex-1" label={t('tenant.address')} dir="ltr" value={editing.subdomain} onChange={(e) => setEditing({ ...editing, subdomain: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })} hint={t('tenant.changeHint')} />
+              <Button variant="secondary" loading={saveAddress.isPending} onClick={() => saveAddress.mutate()}>{t('tenant.saveAddress')}</Button>
+            </div>
           </div>
         )}
       </Modal>

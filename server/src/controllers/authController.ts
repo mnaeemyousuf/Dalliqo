@@ -7,6 +7,8 @@ import { tokenService } from '../services/tokenService';
 import type { RequestMeta } from '../types/context';
 import { sendSuccess } from '../utils/http';
 import { REFRESH_COOKIE } from '../constants';
+import { ERROR_CODES } from '@recrm/shared';
+import { forbidden } from '../utils/AppError';
 
 
 export { REFRESH_COOKIE };
@@ -47,6 +49,8 @@ export const authController = {
   async register(req: Request, res: Response) {
     const clientType = clientTypeOf(req);
     const { deviceName, ...input } = req.body;
+    // New agencies sign up on the shared address, not on another agency's subdomain.
+    if (req.tenant) throw forbidden(ERROR_CODES.FORBIDDEN, 'Create a new agency from the main Stateown address');
     const result = await authService.register(input, { ...requestMeta(req), clientType, deviceName });
     sendSuccess(
       res,
@@ -58,7 +62,7 @@ export const authController = {
   async login(req: Request, res: Response) {
     const clientType = clientTypeOf(req);
     const { email, password, deviceName } = req.body;
-    const result = await authService.login({ email, password }, { ...requestMeta(req), clientType, deviceName });
+    const result = await authService.login({ email, password }, { ...requestMeta(req), clientType, deviceName }, req.tenant?.businessId);
     sendSuccess(res, {
       user: result.user,
       business: result.business,
@@ -71,7 +75,7 @@ export const authController = {
     const clientType = clientTypeOf(req);
     const raw = clientType === 'mobile' ? req.body.refreshToken : req.cookies?.[REFRESH_COOKIE];
     try {
-      const tokens = await authService.refresh(raw, requestMeta(req));
+      const tokens = await authService.refresh(raw, requestMeta(req), req.tenant?.businessId);
       sendSuccess(res, tokenBody(tokens, clientType, res));
     } catch (err) {
       if (clientType === 'web') res.clearCookie(REFRESH_COOKIE, cookieOptions());

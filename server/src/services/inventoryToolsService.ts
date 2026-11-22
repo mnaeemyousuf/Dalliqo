@@ -11,6 +11,7 @@ import { badRequest, notFound } from '../utils/AppError';
 import { activityService } from './activityService';
 import { auditService } from './auditService';
 import { propertyService } from './propertyService';
+import { tenantService } from './tenantService';
 
 /** Property Excel import, property QR codes and saved list views. */
 
@@ -151,7 +152,7 @@ export const inventoryToolsService = {
   /** QR code (PNG) pointing at the property in Stateown — for signboards, files and brochures. */
   async propertyQr(ctx: TenantContext, id: string): Promise<{ png: Buffer; url: string; fileName: string }> {
     const p = await propertyRepository.getById(ctx, id, 'Property not found');
-    const url = `${env.APP_WEB_URL.replace(/\/$/, '')}/properties/${p._id}`;
+    const url = `${await tenantService.urlForBusiness(ctx.businessId)}/properties/${p._id}`;
     const png = await QRCode.toBuffer(url, { margin: 2, width: 600, errorCorrectionLevel: 'M' });
     return { png, url, fileName: `${p.propertyId}-qr.png` };
   },

@@ -218,6 +218,13 @@ Did you mean this?
 To see a list of supported npm commands, run:
   npm help now lists no high-severity issue.
 
+## SaaS addresses (22 Nov 2026, `server/tests/saas.test.ts`, `web/src/test/login.test.tsx`)
+- Address rules: made from the name, 3–30 characters, reserved names (www, api, admin, mail, cpanel …) refused; the host is read case-insensitively and nested, reserved or look-alike hosts (`evilstateown.test`) are treated as the shared address.
+- Sign-up: unique addresses, requested address kept, taken → 409, reserved → 400, sign-up on an agency's address → 403; four simultaneous sign-ups with the same name get four addresses.
+- On an agency's address: the sign-in page gets the agency's name; another agency's owner gets "Incorrect email or password"; another agency's token gets WRONG_TENANT and its refresh token is refused; an unknown address gets TENANT_NOT_FOUND.
+- CORS allows agency subdomains and refuses `stateown.test.evil.example`; e-mail and portal links use the agency's address; platform staff can move an agency; migration 008 gives older businesses an address; the cron endpoint needs its secret.
+- Web: the sign-in page shows the agency and hides "Create account" on an agency address, and shows "Agency not found" for an unknown one.
+
 ## Manual / visual verification
 Demo API (`npm run demo`) + web, headless Chrome screenshots at 1440 px: client list with lead scores and temperature filter, client lead panel, Reports (leads + inventory aging), Settings → Subscription. All rendered correctly with real demo data.
 

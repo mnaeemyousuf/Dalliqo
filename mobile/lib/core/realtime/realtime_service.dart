@@ -41,7 +41,7 @@ class RealtimeService extends ChangeNotifier {
     if (token == null) return;
     final s = io.io(
       Env.apiBaseUrl,
-      io.OptionBuilder().setTransports(['websocket']).setAuth({'token': token}).disableAutoConnect().enableReconnection().build(),
+      io.OptionBuilder().setTransports(['polling', 'websocket']).setAuth({'token': token}).disableAutoConnect().enableReconnection().build(),
     );
     s.onConnect((_) => _setConnected(true));
     s.onDisconnect((_) => _setConnected(false));

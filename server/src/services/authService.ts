@@ -17,6 +17,7 @@ import { eventBus } from '../utils/eventBus';
 import { isDuplicateKeyError } from '../utils/mongoErrors';
 import { withTransaction } from '../utils/transaction';
 import { auditService } from './auditService';
+import { tenantService } from './tenantService';
 import { branchService } from './branchService';
 import { categoryService } from './categoryService';
 import { transactionService } from './transactionService';
@@ -98,10 +99,13 @@ function notifySessionsRevoked(businessId: string, userId: string, actorUserId: 
 
 export const authService = {
   async register(
-    input: { fullName: string; email: string; password: string; mobileNumber?: string; businessName: string },
+    input: { fullName: string; email: string; password: string; mobileNumber?: string; businessName: string; subdomain?: string },
     meta: SessionMeta,
+    attempt = 0,
   ): Promise<AuthResult> {
     const email = input.email.toLowerCase();
+    // Every new agency gets its own address (used when the system is sold per subdomain).
+    const subdomain = await tenantService.claim(input.subdomain, input.businessName);
     if (await userRepository.findByEmail(email)) {
       throw conflict(ERROR_CODES.EMAIL_IN_USE, 'An account with this email already exists');
     }
@@ -119,7 +123,7 @@ export const authService = {
           session,
         );
         const business = await businessRepository.create(
-          { _id: businessId, name: input.businessName, ownerUserId: userId, createdBy: userId, updatedBy: userId, subscription: subscriptionService.newTrial() },
+          { _id: businessId, name: input.businessName, subdomain, ownerUserId: userId, createdBy: userId, updatedBy: userId, subscription: subscriptionService.newTrial() },
           session,
         );
         const member = await memberRepository.create(ctx, { userId, role: ROLES.OWNER, permissions: [] }, session);
@@ -136,6 +140,9 @@ export const authService = {
         return { user, business, member };
       });
     } catch (err) {
+      // Two agencies with the same name signing up at once: a made-up address moves on to the next free one.
+      if (isDuplicateKeyError(err) && err.keyPattern?.subdomain && !input.subdomain && attempt < 5) return this.register(input, meta, attempt + 1);
+      if (isDuplicateKeyError(err) && err.keyPattern?.subdomain) throw conflict(ERROR_CODES.SUBDOMAIN_TAKEN, 'This address is already taken', [{ path: 'subdomain', message: 'This address is already taken' }]);
       if (isDuplicateKeyError(err)) throw conflict(ERROR_CODES.EMAIL_IN_USE, 'An account with this email already exists');
       throw err;
     }
@@ -150,7 +157,8 @@ export const authService = {
     };
   },
 
-  async login(input: { email: string; password: string }, meta: SessionMeta): Promise<AuthResult> {
+  /** `tenantBusinessId`: on an agency's subdomain only that agency's members may sign in. */
+  async login(input: { email: string; password: string }, meta: SessionMeta, tenantBusinessId?: string): Promise<AuthResult> {
     const user = await userRepository.findByEmailWithSecrets(input.email);
     if (!user) {
       await passwordService.burnTime(input.password);
@@ -165,7 +173,10 @@ export const authService = {
     }
     if (user.status !== 'ACTIVE') throw forbidden(ERROR_CODES.ACCOUNT_DISABLED, 'Account is disabled');
 
-    const memberships = await memberRepository.findActiveMembershipsForUser(user._id);
+    const all = await memberRepository.findActiveMembershipsForUser(user._id);
+    const memberships = tenantBusinessId ? all.filter((m) => m.businessId.equals(tenantBusinessId)) : all;
+    // Same answer as a wrong password, so one agency's address does not reveal who uses other agencies.
+    if (tenantBusinessId && !memberships.length) throw unauthorized(ERROR_CODES.INVALID_CREDENTIALS, 'Incorrect email or password');
     const member =
       memberships.find((m) => user.defaultBusinessId && m.businessId.equals(user.defaultBusinessId)) ?? memberships[0];
     if (!member) throw forbidden(ERROR_CODES.NO_ACTIVE_MEMBERSHIP, 'You are not an active member of any business');
@@ -182,7 +193,7 @@ export const authService = {
     return { user: toPublicUser(user), business, membership: membershipView(member), tokens };
   },
 
-  async refresh(rawToken: string | undefined, meta: RequestMeta): Promise<TokenPair> {
+  async refresh(rawToken: string | undefined, meta: RequestMeta, tenantBusinessId?: string): Promise<TokenPair> {
     if (!rawToken) throw unauthorized(ERROR_CODES.INVALID_REFRESH_TOKEN, 'Refresh token missing');
     const hash = hashToken(rawToken);
     const session = await sessionRepository.findByTokenHash(hash);
@@ -205,6 +216,7 @@ export const authService = {
       throw unauthorized(ERROR_CODES.INVALID_REFRESH_TOKEN, 'Session has ended. Please sign in again.');
     }
 
+    if (tenantBusinessId && !session.businessId.equals(tenantBusinessId)) throw unauthorized(ERROR_CODES.WRONG_TENANT, 'This session belongs to another agency.');
     await assertSessionPrincipalActive(session);
 
     const next = tokenService.generateRefreshToken();
@@ -257,7 +269,7 @@ export const authService = {
       expiresAt: new Date(Date.now() + env.PASSWORD_RESET_TTL_MINUTES * 60_000),
       requestedIp: meta.ip,
     });
-    const link = `${env.APP_WEB_URL.replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(raw)}`;
+    const link = `${await tenantService.urlForBusiness(user.defaultBusinessId)}/reset-password?token=${encodeURIComponent(raw)}`;
     await mailService.send({
       to: user.email,
       subject: 'Reset your Stateown password',

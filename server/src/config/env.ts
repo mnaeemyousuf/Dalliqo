@@ -28,6 +28,16 @@ const schema = z
     TRUST_PROXY: z.coerce.number().int().min(0).default(0),
     RATE_LIMIT_ENABLED: bool.default(true),
     APP_WEB_URL: z.string().url().default('http://localhost:5173'),
+    // SaaS: each agency at <subdomain>.<TENANT_BASE_DOMAIN> (e.g. stateown.pk). Empty = one shared address.
+    TENANT_BASE_DOMAIN: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .regex(/^([a-z0-9-]+\.)+[a-z]{2,}$/,'TENANT_BASE_DOMAIN must be a bare domain such as stateown.pk')
+      .optional()
+      .or(z.literal('').transform(() => undefined)),
+    // Hosts without always-on timers (e.g. Hostinger web hosting): a cron calls POST /api/internal/jobs with this secret.
+    CRON_SECRET: z.string().min(24, 'CRON_SECRET must be at least 24 characters').optional().or(z.literal('').transform(() => undefined)),
     /** Comma-separated emails of Stateown staff who manage subscriptions (platform admin screen). */
     PLATFORM_ADMIN_EMAILS: optional,
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),

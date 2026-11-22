@@ -44,7 +44,8 @@ let socket: Socket | null = null;
 
 export function connectRealtime(queryClient: QueryClient): () => void {
   disconnectRealtime();
-  socket = io({ path: '/socket.io', transports: ['websocket'], auth: (cb) => cb({ token: tokenStore.get() }) });
+  // Long-polling first, then upgrade to WebSocket where the host allows it (Hostinger web hosting does not).
+  socket = io({ path: '/socket.io', transports: ['polling', 'websocket'], auth: (cb) => cb({ token: tokenStore.get() }) });
 
   socket.on('connect', () => useRealtime.setState({ connected: true }));
   socket.on('disconnect', () => useRealtime.setState({ connected: false }));

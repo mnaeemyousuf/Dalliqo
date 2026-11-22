@@ -5,6 +5,7 @@ import { apiKeyService, isApiKey } from '../services/apiKeyService';
 import { resolveAuthContext } from '../services/authContextService';
 import { narrowToSelectedBranch } from '../services/branchScope';
 import { regionService } from '../services/regionService';
+import { assertTenantMatch } from './tenant';
 import { withCurrency } from '../utils/text';
 import { tokenService } from '../services/tokenService';
 import type { AuthContext } from '../types/context';
@@ -27,6 +28,8 @@ export const authenticate = asyncHandler(async (req, _res, next) => {
   } else {
     req.auth = await narrowToSelectedBranch(await resolveAuthContext(tokenService.verifyAccessToken(token)), req.get(BRANCH_HEADER));
   }
+  // On an agency's own subdomain only that agency's accounts and keys work.
+  assertTenantMatch(req, req.auth.businessId);
   // Amounts in messages, PDFs and exports use the business's own currency for the rest of the request.
   const { currency } = await regionService.of(req.auth.businessId);
   withCurrency(currency, () => next());

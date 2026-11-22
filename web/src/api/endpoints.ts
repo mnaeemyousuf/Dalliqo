@@ -374,6 +374,7 @@ export const subscriptionApi = {
   request: (plan: string, cycle: string, note?: string) => api<SubscriptionInfo>({ method: 'POST', url: '/subscription/request', data: clean({ plan, cycle, note }) }),
   businesses: (params: Params) => apiPage<PlatformBusiness>('/platform/businesses', params),
   setSubscription: (id: string, body: Body) => api<Entitlements>({ method: 'PATCH', url: `/platform/businesses/${id}/subscription`, data: body }),
+  setSubdomain: (id: string, subdomain: string) => api<{ subdomain: string; url: string }>({ method: 'PATCH', url: `/platform/businesses/${id}/subdomain`, data: { subdomain } }),
 };
 
 export const ownerApi = {

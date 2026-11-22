@@ -52,7 +52,7 @@ export function newerChapters(m, fig) {
   if (can('clients:create')) {
     leads.push({
       title: 'Importing leads from Excel',
-      html: p(`On the ${ui('Clients')} page click ${ui('Import')}, download the template, fill one row per lead and upload the file. Rows whose phone number already exists are skipped and listed, so nothing is duplicated.`) + p(`${ui('Save view')} above the filters keeps the current filter combination under a name, so you can reopen “Hot leads in DHA” with one click.`),
+      html: p(`On the ${ui('Clients')} page click ${ui('Import')}, download the template, fill one row per lead and upload the file. Rows whose phone number already exists are skipped and listed, so nothing is duplicated. One file can hold up to 2,000 rows and be at most 5 MB; split larger lists.`) + p(`${ui('Save view')} above the filters keeps the current filter combination under a name, so you can reopen “Hot leads in DHA” with one click.`),
     });
   }
   out.push({ title: 'Lead management', sections: leads });
@@ -288,5 +288,8 @@ export function mobileExtras(m) {
     '<b>More actions (⋯) on a record.</b> On a property: verification, listing quality, write a description, QR code. On a deal: checklist, approvals, adjustments, dispute, receipts and vouchers. On a lease: renew, end, waive, inspection, notice. On an income entry: refund.',
     can('rentals:manage') && '<b>New lease</b> and, with finance access, <b>new installment plan</b> from the + button on those lists.',
     '<b>Administration.</b> Subscription and, for the owner, business profile, automation, lead scoring, deal pipeline, commission rules, data retention, API keys and Excel import.',
+    '<b>Properties on the phone.</b> The form warns about a plot that is already listed (offline too) and has an <i>Available until</i> date; the property page shows the price history.',
+    can('matches:manage') && '<b>Recalculate matches.</b> The refresh button on Matches scores every listing against every client again.',
+    '<b>Your data stays on your phone.</b> Android backup is switched off for the app, so client data is not copied to cloud or computer backups. On a new phone, simply sign in: everything is restored from the business account.',
   ]) + note('These newer screens work with live data, so they need an internet connection. Clients, properties, owners, follow-ups, notes, deals, income and expense and agreement drafts still work offline.');
 }
